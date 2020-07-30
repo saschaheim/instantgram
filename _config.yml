@@ -1,0 +1,8 @@
+title: Instantgram
+description: ":cloud: A bookmarklet for download photos in Instagram"
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
