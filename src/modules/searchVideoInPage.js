@@ -46,7 +46,7 @@ export default function searchVideoInPage(program) {
                             _mediaEl = liElements.reverse().pop();
                         }
                     } else {
-                        console.log(liElements[Math.floor(liElements.length / 2)]);
+                        //console.log(liElements[Math.floor(liElements.length / 2)]);
                     }
 
                     _mediaEl = _mediaEl.querySelectorAll('video');

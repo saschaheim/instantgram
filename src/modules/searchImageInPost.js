@@ -23,7 +23,7 @@ export default function searchImageInPost(program) {
                         _mediaEl = liElements.reverse().pop();
                     }
                 } else {
-                    console.log(liElements[Math.floor(liElements.length / 2)]);
+                    //console.log(liElements[Math.floor(liElements.length / 2)]);
                 }
 
                 _mediaEl = _mediaEl.querySelectorAll('img[srcset]');
@@ -33,12 +33,12 @@ export default function searchImageInPost(program) {
                 _mediaEl = $container.querySelectorAll('img[srcset]');
             }
 
-            console.log(_mediaEl);
+            //console.log(_mediaEl);
 
             // last stage open the image ?
             var i = 0;
             for (var i = 0; i < _mediaEl.length; i++) {
-                console.log(isElementInViewport(_mediaEl[i]))
+                //console.log(isElementInViewport(_mediaEl[i]))
 
                 if (isElementInViewport(_mediaEl[i])) { // verify if is in viewport
                     let imageLink = _mediaEl[i].src
