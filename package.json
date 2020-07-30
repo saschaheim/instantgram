@@ -1,6 +1,6 @@
 {
   "name": "instantgram",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "A bookmarklet for download photos in Instagram",
   "main": "src/index.js",
   "scripts": {
@@ -16,12 +16,12 @@
     "build:release:dev": "npm run build:bookmarklet:dev && npm run build:pages",
     "build": "npm run build:webpack && npm run build:release"
   },
-  "homepage": "https://theus.github.io/instantgram/",
+  "homepage": "https://thinkbig-company.github.io/instantgram/",
   "repository": {
     "type": "git",
-    "url": "(https://github.com/theus/instantgram"
+    "url": "(https://github.com/ThinkBIG-Company/instantgram"
   },
-  "author": "Matheus Falcão",
+  "author": "Version 4 Sascha Heim, version 3 Matheus Falcão",
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.26.3",
