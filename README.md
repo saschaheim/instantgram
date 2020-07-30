@@ -12,7 +12,8 @@
 
 ![gif demo](img/demo.gif)
 
-:bulb: Now in version 2.1.0, [instantgram] can search images on screen. When scrolling through your timeline, stop on the image that you want and click on the [instantgram] bookmarklet. It should work.
+:bulb: Now in version 4.0.0, [instantgram] now working again with full support of all media types also recognizes canvas images.
+Also it has now support for multiple images videos in any site feed or post with modal.
 
 ## Compatibility
 
