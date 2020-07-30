@@ -1,4 +1,4 @@
-# [instantgram]
+# [instantgram] v4
 ![GitHub release](https://img.shields.io/github/release/theus/instantgram.svg)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
@@ -35,6 +35,7 @@
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v4.0.0 - [instangram] mostly rewrite of all to fix all the issues an make this great tool to work again.
 - v2.4.0 - [instangram] now supports Stories.
 - v2.3.0 - [instangram] now supports localization, both app and website. Initially it has en-US and pt-BR. You can help us translate [instantgram] for your language! Cool? Read [contributing](CONTRIBUTING.md) for more information.
 - v2.2.0 - [instantgram] now supports video too! :movie_camera:
