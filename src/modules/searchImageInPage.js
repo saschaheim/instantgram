@@ -37,7 +37,7 @@ export default function searchImageInPage(program) {
 				Series image
 				*/
 				var multiImage = [...$article[i].querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')].filter(el => (el.firstChild != null && el.classList.length > 0));
-				console.log(multiImage.length)
+				//console.log(multiImage.length)
 				if(multiImage) {
 							
 					var _mediaEl;
@@ -46,30 +46,30 @@ export default function searchImageInPage(program) {
 						if (multiImage.length == 3) {
 							_mediaEl = multiImage[Math.floor(multiImage.length / 2)]
 						} else if (multiImage.length == 2) {
-							if ($article[i].querySelector('div > div > div > div > div').getElementsByClassName('coreSpriteLeftChevron').length == 1) {
+							if ($article[i].querySelector('div > div > div > div > div > div').getElementsByClassName('coreSpriteLeftChevron').length == 1) {
 								_mediaEl = multiImage.reverse().shift()
 							} else {
 								_mediaEl = multiImage.reverse().pop()
 							}
+							//console.log(_mediaEl.querySelector('img[srcset]'))
 						} else {
-							console.log(multiImage[Math.floor(multiImage.length / 2)])
+							//console.log(multiImage[Math.floor(multiImage.length / 2)])
 						}
 					
 						_mediaEl = _mediaEl.querySelector('img[srcset]')
-						
 						imageLink = _mediaEl.src
 					
 					}
 				}
 				
-				console.log(imageLink)
+				//console.log(imageLink)
 				
 				// bring the original image if had
 				program.setImageLink(imageLink)
 
 				if (program.imageLink) {
 					// open image in new tab
-					window.open(program.imageLink)
+					//window.open(program.imageLink)
 					found = true
 					program.foundByModule = 'searchImageInPage'
 				} else {
