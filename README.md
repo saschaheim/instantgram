@@ -1,4 +1,4 @@
-# [instantgram]
+# [instantgram] v4
 ![GitHub release](https://img.shields.io/github/release/theus/instantgram.svg)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
