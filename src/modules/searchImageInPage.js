@@ -69,7 +69,7 @@ export default function searchImageInPage(program) {
 
 				if (program.imageLink) {
 					// open image in new tab
-					//window.open(program.imageLink)
+					window.open(program.imageLink)
 					found = true
 					program.foundByModule = 'searchImageInPage'
 				} else {
