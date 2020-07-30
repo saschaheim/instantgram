@@ -1,5 +1,5 @@
 # [instantgram]
-![GitHub release](https://img.shields.io/github/release/theus/instantgram.svg)
+![GitHub release](https://img.shields.io/badge/release-v4.0.0-blue)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
