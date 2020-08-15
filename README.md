@@ -1,5 +1,5 @@
-# [instantgram] v4.0.0
-![GitHub release](https://img.shields.io/badge/release-v4.0.0-blue)
+# [instantgram] v5.0.0
+![GitHub release](https://img.shields.io/badge/release-v5.0.0-blue)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -12,8 +12,8 @@
 
 ![gif demo](img/demo.gif)
 
-:bulb: Now in version 4.0.0, [instantgram] now working again with full support of all media types also recognizes canvas images.\
-Also it has now support for multiple images videos in any site feed or post with modal.
+:bulb: We have completely rewritten instantgram. \
+With this version we support all modern browsers that have ECMAScript 2015 (es6) support.
 
 ## Compatibility
 
@@ -37,6 +37,8 @@ Also it has now support for multiple images videos in any site feed or post with
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v5.0.0 - [instangram] We have completely rewritten instantgram. \
+With this version we support all modern browsers that have ECMAScript 2015 (es6) support. 
 - v4.0.0 - [instangram] now working again with full support of all media types also recognizes canvas images.\
 Also it has now support for multiple images videos in any site feed or post with modal. 
 - v2.4.0 - [instangram] now supports Stories.

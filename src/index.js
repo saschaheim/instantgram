@@ -1,137 +1,118 @@
-import localize from './helpers/localize.js'
-//import update from './modules/update.js'
-import forEach from './helpers/forEach.js'
-import isElementInViewport from './helpers/isElementInViewport.js'
-import isOnArticle from './helpers/isOnArticle.js'
+import localize from './helpers/localize.js';
 
-import searchVideoInPage from './modules/searchVideoInPage.js'
-import searchImageVideoInStories from './modules/searchImageVideoInStories.js'
-import searchVideoInPost from './modules/searchVideoInPost.js'
-import searchVideoInModalPost from './modules/searchVideoInModalPost.js'
-import searchImageInPage from './modules/searchImageInPage.js'
-import searchImageInPost from './modules/searchImageInPost.js'
-import searchImageInModalPost from './modules/searchImageInModalPost.js'
+import searchVideoInFeed from './modules/searchVideoInFeed.js';
+import searchImageVideoInStories from './modules/searchImageVideoInStories.js';
+import searchVideoInPost from './modules/searchVideoInPost.js';
+import searchVideoInModalPost from './modules/searchVideoInModalPost.js';
+import searchImageInFeed from './modules/searchImageInFeed.js';
+import searchImageInPost from './modules/searchImageInPost.js';
+import searchImageInModalPost from './modules/searchImageInModalPost.js';
 
 if (DEV) {
-    console.clear()
+    console.clear();
 }
 
 const program = {
     VERSION: VERSION,
+
+    context: {
+        hasMsg: false,
+        msg: ''
+    },
+
     hostname: window.location.hostname,
     path: window.location.pathname,
-    images: [],
-    imagesOnViewPort: [],
     videos: document.querySelectorAll('video'),
+
+    regexHostname: /instagram\.com/,
+    regexRootPath: /\//,
+    regexPostPath: /^\/p\//,
+    regexStoriesURI: /stories\/(.*)+/,
+
     regexOriginalImage: /\/[a-z]+\d+[a-z]?x\d+[a-z]?/, // ex: url p750x750/
     regexMaxResImage: /\/[a-z]+[1080]+[a-z]?x[1080]+[a-z]?/, // ex: url p1080x1080/
-    regexPath: /^\/p\//,
-    regexHostname: /instagram\.com/,
-    regexStoriesURI: /stories\/(.*)+/,
-    regexURL: /([--:\w?@%&+~#=]*\.[a-z]{2,4}\/{0,2})((?:[?&](?:\w+)=(?:\w+))+|[--:\w?@%&+~#=]+)?/,
+
+    alertNotInInstagramPost: false,
+
     foundByModule: null,
-
-    probablyHasAGallery: {
-        check: null,
-        byModule: ''
-    },
-
-    setImageLink: function(link) {
-        this.imageLinkBeforeParse = link
-
-        if (this.regexMaxResImage.test(link)) {
-            this.imageLink = link
-        } else {
-            this.imageLink = (this.regexOriginalImage.test(link)) ? link.replace(this.regexOriginalImage, '') : link
-        }
-    },
-
     foundVideo: false,
     foundImage: false,
     imageLink: false,
     imageLinkBeforeParse: false,
 
-    alertNotInInstagramPost: false,
-    context: {
-        hasMsg: false,
-        msg: ''
-    }
-}
+    setImageLink: function(link) {
+        this.imageLinkBeforeParse = link;
 
-const documentImages = document.images
-
-forEach(documentImages, (index, image) => {
-    if (isOnArticle(image) || documentImages.length === 2) { // story has only 2 images (the main and the avatar)
-        program.images.push(image)
-        if (isElementInViewport(image)) {
-            program.imagesOnViewPort.push(image)
+        if (this.regexMaxResImage.test(link)) {
+            this.imageLink = link;
+        } else {
+            this.imageLink = (this.regexOriginalImage.test(link)) ? link.replace(this.regexOriginalImage, '') : link;
         }
     }
-})
+};
 
 // verify if are running in instagram site
 if (!program.regexHostname.test(program.hostname)) {
-    window.alert(localize('index@alert_onlyWorks'))
+    window.alert(localize('index@alert_onlyWorks'));
 }
 
 /* ===============================
-=            Program            =
-===============================*/
+ =            Program            =
+ ===============================*/
 if (program.regexHostname.test(program.hostname)) {
-    if (searchVideoInPage(program) === false) {
-        console.log('searchVideoInPage(program) === false');
+    if (searchVideoInFeed(program) === false) {
+        console.log('searchVideoInFeed(program) === false');
 
         if (searchImageVideoInStories(program) === false) {
             console.log('searchImageVideoInStories(program) === false');
 
             if (searchVideoInPost(program) === false) {
                 console.log('searchVideoInPost(program) === false');
-				
-				if (searchVideoInModalPost(program) === false) {
-					console.log('searchVideoInModalPost(program) === false');
 
-					if (searchImageInPage(program) === false) {
-						console.log('searchImageInPage(program) === false');
+                if (searchVideoInModalPost(program) === false) {
+                    console.log('searchVideoInModalPost(program) === false');
 
-						if (searchImageInPost(program) === false) {
-							console.log('searchImageInPost(program) === false');
-							
-							if (searchImageInModalPost(program) === false) {
-								console.log('searchImageInModalPost(program) === false');
-								program.context.hasMsg = false
-							} else {
-								console.log('searchImageInModalPost(program) === true');
-							}
-							
-						} else {
-							console.log('searchImageInPost(program) === true');
-						}
-					} else {
-						console.log('searchImageInPage(program) === true');
-					}
-				} else {
-					console.log('searchVideoInModalPost(program) === true');
-				}					
+                    if (searchImageInFeed(program) === false) {
+                        console.log('searchImageInFeed(program) === false');
+
+                        if (searchImageInPost(program) === false) {
+                            console.log('searchImageInPost(program) === false');
+
+                            if (searchImageInModalPost(program) === false) {
+                                console.log('searchImageInModalPost(program) === false');
+                                program.context.hasMsg = false
+                            } else {
+                                console.log('searchImageInModalPost(program) === true');
+                            }
+
+                        } else {
+                            console.log('searchImageInPost(program) === true');
+                        }
+                    } else {
+                        console.log('searchImageInFeed(program) === true');
+                    }
+                } else {
+                    console.log('searchVideoInModalPost(program) === true');
+                }
             } else {
-				console.log('searchVideoInPost(program) === true');
-			}
+                console.log('searchVideoInPost(program) === true');
+            }
         } else {
-			console.log('searchImageVideoInStories(program) === true');
-		}
+            console.log('searchImageVideoInStories(program) === true');
+        }
     } else {
-		console.log('searchVideoInPage(program) === true');
-	}
+        console.log('searchVideoInFeed(program) === true');
+    }
 
     if (DEV) {
-        console.info('dev mode', program)
+        console.info('dev mode', program);
     }
 
     if (program.context.hasMsg) {
-        //window.alert(localize(program.context.msg))
+        window.alert(localize(program.context.msg));
     }
     if (program.alertNotInInstagramPost && !program.foundVideo && !program.foundImage) {
-        //window.alert(localize('index#program@alert_dontFound'))
+        window.alert(localize('index#program@alert_dontFound'));
     }
-    //update(program.VERSION)
 }
 /* =====  End of Program  ======*/

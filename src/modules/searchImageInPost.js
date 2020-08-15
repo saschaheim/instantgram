@@ -1,68 +1,130 @@
 import isElementInViewport from '../helpers/isElementInViewport.js'
 
 export default function searchImageInPost(program) {
-    var found = false
-    /* ==============================================
-    =            Instagram Post                     =
-    ===============================================*/
-    try {
-        if (document.getElementsByTagName('article').length === 1) { // verify if has a image post
-            var $container = document.querySelector('article');
+    var found = false;
 
-            // Multiple image
-            var _mediaEl;
-            let liElements = [...$container.querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')].filter(el => (el.firstChild != null && el.classList.length > 0));
-            if (liElements.length > 1) {
-                // this is the hack for instagram dont mess with me fuckers !
-                if (liElements.length == 3) {
-                    _mediaEl = liElements[Math.floor(liElements.length / 2)];
-                } else if (liElements.length == 2) {
-                    if (document.getElementsByClassName('coreSpriteLeftChevron').length == 1) {
-                        _mediaEl = liElements.reverse().shift();
-                    } else {
-                        _mediaEl = liElements.reverse().pop();
+    if (program.regexPostPath.test(program.path)) {
+
+        /* =====================================
+         =        Search image in post         =
+         ==================================== */
+        try {
+            searchImage: { // eslint-disable-line no-labels
+                if (document.querySelectorAll('main').length === 1) {
+                    const $container = document.querySelector('main');
+                    const $article = $container.querySelectorAll('div > div > article');
+
+                    let imageLink;
+                    for (var i = 0;
+                            i < $article.length; i++) {
+                        if (isElementInViewport($article[i])) {
+
+                            /*
+                             Single image
+                             */
+                            let singleImage = $article[i].querySelector('div > div > div > div > img');
+                            if (singleImage !== null) {
+                                imageLink = singleImage.src;
+                                break;
+                            }
+
+                        }
                     }
-                } else {
-                    //console.log(liElements[Math.floor(liElements.length / 2)]);
-                }
 
-                _mediaEl = _mediaEl.querySelectorAll('img[srcset]');
+                    // Next
+                    /*
+                     Series image
+                     */
+                    let multiImage = [...$article[i].querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')].filter(el => (el.firstChild != null && el.classList.length > 0));
+                    if (multiImage.length > 0) {
+                        imageLink = null;
 
-            } else {
-                // Single image
-                _mediaEl = $container.querySelectorAll('img[srcset]');
-            }
+                        let _currentSelectedControlIndex;
+                        let _isLastMedia = false;
+                        let controlsArray = [...$article[i].children[2].querySelector('div > div').children[1].children];
+                        // detect some things
+                        for (let _i = 0; _i < controlsArray.length; _i++) {
 
-            //console.log(_mediaEl);
+                            if (controlsArray[_i].classList.length > 1) {
+                                _currentSelectedControlIndex = _i;
+                            }
 
-            // last stage open the image ?
-            var i = 0;
-            for (var i = 0; i < _mediaEl.length; i++) {
-                //console.log(isElementInViewport(_mediaEl[i]))
+                            // Is last media
+                            if (_currentSelectedControlIndex == controlsArray.length - 1) {
+                                _isLastMedia = true;
+                                break;
+                            }
+                        }
 
-                if (isElementInViewport(_mediaEl[i])) { // verify if is in viewport
-                    let imageLink = _mediaEl[i].src
+                        let _mediaEl;
+                        for (let i = 0; i < multiImage.length; i++) {
 
-                    if (imageLink) {
-                        // open image in new tab
-                        window.open(imageLink)
-                        program.foundImage = true
-                        found = true
-                        program.foundByModule = 'searchImageInPost'
+                            // First
+                            if (multiImage.length == 2) {
+                                if (_isLastMedia) {
+                                    _mediaEl = multiImage[1];
+                                } else {
+                                    _mediaEl = multiImage[0];
+                                }
+                            } else if (multiImage.length == 3) {
+                                if (_isLastMedia) {
+                                    _mediaEl = multiImage[2];
+                                } else {
+                                    _mediaEl = multiImage[1];
+                                }
+                            } else if (multiImage.length == 4) {
+                                if (_isLastMedia) {
+                                    _mediaEl = multiImage[2];
+                                } else {
+                                    if (controlsArray.length > 6 && _currentSelectedControlIndex == 4) {
+                                        _mediaEl = multiImage[1];
+                                    } else if (controlsArray.length > 6 && _currentSelectedControlIndex == 5) {
+                                        _mediaEl = multiImage[2];
+                                    } else if (controlsArray.length > 6 && _currentSelectedControlIndex == 6) {
+                                        _mediaEl = multiImage[2];
+                                    } else if (controlsArray.length > 6 && _currentSelectedControlIndex == 7) {
+                                        _mediaEl = multiImage[1];
+                                    } else if (controlsArray.length > 6 && _currentSelectedControlIndex == 8) {
+                                        _mediaEl = multiImage[2];
+                                    } else {
+                                        _mediaEl = multiImage[_currentSelectedControlIndex - 1];
+                                    }
+                                }
+                            }
+
+                            if (_mediaEl.querySelector('img[srcset]').length !== null) {
+                                imageLink = _mediaEl.querySelector('img[srcset]').src;
+                                break;
+                            }
+                        }
+
+                    }
+
+                    // bring the original image if had
+                    program.setImageLink(imageLink);
+
+                    if (program.imageLink) {
+                        window.open(program.imageLink);
+                        found = true;
+                        program.foundByModule = 'searchImageInPost';
                     } else {
                         program.context = {
                             hasMsg: true,
-                            msg: 'index#program#screen@alert_dontFound'
+                            msg: 'index#program#post@alert_dontFound'
                         }
                     }
-                    program.alertNotInInstagramPost = false
+
+                    // if found the image stop searching
+                    break searchImage; // eslint-disable-line no-labels
+
                 }
             }
+        } catch (e) {
+            console.error('searchImageInPost()', `[instantgram] ${program.VERSION}`, e);
         }
-    } catch (e) {
-        console.error('searchImageInPost()', `[instantgram] ${program.VERSION}`, e)
-    }
-    /* =====  End of Image visible in screen  ======*/
+        /* =====  End of search image in post ======*/
 
-    return found
+    }
+
+    return found;
 }

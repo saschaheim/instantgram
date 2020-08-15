@@ -1,42 +1,47 @@
 import isElementInViewport from '../helpers/isElementInViewport.js'
 
-export default function searchImageInModalPost(program) {
+export default function searchImageInFeed(program) {
     var found = false;
 
-    if (program.regexPostPath.test(program.path)) {
+    if (program.regexRootPath.test(program.path)) {
 
         /* =====================================
-         =      Search image in modal post     =
+         =        Search image in feed         =
          ==================================== */
         try {
             searchImage: { // eslint-disable-line no-labels
-                if (document.getElementsByTagName('article').length === 2) { // when instagram post is a modal
-                    const $article = document.getElementsByTagName('article')[1];
+                if (document.querySelectorAll('main > section').length === 1) {
+                    const $container = document.querySelector('main > section');
+                    const $article = $container.querySelectorAll('div > div > div > article');
 
                     let imageLink;
-                    if (isElementInViewport($article)) {
+                    for (var i = 0;
+                            i < $article.length; i++) {
+                        if (isElementInViewport($article[i])) {
 
-                        /*
-                         Single image
-                         */
-                        let singleImage = $article.querySelector('div > div > div > div > img');
-                        if (singleImage !== null) {
-                            imageLink = singleImage.src;
+                            /*
+                             Single image
+                             */
+                            let singleImage = $article[i].querySelector('div > div > div > div > img');
+                            if (singleImage !== null) {
+                                imageLink = singleImage.src;
+                                break;
+                            }
+
                         }
-
                     }
 
                     // Next
                     /*
                      Series image
                      */
-                    let multiImage = [...$article.querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')].filter(el => (el.firstChild != null && el.classList.length > 0));
+                    let multiImage = [...$article[i].querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')].filter(el => (el.firstChild != null && el.classList.length > 0));
                     if (multiImage.length > 0) {
                         imageLink = null;
 
                         let _currentSelectedControlIndex;
                         let _isLastMedia = false;
-                        let controlsArray = [...$article.children[2].querySelector('div > div').children[1].children];
+                        let controlsArray = [...$article[i].children[2].querySelector('div > div').children[1].children];
                         // detect some things
                         for (let _i = 0; _i < controlsArray.length; _i++) {
 
@@ -101,7 +106,7 @@ export default function searchImageInModalPost(program) {
                     if (program.imageLink) {
                         window.open(program.imageLink);
                         found = true;
-                        program.foundByModule = 'searchImageInModalPost';
+                        program.foundByModule = 'searchImageInFeed';
                     } else {
                         program.context = {
                             hasMsg: true,
@@ -115,11 +120,11 @@ export default function searchImageInModalPost(program) {
                 }
             }
         } catch (e) {
-            console.error('searchImageInModalPost()', `[instantgram] ${program.VERSION}`, e);
+            console.error('searchImageInFeed()', `[instantgram] ${program.VERSION}`, e);
         }
-        /* =====  End of search in modal post ======*/
+        /* =====  End of search image in feed  ======*/
 
     }
 
-    return found
+    return found;
 }
