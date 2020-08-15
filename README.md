@@ -21,7 +21,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 | -------------------- | -------------------|
 | Google Chrome        | :white_check_mark: |
 | Mozilla Firefox      | :white_check_mark: |
-| Internet Explorer 11 | :cross_mark: |
+| Internet Explorer 11 | :x: |
 | Edge on chromium >=80 | :white_check_mark: |
 | Edge*                | :warning:          |
 *_apparently Edge doesn't allow you to drag a button to the bookmark bar_
