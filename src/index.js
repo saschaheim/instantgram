@@ -61,47 +61,19 @@ if (!program.regexHostname.test(program.hostname)) {
  ===============================*/
 if (program.regexHostname.test(program.hostname)) {
     if (searchVideoInFeed(program) === false) {
-        console.log('searchVideoInFeed(program) === false');
-
         if (searchImageVideoInStories(program) === false) {
-            console.log('searchImageVideoInStories(program) === false');
-
             if (searchVideoInPost(program) === false) {
-                console.log('searchVideoInPost(program) === false');
-
                 if (searchVideoInModalPost(program) === false) {
-                    console.log('searchVideoInModalPost(program) === false');
-
                     if (searchImageInFeed(program) === false) {
-                        console.log('searchImageInFeed(program) === false');
-
                         if (searchImageInPost(program) === false) {
-                            console.log('searchImageInPost(program) === false');
-
                             if (searchImageInModalPost(program) === false) {
-                                console.log('searchImageInModalPost(program) === false');
-                                program.context.hasMsg = false
-                            } else {
-                                console.log('searchImageInModalPost(program) === true');
+                                program.context.hasMsg = false;
                             }
-
-                        } else {
-                            console.log('searchImageInPost(program) === true');
                         }
-                    } else {
-                        console.log('searchImageInFeed(program) === true');
                     }
-                } else {
-                    console.log('searchVideoInModalPost(program) === true');
                 }
-            } else {
-                console.log('searchVideoInPost(program) === true');
             }
-        } else {
-            console.log('searchImageVideoInStories(program) === true');
         }
-    } else {
-        console.log('searchVideoInFeed(program) === true');
     }
 
     if (DEV) {
