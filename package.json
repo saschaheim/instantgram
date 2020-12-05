@@ -1,6 +1,6 @@
 {
   "name": "instantgram",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "description": "A bookmarklet for download photos in Instagram",
   "main": "src/index.js",
   "scripts": {
@@ -44,6 +44,7 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
+    "gulp": "^4.0.2",
     "sweetalert": "^2.1.0"
   }
 }
