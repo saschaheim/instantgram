@@ -15,11 +15,10 @@ export default function searchImageVideoInStories(program) {
 						maxRes = imgWidth;
 						highResImgUrl = urlWidthArr[0];
 					}
-
 				});
 
 				return highResImgUrl;
-			}else{
+			} else {
 			  return element.getAttribute('src');
 			}
 		}
