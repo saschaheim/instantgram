@@ -41,13 +41,14 @@ const program = {
     imageLinkBeforeParse: false,
 
     setImageLink: function(link) {
-        this.imageLinkBeforeParse = link;
+        /*this.imageLinkBeforeParse = link;
 
         if (this.regexMaxResImage.test(link)) {
             this.imageLink = link;
         } else {
             this.imageLink = (this.regexOriginalImage.test(link)) ? link.replace(this.regexOriginalImage, '') : link;
-        }
+        }*/
+		this.imageLink = link;
     }
 };
 
