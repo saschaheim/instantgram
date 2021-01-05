@@ -36,7 +36,19 @@ export default function searchImageVideoInStories(program) {
             if ($video.length > 0) {
                 story = $video[0].src;
             } else {
-                if ($img.length == 1) {
+                if ($img.length > 1) {
+                    let _mediaEl;
+                    for (let i = 0; i < $img.length; i++) {
+                        if ($img[i].className.length > 0) {
+                            _mediaEl = $img[i];
+                            break;
+                        }
+                    }
+
+                    if (getHighestResImg(_mediaEl).length > 0) {
+                        story = getHighestResImg(_mediaEl);
+                    }
+                } else if ($img.length == 1) {
                     if (getHighestResImg($img[0]).length > 0) {
                         story = getHighestResImg($img[0]);
                     } else {
