@@ -37,6 +37,9 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v5.2.0 - [instangram] Refactor Languages.
+- v5.1.1 - [instangram] Fix set language: undefined in dev console.
+- v5.1.0 - [instangram] Instagram changed their stories design to a new one. And this update adress this new design and make it compatible again.
 - v5.0.0 - [instangram] We have completely rewritten instantgram. \
 With this version we support all modern browsers that have ECMAScript 2015 (es6) support. 
 - v4.0.0 - [instangram] now working again with full support of all media types also recognizes canvas images.\
