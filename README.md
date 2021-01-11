@@ -39,6 +39,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 ## Changelog
 - v6.0.0 [Beta] - [instangram] Biggest Update ever! \
 Added support for blob videos, means all videos can be downloaded again. \
+Supports the new and old story layout. \
 Replaced native browser dialog with own for nicer display. \
 The removed update checker in version 4.0 is available again. \
 This version should now work properly and display all errors in the console correctly.
