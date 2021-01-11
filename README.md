@@ -37,10 +37,10 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
-- v6.0.0 [Beta] - [instangram] Biggest Update ever!
-Added support for blob videos, means all videos can be downloaded again.
-Replaced native browser dialog with own for nicer display.
-The removed update checker in version 4.0 is available again.
+- v6.0.0 [Beta] - [instangram] Biggest Update ever! \
+Added support for blob videos, means all videos can be downloaded again. \
+Replaced native browser dialog with own for nicer display. \
+The removed update checker in version 4.0 is available again. \
 This version should now work properly and display all errors in the console correctly.
 - v5.2.0 - [instangram] Refactor Languages.
 - v5.1.1 - [instangram] Fix set language: undefined in dev console.
