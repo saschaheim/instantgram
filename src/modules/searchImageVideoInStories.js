@@ -1,98 +1,101 @@
+import getHighestResImg from '../helpers/getHighestResImg.js'
+
 export default function searchImageVideoInStories(program) {
-    var found = false;
+    var found = false
 
     if (program.regexStoriesURI.test(program.path)) {
-
-        function getHighestResImg(element) {
-            if (element.getAttribute('srcset')) {
-                let highResImgUrl = '';
-                let maxRes = 0;
-                let imgWidth, urlWidthArr;
-                element.getAttribute('srcset').split(',').forEach((item) => {
-                    urlWidthArr = item.trim().split(' ');
-                    imgWidth = parseInt(urlWidthArr[1]);
-                    if (imgWidth > maxRes) {
-                        maxRes = imgWidth;
-                        highResImgUrl = urlWidthArr[0];
-                    }
-                });
-
-                return highResImgUrl;
-            } else {
-                return element.getAttribute('src');
-            }
-        }
 
         /* ======================================
          =     Search image/video in stories    =
          ===================================== */
         try {
-            const $root = document.getElementById('react-root');
+            const $root = document.getElementById('react-root')
 
-            const $video = $root.querySelectorAll('video > source');
-            const $img = $root.querySelectorAll('img[srcset]');
+            const $video = $root.querySelectorAll('video > source')
+            const $img = $root.querySelectorAll('img[srcset]')
 
-            let story = '';
+            let _videoUrl
+            let _imgUrl
+
             if ($video.length > 0) {
-                story = $video[0].src;
+                found = true
+                program.foundVideo = true
+                program.foundByModule = 'searchImageVideoInStories'
+
+                // Fix url timestamp error or signature mismatch
+                _videoUrl = $video[0].src.replace('amp;', '&')
+                window.open(_videoUrl)
             } else {
                 if ($img.length > 1) {
-                    let _mediaEl;
+                    let _mediaEl
                     for (let i = 0; i < $img.length; i++) {
                         if ($img[i].className.length > 0) {
-                            _mediaEl = $img[i];
-                            break;
+                            _mediaEl = $img[i]
+                            break
                         }
                     }
 
-                    if (getHighestResImg(_mediaEl).length > 0) {
-                        story = getHighestResImg(_mediaEl);
+                    if (_imgUrl = getHighestResImg(_mediaEl)) {
+                        found = true
+                        program.foundImage = true
+                        program.foundByModule = 'searchImageVideoInStories'
+
+                        // Fix url timestamp error or signature mismatch
+                        _imgUrl = _imgUrl.replace('amp;', '&')
+                        window.open(_imgUrl)
+                    } else {
+                        found = false
+                        program.foundImage = false
                     }
                 } else if ($img.length == 1) {
-                    if (getHighestResImg($img[0]).length > 0) {
-                        story = getHighestResImg($img[0]);
+                    if (_imgUrl = getHighestResImg($img[0])) {
+                        found = true
+                        program.foundImage = true
+                        program.foundByModule = 'searchImageVideoInStories'
+
+                        // Fix url timestamp error or signature mismatch
+                        _imgUrl = _imgUrl.replace('amp;', '&')
+                        window.open(_imgUrl)
                     } else {
-                        story = $img[0].src;
+                        if (_imgUrl = $img[0].src) {
+                            found = true
+                            program.foundImage = true
+                            program.foundByModule = 'searchImageVideoInStories'
+
+                            // Fix url timestamp error or signature mismatch
+                            _imgUrl = _imgUrl.replace('amp;', '&')
+                            window.open(_imgUrl)
+                        } else {
+                            found = false
+                            program.foundImage = false
+                        }
                     }
                 }
             }
 
-            if (story) {
-                // Fix url timestamp error or signature mismatch
-                story = story.replace('amp;', '&');
-
-                program.setImageLink(story);
-
-                window.open(program.imageLink);
-                found = true;
-                program.foundImage = true;
-                program.foundByModule = 'searchImageVideoInStories';
-            }
-
             if (found === false) {
                 if (program.videos.length > 0) {
-                    let videoLink = program.videos[0].src;
+                    let videoLink = program.videos[0].src
 
                     if (!videoLink && program.videos[0].children) {
-                        videoLink = program.videos[0].children[0].src;
+                        videoLink = program.videos[0].children[0].src
                     }
 
                     if (videoLink) {
-                        window.open(videoLink);
-                        found = true;
-                        program.foundVideo = true;
-                        program.foundByModule = 'searchImageVideoInStories';
-                        program.alertNotInInstagramPost = true; // if don't find nothing, alert to open the post
+                        window.open(videoLink)
+                        found = true
+                        program.foundVideo = true
+                        program.foundByModule = 'searchImageVideoInStories'
                     }
                 }
             }
 
         } catch (e) {
-            console.error('searchImageVideoInStories()', `[instantgram] ${program.VERSION}`, e);
+            console.error('searchImageVideoInStories()', `[instantgram] ${program.VERSION}`, e)
         }
         /* =====  End of search image/video in stories  ======*/
 
     }
 
-    return found;
+    return found
 }

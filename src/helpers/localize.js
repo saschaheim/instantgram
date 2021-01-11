@@ -1,11 +1,11 @@
 import localization from '../localization.js'
 
-let shortLang = navigator.language;
+let shortLang = navigator.language
 if (shortLang.indexOf('-') !== -1) {
-    shortLang = shortLang.split('-')[0];
+    shortLang = shortLang.split('-')[0]
 }
 if (shortLang.indexOf('_') !== -1) {
-    shortLang = shortLang.split('_')[0];
+    shortLang = shortLang.split('_')[0]
 }
 
 const LANGS_NORMALIZE = {
@@ -23,7 +23,6 @@ const LANG_DEFAULT = LANGS_NORMALIZE[shortLang]
  * @return str in language selected
  *
  */
-
 function localize(str, lang = LANG_DEFAULT) {
     try {
         if (!localization.langs.hasOwnProperty(lang)) {

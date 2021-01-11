@@ -1,16 +1,17 @@
-import localize from './helpers/localize.js';
+import localize from './helpers/localize.js'
+import picoModal from './helpers/picoModal.js'
+import showNotFoundModal from './helpers/showNotFoundModal.js'
+import update from './modules/update.js'
 
-import searchVideoInFeed from './modules/searchVideoInFeed.js';
-import searchImageVideoInStories from './modules/searchImageVideoInStories.js';
-import searchVideoInPost from './modules/searchVideoInPost.js';
-import searchVideoInModalPost from './modules/searchVideoInModalPost.js';
-import searchImageInFeed from './modules/searchImageInFeed.js';
-import searchImageInPost from './modules/searchImageInPost.js';
-import searchImageInModalPost from './modules/searchImageInModalPost.js';
+import searchVideoInFeed from './modules/searchVideoInFeed.js'
+import searchImageVideoInStories from './modules/searchImageVideoInStories.js'
+import searchVideoInPost from './modules/searchVideoInPost.js'
+import searchVideoInModalPost from './modules/searchVideoInModalPost.js'
+import searchImageInFeed from './modules/searchImageInFeed.js'
+import searchImageInPost from './modules/searchImageInPost.js'
+import searchImageInModalPost from './modules/searchImageInModalPost.js'
 
-if (DEV) {
-    console.clear();
-}
+console.clear()
 
 const program = {
     VERSION: VERSION,
@@ -25,67 +26,136 @@ const program = {
     videos: document.querySelectorAll('video'),
 
     regexHostname: /instagram\.com/,
-    regexRootPath: /\//,
+    regexRootPath: /^\/+$/,
     regexPostPath: /^\/p\//,
     regexStoriesURI: /stories\/(.*)+/,
-
-    regexOriginalImage: /\/[a-z]+\d+[a-z]?x\d+[a-z]?/, // ex: url p750x750/
-    regexMaxResImage: /\/[a-z]+[1080]+[a-z]?x[1080]+[a-z]?/, // ex: url p1080x1080/
-
-    alertNotInInstagramPost: false,
 
     foundByModule: null,
     foundVideo: false,
     foundImage: false,
     imageLink: false,
-    imageLinkBeforeParse: false,
 
     setImageLink: function(link) {
-        /*this.imageLinkBeforeParse = link;
-
-        if (this.regexMaxResImage.test(link)) {
-            this.imageLink = link;
-        } else {
-            this.imageLink = (this.regexOriginalImage.test(link)) ? link.replace(this.regexOriginalImage, '') : link;
-        }*/
-		this.imageLink = link;
+        this.imageLink = link
     }
-};
-
-// verify if are running in instagram site
-if (!program.regexHostname.test(program.hostname)) {
-    window.alert(localize('index@alert_onlyWorks'));
 }
-
 /* ===============================
  =            Program            =
  ===============================*/
+// verify if are running on instagram site
 if (program.regexHostname.test(program.hostname)) {
-    if (searchVideoInFeed(program) === false) {
-        if (searchImageVideoInStories(program) === false) {
-            if (searchVideoInPost(program) === false) {
-                if (searchVideoInModalPost(program) === false) {
-                    if (searchImageInFeed(program) === false) {
-                        if (searchImageInPost(program) === false) {
-                            if (searchImageInModalPost(program) === false) {
-                                program.context.hasMsg = false;
-                            }
-                        }
-                    }
+
+    // Feed -> instagram.com/
+    if (program.regexRootPath.test(program.path)) {
+        //console.log('Root domain')
+
+        searchVideoInFeed(program, function(vInFeed, vInFeedProgram) {
+            if (DEV) {
+                console.log('videoInFeed', vInFeed)
+            }
+            if (typeof vInFeedProgram.foundVideo !== "undefined" && typeof vInFeedProgram.foundByModule !== "undefined") {
+                program.foundVideo = vInFeedProgram.foundVideo
+                program.foundByModule = vInFeedProgram.foundByModule
+            }
+
+            if (vInFeed === false) {
+                if (searchImageInFeed(program) === false) {
+                    program.context.hasMsg = false
                 }
             }
+        })
+    }
+
+    // Stories -> instagram.com/stories/user name/id/
+    if (program.regexStoriesURI.test(program.path)) {
+        //console.log('Stories domain')
+
+        if (searchImageVideoInStories(program) === false) {
+            program.context.hasMsg = false
         }
     }
 
+    // Post -> instagram.com/p/post id/
+    if (program.regexPostPath.test(program.path)) {
+        //console.log('Post domain')
+
+        searchVideoInPost(program, function(vInPost, vInPostProgram) {
+            if (DEV) {
+                console.log('videoInPost', vInPost)
+            }
+            if (typeof vInPostProgram.foundVideo !== "undefined" && typeof vInPostProgram.foundByModule !== "undefined") {
+                program.foundVideo = vInPostProgram.foundVideo
+                program.foundByModule = vInPostProgram.foundByModule
+            }
+
+            if (vInPost === false) {
+                if (searchImageInPost(program) === false) {
+                    searchVideoInModalPost(program, function(vInModalPost, vInModalPostProgram) {
+                        if (DEV) {
+                            console.log('vInModalPost', vInModalPost)
+                        }
+                        if (typeof vInModalPostProgram.foundVideo !== "undefined" && typeof vInModalPostProgram.foundByModule !== "undefined") {
+                            program.foundVideo = vInModalPostProgram.foundVideo
+                            program.foundByModule = vInModalPostProgram.foundByModule
+                        }
+
+                        if (vInModalPost === false) {
+                            if (searchImageInModalPost(program) === false) {
+                                program.context.hasMsg = false
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    }
+
     if (DEV) {
-        console.info('dev mode', program);
+        console.info('Developer Mode Caution!', program)
+    }
+
+    if (!program.regexRootPath.test(program.path) && !program.regexStoriesURI.test(program.path) && !program.regexPostPath.test(program.path)) {
+        showNotFoundModal(program)
     }
 
     if (program.context.hasMsg) {
-        window.alert(localize(program.context.msg));
+        picoModal({
+            width: 400,
+            content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + program.VERSION + "</span></h4><br/>" +
+                "<p style='margin:0'>" + localize(program.context.msg) + "</p>" +
+                "</div>" +
+                "<div class='footer' style='display:block;bottom:0;background:#efefef;width:100%;left:0;padding:10px;box-sizing:border-box;margin:0;text-align:right;'>" +
+                "<button class='ok' style='width:50px;cursor:pointer;'>Ok</button>" +
+                "</div>"
+        }).afterCreate(modal => {
+            modal.modalElem().addEventListener("click", evt => {
+                if (evt.target && evt.target.matches(".ok")) {
+                    modal.close(true)
+                }
+            })
+        }).afterClose((modal, evt) => {
+            modal.destroy()
+        }).show()
     }
-    if (program.alertNotInInstagramPost && !program.foundVideo && !program.foundImage) {
-        window.alert(localize('index#program@alert_dontFound'));
-    }
+} else {
+    picoModal({
+        width: 400,
+        content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + program.VERSION + "</span></h4>" +
+            "<p style='margin:0'>" + localize('index@alert_onlyWorks') + "</p>" +
+            "</div>" +
+            "<div class='footer' style='display:block;bottom:0;background:#efefef;width:100%;left:0;padding:10px;box-sizing:border-box;margin:0;text-align:right;'>" +
+            "<button class='ok' style='width:50px;cursor:pointer;'>Ok</button>" +
+            "</div>"
+    }).afterCreate(modal => {
+        modal.modalElem().addEventListener('click', evt => {
+            if (evt.target && evt.target.matches('.ok')) {
+                modal.close(true)
+            }
+        })
+    }).afterClose((modal, evt) => {
+        modal.destroy()
+    }).show()
 }
+
+update(program.VERSION)
 /* =====  End of Program  ======*/
