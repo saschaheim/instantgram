@@ -19,8 +19,6 @@ export default function searchVideoInPost(program, callback) {
                     const $container = document.querySelector('main')
                     const $article = $container.querySelectorAll('div > div > article')
 
-                    console.log('was geht')
-
                     let mediaEl
                     let videoLink
                     for (var i = 0; i < $article.length; i++) {
@@ -122,7 +120,6 @@ export default function searchVideoInPost(program, callback) {
                                 getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
                             }).afterShow(modal => {
                                 setTimeout(function() {
-                                    console.log('verdammt')
                                     getBlobVideoUrl($article[i], mediaEl, _currentSelectedControlIndex, function(scrapedBlobVideoUrl) {
                                         if (scrapedBlobVideoUrl) {
                                             modal.close()
