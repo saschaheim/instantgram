@@ -7,10 +7,20 @@ function informOutdatedVersion_In_DevConsole(data) {
     console.warn(localize('modules.update@consoleWarnOutdatedInfoVersions').replace('${data.version}', data.version).replace('${data.onlineVersion}', data.onlineVersion))
 }
 
-function determineIfGetUpdateIsNecessary() {
+function determineIfGetUpdateIsNecessary(localVersion) {
     let data = window.localStorage.getItem('instantgram')
     if (data) {
         data = JSON.parse(data)
+
+        // Sync installed version with localStorage
+        if (isSemVer(localVersion, '> ' + data.version)) {
+            window.localStorage.setItem('instantgram', JSON.stringify({
+                version: localVersion,
+                onlineVersion: data.onlineVersion,
+                lastVerification: data.lastVerification,
+                dateExpiration: data.dateExpiration
+            }))
+        }
         // compare versions cached
         if (isSemVer(data.onlineVersion, '> ' + data.version)) {
             informOutdatedVersion_In_DevConsole(data)
@@ -27,7 +37,7 @@ function determineIfGetUpdateIsNecessary() {
 }
 
 function update(localVersion) {
-    if (determineIfGetUpdateIsNecessary()) {
+    if (determineIfGetUpdateIsNecessary(localVersion)) {
         console.info(localize('modules.update@determineIfGetUpdateIsNecessary_contacting'))
         fetch('https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={%22id%22:45423705413,%22first%22:100}')
             .then(function(response) {

@@ -1,4 +1,4 @@
-# [instantgram] v7.0.0
+# [instantgram] v7.0.1
 ![GitHub release](https://img.shields.io/badge/release-v7.0.0-blue)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
@@ -37,6 +37,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v7.0.1 - [instangram] Fix update handler.
 - v7.0.0 - [instangram] Fix get highest image on every post or story.
 - v6.0.0 - [instangram] Biggest Update ever! \
 Added support for blob videos, means all videos can be downloaded again. \
