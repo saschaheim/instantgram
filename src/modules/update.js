@@ -43,7 +43,8 @@ function update(localVersion) {
             .then(function(response) {
                 return response.json()
             }).then(function(data) {
-                let onlineVersion = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0]
+                let changelog = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text
+                let onlineVersion = changelog.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0]
                 let limitDate = new Date()
                 // verify update each 2 days
                 limitDate.setDate(limitDate.getDate() + 2)
@@ -56,23 +57,38 @@ function update(localVersion) {
                 }))
 
                 console.info(localize('modules.update@determineIfGetUpdateIsNecessary_updated'))
+				console.log(data)
 
                 // if instagram post had a update, notify in console and in a modal
                 if (isSemVer(onlineVersion, '> ' + localVersion)) {
                     picoModal({
                         width: 400,
                         content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + localVersion + "</span></h4><br/>" +
-                            "<p style='margin:0;text-align:center'>" + localize('modules.update@determineIfGetUpdateIsNecessary_@alert_found') + "</p>" +
-                            "</div>" +
+                            "<div style='margin:0;text-align:center'><div style='border: 2px solid rgb(0 0 0 / 70%);border-left: none;border-right: none;border-top: none;padding: 5px;font-variant: small-caps;font-weight: 900;font-size: 16px;'>" + localize('modules.update@determineIfGetUpdateIsNecessary_@update_available') + "</div>" +
+                            "<br/>" +
+                            "<br/>" +
+							
+							"<div style='text-align:left'>" +
+							"<h2 style='font-weight: bold;'>Changelog</h2>" +
+							
+							changelog.split('Changelog ')[1] +
+							
+							"</div>" +
+							"<br/>" +
+							
+							"<a href='http://thinkbig-company.github.io/instantgram' target='_blank' onmouseover='this.style.textDecoration='underline'' onmouseout='this.style.textDecoration='initial'' style='text-decoration: initial; margin: 0px auto; padding: 5px; color: black; border-style: solid; border-image-slice: 1; border-width: 3px; border-image-source: linear-gradient(to left, rgb(213, 58, 157), rgb(116, 58, 213));'>" + localize('modules.update@determineIfGetUpdateIsNecessary_@load_update') + "</a>" +
+							"<br/>" +
+							
+							"</div>" +
                             "<div class='footer' style='display:block;bottom:0;background:#efefef;width:100%;left:0;padding:10px;box-sizing:border-box;margin:0;text-align:right;'>" +
                             "<button class='ok' style='width:50px;cursor:pointer;'>Ok</button>" +
                             "</div>"
                     }).afterCreate(modal => {
-                        modal.modalElem().addEventListener("click", evt => {
-                            if (evt.target && evt.target.matches(".ok")) {
-                                modal.close(true);
+                        modal.modalElem().addEventListener('click', evt => {
+                            if (evt.target && evt.target.matches('.ok')) {
+                                modal.close(true)
                             }
-                        });
+                        })
                     }).afterClose((modal, evt) => {
                         modal.destroy()
                     }).show()
