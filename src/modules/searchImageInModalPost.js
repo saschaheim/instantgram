@@ -1,7 +1,7 @@
 import getHighestResImg from '../helpers/getHighestResImg.js'
 import isElementInViewport from '../helpers/isElementInViewport.js'
 
-export default function searchImageInModalPost(program) {
+export default async function searchImageInModalPost(program) {
     var found = false
 
     if (program.regexPostPath.test(program.path)) {
@@ -31,12 +31,13 @@ export default function searchImageInModalPost(program) {
                         /*
                          Single image
                          */
-                        let singleImage = $article.querySelector('img[srcset]')
-                        if (singleImage != null) {
-                            mediaEl = singleImage
+                        let singleImageEl = $article.querySelector('img[srcset]')
+                        if (singleImageEl != null) {
+                            mediaEl = singleImageEl
                             // Get highest image if possible
-                            if (getHighestResImg(singleImage).length > 0) {
-                                imageLink = getHighestResImg(singleImage)
+                            let helperResult = await getHighestResImg(singleImageEl)
+                            if (helperResult.length > 0) {
+                                imageLink = helperResult
                             }
                         }
                     }
@@ -105,8 +106,9 @@ export default function searchImageInModalPost(program) {
 
                                 if (mediaEl != null && mediaEl.querySelector('img[srcset]') != null) {
                                     // Get highest image if possible
-                                    if (getHighestResImg(mediaEl.querySelector('img[srcset]')).length > 0) {
-                                        imageLink = getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    let helperResult = await getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    if (helperResult.length > 0) {
+                                        imageLink = helperResult
                                     }
                                     break
                                 } else {

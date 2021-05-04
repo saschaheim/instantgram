@@ -53,13 +53,13 @@ if (program.regexHostname.test(program.hostname)) {
             if (DEV) {
                 console.log('videoInFeed', vInFeed)
             }
-            if (typeof vInFeedProgram.foundVideo !== "undefined" && typeof vInFeedProgram.foundByModule !== "undefined") {
+            if (typeof vInFeedProgram.foundVideo !== 'undefined' && typeof vInFeedProgram.foundByModule !== 'undefined') {
                 program.foundVideo = vInFeedProgram.foundVideo
                 program.foundByModule = vInFeedProgram.foundByModule
             }
 
             if (vInFeed === false) {
-                if (searchImageInFeed(program) === false) {
+                if (searchImageInFeed(program).then(res => res === false ? true : false)) {
                     program.context.hasMsg = false
                 }
             }
@@ -70,7 +70,7 @@ if (program.regexHostname.test(program.hostname)) {
     if (program.regexStoriesURI.test(program.path)) {
         //console.log('Stories domain')
 
-        if (searchImageVideoInStories(program) === false) {
+        if (searchImageVideoInStories(program).then(res => res === false ? true : false)) {
             program.context.hasMsg = false
         }
     }
@@ -83,24 +83,24 @@ if (program.regexHostname.test(program.hostname)) {
             if (DEV) {
                 console.log('videoInPost', vInPost)
             }
-            if (typeof vInPostProgram.foundVideo !== "undefined" && typeof vInPostProgram.foundByModule !== "undefined") {
+            if (typeof vInPostProgram.foundVideo !== 'undefined' && typeof vInPostProgram.foundByModule !== 'undefined') {
                 program.foundVideo = vInPostProgram.foundVideo
                 program.foundByModule = vInPostProgram.foundByModule
             }
 
             if (vInPost === false) {
-                if (searchImageInPost(program) === false) {
+                if (searchImageInPost(program).then(res => res === false ? true : false)) {
                     searchVideoInModalPost(program, function(vInModalPost, vInModalPostProgram) {
                         if (DEV) {
                             console.log('vInModalPost', vInModalPost)
                         }
-                        if (typeof vInModalPostProgram.foundVideo !== "undefined" && typeof vInModalPostProgram.foundByModule !== "undefined") {
+                        if (typeof vInModalPostProgram.foundVideo !== 'undefined' && typeof vInModalPostProgram.foundByModule !== 'undefined') {
                             program.foundVideo = vInModalPostProgram.foundVideo
                             program.foundByModule = vInModalPostProgram.foundByModule
                         }
 
                         if (vInModalPost === false) {
-                            if (searchImageInModalPost(program) === false) {
+                            if (searchImageInModalPost(program).then(res => res === false ? true : false)) {
                                 program.context.hasMsg = false
                             }
                         }

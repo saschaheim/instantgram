@@ -1,7 +1,7 @@
 import getHighestResImg from '../helpers/getHighestResImg.js'
 import isElementInViewport from '../helpers/isElementInViewport.js'
 
-export default function searchImageInPost(program) {
+export default async function searchImageInPost(program) {
     var found = false
 
     if (program.regexPostPath.test(program.path)) {
@@ -15,19 +15,20 @@ export default function searchImageInPost(program) {
                     const $container = document.querySelector('main')
                     const $article = $container.querySelectorAll('div > div > article')
 
-                    let mediaEl
+                    let mediaEl = null
                     let imageLink = null
                     for (var i = 0; i < $article.length; i++) {
                         if (isElementInViewport($article[i])) {
                             /*
                              Single image
                              */
-                            let singleImage = $article[i].querySelector('div > div > div > div > img')
-                            if (singleImage != null) {
-                                mediaEl = singleImage
+                            let singleImageEl = $article[i].querySelector('div > div > div > div > img')
+                            if (singleImageEl != null) {
+                                mediaEl = singleImageEl
                                 // Get highest image if possible
-                                if (getHighestResImg(singleImage).length > 0) {
-                                    imageLink = getHighestResImg(singleImage)
+                                let helperResult = await getHighestResImg(singleImageEl)
+                                if (helperResult.length > 0) {
+                                    imageLink = helperResult
                                 }
                                 break
                             }
@@ -98,8 +99,9 @@ export default function searchImageInPost(program) {
 
                                 if (mediaEl != null && mediaEl.querySelector('img[srcset]') != null) {
                                     // Get highest image if possible
-                                    if (getHighestResImg(mediaEl.querySelector('img[srcset]')).length > 0) {
-                                        imageLink = getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    let helperResult = await getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    if (helperResult.length > 0) {
+                                        imageLink = helperResult
                                     }
                                     break
                                 } else {

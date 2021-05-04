@@ -1,7 +1,7 @@
 import getHighestResImg from '../helpers/getHighestResImg.js'
 import isElementInViewport from '../helpers/isElementInViewport.js'
 
-export default function searchImageInFeed(program) {
+export default async function searchImageInFeed(program) {
     var found = false
 
     if (program.regexRootPath.test(program.path)) {
@@ -22,12 +22,13 @@ export default function searchImageInFeed(program) {
                             /*
                              Single image
                              */
-                            let singleImage = $article[i].querySelector('div > div > div > div > img')
-                            if (singleImage != null) {
-                                mediaEl = singleImage
+                            let singleImageEl = $article[i].querySelector('div > div > div > div > img')
+                            if (singleImageEl != null) {
+                                mediaEl = singleImageEl
                                 // Get highest image if possible
-                                if (getHighestResImg(singleImage).length > 0) {
-                                    imageLink = getHighestResImg(singleImage)
+                                let helperResult = await getHighestResImg(singleImageEl)
+                                if (helperResult.length > 0) {
+                                    imageLink = helperResult
                                 }
                                 break
                             }
@@ -98,8 +99,9 @@ export default function searchImageInFeed(program) {
 
                                 if (mediaEl != null && mediaEl.querySelector('img[srcset]') != null) {
                                     // Get highest image if possible
-                                    if (getHighestResImg(mediaEl.querySelector('img[srcset]')).length > 0) {
-                                        imageLink = getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    let helperResult = await getHighestResImg(mediaEl.querySelector('img[srcset]'))
+                                    if (helperResult.length > 0) {
+                                        imageLink = helperResult
                                     }
                                     break
                                 } else {
