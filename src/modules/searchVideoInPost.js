@@ -120,10 +120,10 @@ export default function searchVideoInPost(program, callback) {
                                 getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
                             }).afterShow(modal => {
                                 setTimeout(function() {
-                                    getBlobVideoUrl($article[i], mediaEl, _currentSelectedControlIndex, function(scrapedBlobVideoUrl) {
-                                        if (scrapedBlobVideoUrl) {
-                                            modal.close()
+                                    getBlobVideoUrl(mediaEl, function(scrapedBlobVideoUrl) {
+                                        modal.close()
 
+                                        if (scrapedBlobVideoUrl) {
                                             found = true
                                             program.foundVideo = true
                                             program.foundByModule = 'searchVideoInPost'
@@ -132,8 +132,6 @@ export default function searchVideoInPost(program, callback) {
 
                                             callback(found, program)
                                         } else {
-                                            modal.close()
-
                                             found = false
                                             program.foundVideo = false
                                             program.foundByModule = 'searchVideoInPost'

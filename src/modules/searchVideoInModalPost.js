@@ -115,7 +115,7 @@ export default function searchVideoInModalPost(program, callback) {
 
                     if (videoLink) {
                         if (videoLink.indexOf('blob:') !== -1) {
-                            let blobLoaderModal = picoModal({
+                            picoModal({
                                 width: 400,
                                 content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + program.VERSION + "</span></h4><br/>" +
                                     "<p style='margin:0;text-align:center'>" + getPreLoader() + "</p>" +
@@ -128,10 +128,10 @@ export default function searchVideoInModalPost(program, callback) {
                                 getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
                             }).afterShow(modal => {
                                 setTimeout(function() {
-                                    getBlobVideoUrl($article, mediaEl, _currentSelectedControlIndex, function(scrapedBlobVideoUrl) {
-                                        if (scrapedBlobVideoUrl) {
-                                            blobLoaderModal.close()
+                                    getBlobVideoUrl(mediaEl, function(scrapedBlobVideoUrl) {
+                                        modal.close()
 
+                                        if (scrapedBlobVideoUrl) {
                                             found = true
                                             program.foundVideo = true
                                             program.foundByModule = 'searchVideoInModalPost'
@@ -140,8 +140,6 @@ export default function searchVideoInModalPost(program, callback) {
 
                                             callback(found, program)
                                         } else {
-                                            blobLoaderModal.close()
-
                                             found = false
                                             program.foundVideo = false
                                             program.foundByModule = 'searchVideoInModalPost'
