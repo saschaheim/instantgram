@@ -1,4 +1,4 @@
-export default async function getHighestResImg(el) {
+export default async function getHighestResImg(el: Element) {
     if (el.getAttribute('srcset')) {
         let urlWidthArr = []
         el.getAttribute('srcset').split(',').forEach((item) => {
@@ -13,13 +13,15 @@ export default async function getHighestResImg(el) {
             urlWidthArr.unshift(obj)
         }
 
-        let maxRes = 0
-        let imgWidthHeight
+        let maxRes: number = 0
+        let imgWidthHeight: number
         let highResImgUrl = ''
         for (let i = 0; i < urlWidthArr.length; i++) {
-            const dimensions = await getImageDimensions(urlWidthArr[i][0])
+            let _dimensions = await getImageDimensions(urlWidthArr[i][0]) as any
+            let _width = _dimensions.width as number
+            let _height = _dimensions.height as number
 
-            imgWidthHeight = parseInt(dimensions.width * dimensions.height)
+            imgWidthHeight = (_width * _height)
             if (imgWidthHeight > maxRes) {
                 maxRes = imgWidthHeight
                 highResImgUrl = urlWidthArr[i][0]
@@ -40,27 +42,26 @@ export default async function getHighestResImg(el) {
     }
 }
 
-const getImageDimensions = src =>
-    new Promise((resolve, reject) => {
-        const img = new Image()
+const getImageDimensions = (src: any) => new Promise((resolve, reject) => {
+    const img = new Image()
 
-        // the following handler will fire after the successful loading of the image
-        img.onload = () => {
-            const {
-                naturalWidth: width,
-                naturalHeight: height
-            } = img
-            resolve({
-                width,
-                height
-            })
-        }
+    // the following handler will fire after the successful loading of the image
+    img.onload = () => {
+        const {
+            naturalWidth: width,
+            naturalHeight: height
+        } = img
 
-        // and this handler will fire if there was an error with the image (like if it's not really an image or a corrupted one)
-        img.onerror = () => {
-            reject('There was some problem with the image.')
-        }
-
-        img.src = src
+        resolve({
+            width,
+            height
+        }) as any
     }
-)
+
+    // and this handler will fire if there was an error with the image (like if it's not really an image or a corrupted one)
+    img.onerror = () => {
+        reject('There was some problem with the image.')
+    }
+
+    img.src = src
+})

@@ -1,32 +1,35 @@
-import localize from '../helpers/localize.js'
-import isSemVer from '../helpers/isSemVer.js'
-import picoModal from '../helpers/picoModal.js'
+import localize from '../helpers/localize'
+import picoModal from '../helpers/picoModal'
+const isSemVer = require('semver')
 
-function informOutdatedVersion_In_DevConsole(data) {
+function informOutdatedVersion_In_DevConsole(data: any) {
     console.warn(localize('modules.update@consoleWarnOutdatedInfo'))
     console.warn(localize('modules.update@consoleWarnOutdatedInfoVersions').replace('${data.version}', data.version).replace('${data.onlineVersion}', data.onlineVersion))
 }
 
-function determineIfGetUpdateIsNecessary(localVersion) {
-    let data = window.localStorage.getItem('instantgram')
-    if (data) {
-        data = JSON.parse(data)
+function determineIfGetUpdateIsNecessary(localVersion: string) {
+    var data = window.localStorage.getItem('instantgram') as string
+
+    if (typeof data === 'string') {
+        let _data = JSON.parse(data) as any
 
         // Sync installed version with localStorage
-        if (isSemVer(localVersion, '> ' + data.version)) {
+        if (isSemVer(localVersion, '> ' + _data.version)) {
             window.localStorage.setItem('instantgram', JSON.stringify({
                 version: localVersion,
-                onlineVersion: data.onlineVersion,
-                lastVerification: data.lastVerification,
-                dateExpiration: data.dateExpiration
+                onlineVersion: _data.onlineVersion,
+                lastVerification: _data.lastVerification,
+                dateExpiration: _data.dateExpiration
             }))
         }
+
         // compare versions cached
-        if (isSemVer(data.onlineVersion, '> ' + data.version)) {
-            informOutdatedVersion_In_DevConsole(data)
+        if (isSemVer(_data.onlineVersion, '> ' + _data.version)) {
+            informOutdatedVersion_In_DevConsole(_data)
         }
+
         // compare date now with expiration
-        if (Date.now() > data.dateExpiration) {
+        if (Date.now() > _data.dateExpiration) {
             return true // must have update new informations from github
         } else {
             return false // have localStorage and is on the date
@@ -36,13 +39,13 @@ function determineIfGetUpdateIsNecessary(localVersion) {
     }
 }
 
-function update(localVersion) {
+function update(localVersion: string) {
     if (determineIfGetUpdateIsNecessary(localVersion)) {
         console.info(localize('modules.update@determineIfGetUpdateIsNecessary_contacting'))
         fetch('https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={%22id%22:45423705413,%22first%22:100}')
-            .then(function(response) {
+            .then(function (response) {
                 return response.json()
-            }).then(function(data) {
+            }).then(function (data) {
                 let changelog = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text
                 let onlineVersion = changelog.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0]
                 let limitDate = new Date()

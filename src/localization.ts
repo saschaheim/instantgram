@@ -36,7 +36,7 @@ export default {
             'modules.modal@isLoading': 'Wird versucht zu laden',
 			
             'modules.update@consoleWarnOutdatedInfo': '[instantgram] ist veraltet. Bitte besuche die Seite http://thinkbig-company.github.io/instantgram für ein Update.',
-            'modules.update@consoleWarnOutdatedInfoVersions': '[instantgram] Installierte Version ${data.version} | Neue Version: ${data.onlineVersion}',
+            'modules.update@consoleWarnOutdatedInfoVersions': '[instantgram] Installierte Version: ${data.version} | Neue Version: ${data.onlineVersion}',
             'modules.update@determineIfGetUpdateIsNecessary_contacting': '[instantgram] sucht nach neuen verfügbaren Updates...',
             'modules.update@determineIfGetUpdateIsNecessary_updated': '[instantgram] wurde aktualisiert.',
             'modules.update@determineIfGetUpdateIsNecessary_@update_available': 'Es ist ein neues Update verfügbar',

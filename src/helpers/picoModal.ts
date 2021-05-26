@@ -19,7 +19,7 @@ function observable() {
     var callbacks = [];
     return {
         watch: callbacks.push.bind(callbacks),
-        trigger: function(context, detail) {
+        trigger: function (context: any, detail: any) {
 
             var unprevented = true;
             var event = {
@@ -47,12 +47,12 @@ function isHidden(elem) {
 /**
  * A small interface for creating and managing a dom element
  */
-function Elem(elem) {
+function Elem(this: any, elem: HTMLElement) {
     this.elem = elem;
 }
 
 /** Creates a new div */
-Elem.make = function(parent, tag) {
+Elem.make = function (parent: Element, tag: any) {
     if (typeof parent === "string") {
         parent = document.querySelector(parent);
     }
@@ -64,12 +64,12 @@ Elem.make = function(parent, tag) {
 Elem.prototype = {
 
     /** Creates a child of this node */
-    child: function(tag) {
+    child: function (tag) {
         return Elem.make(this.elem, tag);
     },
 
     /** Applies a set of styles to an element */
-    stylize: function(styles) {
+    stylize: function (styles) {
         styles = styles || {};
 
         if (typeof styles.opacity !== "undefined") {
@@ -86,13 +86,13 @@ Elem.prototype = {
     },
 
     /** Adds a class name */
-    clazz: function(clazz) {
+    clazz: function (clazz) {
         this.elem.className += " " + clazz;
         return this;
     },
 
     /** Sets the HTML */
-    html: function(content) {
+    html: function (content) {
         if (isNode(content)) {
             this.elem.appendChild(content);
         } else {
@@ -102,28 +102,28 @@ Elem.prototype = {
     },
 
     /** Adds a click handler to this element */
-    onClick: function(callback) {
+    onClick: function (callback) {
         this.elem.addEventListener('click', callback);
         return this;
     },
 
     /** Removes this element from the DOM */
-    destroy: function() {
+    destroy: function () {
         this.elem.parentNode.removeChild(this.elem);
     },
 
     /** Hides this element */
-    hide: function() {
+    hide: function () {
         this.elem.style.display = "none";
     },
 
     /** Shows this element */
-    show: function() {
+    show: function () {
         this.elem.style.display = "block";
     },
 
     /** Sets an attribute on this element */
-    attr: function(name, value) {
+    attr: function (name, value) {
         if (value !== undefined) {
             this.elem.setAttribute(name, value);
         }
@@ -131,7 +131,7 @@ Elem.prototype = {
     },
 
     /** Executes a callback on all the ancestors of an element */
-    anyAncestor: function(predicate) {
+    anyAncestor: function (predicate) {
         var elem = this.elem;
         while (elem) {
             if (predicate(new Elem(elem))) {
@@ -144,7 +144,7 @@ Elem.prototype = {
     },
 
     /** Whether this element is visible */
-    isVisible: function() {
+    isVisible: function () {
         return !isHidden(this.elem);
     }
 };
@@ -152,7 +152,7 @@ Elem.prototype = {
 
 /** Generates the grey-out effect */
 function buildOverlay(getOption, close) {
-    return Elem.make(getOption("parent"))
+    return Elem.make(getOption("parent"), null)
         .clazz("pico-overlay")
         .clazz(getOption("overlayClass", ""))
         .stylize({
@@ -168,7 +168,7 @@ function buildOverlay(getOption, close) {
             opacity: 0.5,
             background: "#000"
         }))
-        .onClick(function() {
+        .onClick(function () {
             if (getOption('overlayClose', true)) {
                 close();
             }
@@ -187,7 +187,7 @@ function buildModal(getOption, close) {
 
     var id = getOption("modalId", "pico-" + autoinc++);
 
-    var elem = Elem.make(getOption("parent"))
+    var elem = Elem.make(getOption("parent"), null)
         .clazz("pico-content")
         .clazz(getOption("modalClass", ""))
         .stylize({
@@ -216,8 +216,8 @@ function buildModal(getOption, close) {
         .attr("role", "dialog")
         .attr("aria-labelledby", getOption("ariaLabelledBy"))
         .attr("aria-describedby", getOption("ariaDescribedBy", id))
-        .onClick(function(event) {
-            var isCloseClick = new Elem(event.target).anyAncestor(function(elem) {
+        .onClick(function (event) {
+            var isCloseClick = new Elem(event.target).anyAncestor(function (elem) {
                 return /\bpico-close\b/.test(elem.elem.className);
             });
             if (isCloseClick) {
@@ -256,7 +256,7 @@ function buildClose(elem, getOption) {
 
 /** Builds a method that calls a method and returns an element */
 function buildElemAccessor(builder) {
-    return function() {
+    return function () {
         return builder().elem;
     };
 }
@@ -274,12 +274,12 @@ document.documentElement.addEventListener('keydown', function onKeyPress(event) 
 
     // If this is the escape key
     if (keycode === 27) {
-        escapeKey.trigger();
+        escapeKey.trigger(null, null);
     }
 
     // If this is the tab key
     else if (keycode === 9) {
-        tabKey.trigger(event);
+        tabKey.trigger(event, null);
     }
 });
 
@@ -377,7 +377,7 @@ function manageBodyOverflow(iface, isEnabled) {
     var origOverflow;
     var body = new Elem(document.body);
 
-    iface.beforeShow(function() {
+    iface.beforeShow(function () {
         // Capture the current values so they can be restored
         origOverflow = body.elem.style.overflow;
 
@@ -388,7 +388,7 @@ function manageBodyOverflow(iface, isEnabled) {
         }
     });
 
-    iface.afterClose(function() {
+    iface.afterClose(function () {
         body.stylize({
             overflow: origOverflow
         });
@@ -449,9 +449,10 @@ function picoModal(options) {
     }
 
     /** Wraps a method so it returns the modal interface */
-    function returnIface(callback) {
-        return function() {
-            callback.apply(this, arguments);
+    function returnIface(this: any, callback) {
+        const that = this;
+        return function () {
+            callback.apply(that, arguments);
             return iface;
         };
     }
@@ -489,12 +490,12 @@ function picoModal(options) {
         buildDom: returnIface(build.bind(null, null)),
 
         /** Returns whether this modal is currently being shown */
-        isVisible: function() {
+        isVisible: function () {
             return !!(built && modalElem && modalElem().isVisible());
         },
 
         /** Shows this modal */
-        show: function(detail) {
+        show: function (detail) {
             if (beforeShowEvent.trigger(iface, detail)) {
                 shadowElem().show();
                 closeElem();
@@ -514,7 +515,7 @@ function picoModal(options) {
         forceClose: returnIface(forceClose),
 
         /** Destroys this modal */
-        destroy: function() {
+        destroy: function () {
             modalElem().destroy();
             shadowElem().destroy();
             shadowElem = modalElem = closeElem = undefined;
@@ -525,8 +526,8 @@ function picoModal(options) {
          * change options that are re-evaluted regularly, such as
          * `overlayClose`.
          */
-        options: function(opts) {
-            Object.keys(opts).map(function(key) {
+        options: function (opts) {
+            Object.keys(opts).map(function (key) {
                 options[key] = opts[key];
             });
         },
