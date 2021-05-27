@@ -1,6 +1,6 @@
 import localize from '../helpers/localize'
 import picoModal from '../helpers/picoModal'
-const isSemVer = require('semver')
+import isSemVer from '../helpers/isSemVer'
 
 function informOutdatedVersion_In_DevConsole(data: any) {
     console.warn(localize('modules.update@consoleWarnOutdatedInfo'))
@@ -75,7 +75,6 @@ function update(localVersion: string) {
                             "</div>" +
                             "<br/>" +
                             "<a href='http://thinkbig-company.github.io/instantgram' target='_blank' onmouseover='this.style.textDecoration='underline'' onmouseout='this.style.textDecoration='initial'' style='text-decoration: initial; margin: 0px auto; padding: 5px; color: black; border-style: solid; border-image-slice: 1; border-width: 3px; border-image-source: linear-gradient(to left, rgb(213, 58, 157), rgb(116, 58, 213));'>" + localize('modules.update@determineIfGetUpdateIsNecessary_@load_update') + "</a>" +
-                            "<br/>" +
                             "</div>" +
                             "</div>" +
                             "<div class='footer' style='display:block;bottom:0;background:#efefef;width:100%;left:0;padding:10px;box-sizing:border-box;margin:0;text-align:right;'>" +
