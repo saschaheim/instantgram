@@ -34,7 +34,7 @@ export class ImageVideoInStories implements Module {
 
 				/* Fix error network error since mai 2021 cannot download */
 				let _newVideoUrl = _videoUrl.replace(/^[^.]*/, 'https://scontent')
-				window.open(_newVideoUrl + '&dl=1')
+				window.open(_newVideoUrl)
 			} else {
 				let _mediaEl
 				for (let i = 0; i < (<any>$img).length; i++) {
