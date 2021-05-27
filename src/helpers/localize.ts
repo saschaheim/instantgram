@@ -10,8 +10,9 @@ if (shortLang.indexOf('_') !== -1) {
 
 const LANGS_NORMALIZE = {
     'de': 'de-DE',
-    'pt': 'pt-BR',
-    'en': 'en-US'
+    'en': 'en-US',
+    'es': 'es-AR',
+    'pt': 'pt-BR'
 }
 
 const LANG_DEFAULT = LANGS_NORMALIZE[shortLang]

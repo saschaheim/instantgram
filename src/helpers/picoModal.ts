@@ -436,8 +436,13 @@ function picoModal(options) {
 
     /** Hides this modal */
     function forceClose(detail) {
-        shadowElem().hide();
-        modalElem().hide();
+        if (typeof shadowElem !== 'undefined') {
+            shadowElem().hide();
+        }
+        if (typeof modalElem !== 'undefined') {
+            modalElem().hide();
+        }
+
         afterCloseEvent.trigger(iface, detail);
     }
 
@@ -516,8 +521,12 @@ function picoModal(options) {
 
         /** Destroys this modal */
         destroy: function () {
-            modalElem().destroy();
-            shadowElem().destroy();
+            if (typeof modalElem !== 'undefined') {
+                modalElem().destroy();
+            }
+            if (typeof shadowElem !== 'undefined') {
+                shadowElem().destroy();
+            }
             shadowElem = modalElem = closeElem = undefined;
         },
 

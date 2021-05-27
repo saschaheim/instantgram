@@ -21,7 +21,8 @@ module.exports = function (env) {
             new ESLintPlugin()
         ],
         resolve: {
-            extensions: ['.ts']
+            extensions: ['.ts'],
+            modules: ['node_modules']
         },
         module: {
             rules: [{

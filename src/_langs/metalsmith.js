@@ -27,7 +27,6 @@ Metalsmith(__dirname)
     'pattern': '**/*.html',
     'default': 'default.html',
     'cache': false
-
   }))
   .use(permalinks(':lang/'))
   .destination('../../lang')
@@ -37,7 +36,10 @@ Metalsmith(__dirname)
     var dest = fs.createWriteStream('./index.html')
 
     source.pipe(dest)
-    source.on('end', function () { signale.success('Build page complete'); })
-    source.on('error', function (err) { if (err) signale.fatal(err); })
+    source.on('end', function () {
+      signale.success('Build page complete');
+    })
+    source.on('error', function (err) {
+      if (err) signale.fatal(err);
+    })
   })
-
