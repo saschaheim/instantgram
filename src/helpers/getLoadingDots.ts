@@ -1,9 +1,6 @@
-import interval from '../helpers/interval'
-
-export default function getLoadingDots(el: Element, t: number = 500) {
-    var _int = interval(function () {
-        if ((el.innerHTML += '.').length == 4) {
-            el.innerHTML = ''
-        }
-    }, t, null)
+export default function getLoadingDots(el: HTMLElement, t: number = 500) {
+    let i = 0
+    return setInterval(() => {
+        el.innerText = Array(i = i > 2 ? 0 : i + 1).fill('.').join('')
+    }, t)
 }

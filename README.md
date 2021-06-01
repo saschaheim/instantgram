@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v8.0.2
-![GitHub release](https://img.shields.io/badge/release-v8.0.2-blue)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v8.1.0
+![GitHub release](https://img.shields.io/badge/release-v8.1.0-blue)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -37,6 +37,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v8.1.0 - [instangram] Re-designed video downloader to handle encrypted videos.
 - v8.0.2 - [instangram] Fixed updater that had displayed an old version.
 - v8.0.1 - [instangram] Added spanish language.
 - v8.0.0 - [instangram] Migrate to typescript which has fixed many bugs.

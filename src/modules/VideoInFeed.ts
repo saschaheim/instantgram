@@ -121,6 +121,8 @@ export class VideoInFeed implements Module {
 							program.foundVideo = true
 							program.foundByModule = that.getName()
 
+							let loadingDots
+
 							picoModal({
 								width: 400,
 								content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + program.VERSION + "</span></h4><br/>" +
@@ -131,11 +133,12 @@ export class VideoInFeed implements Module {
 								closeButton: false,
 								overlayClose: false
 							}).afterCreate(modal => {
-								getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
+								loadingDots = getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
 							}).afterShow(modal => {
 								setTimeout(function () {
-									getBlobVideoUrl(mediaEl, function (scrapedBlobVideoUrl: string) {
+									getBlobVideoUrl(mediaEl, $article[i], _currentSelectedControlIndex, function (scrapedBlobVideoUrl: string) {
 										modal.close()
+										clearInterval(loadingDots)
 
 										if (scrapedBlobVideoUrl) {
 											/* Fix error network error since mai 2021 cannot download */

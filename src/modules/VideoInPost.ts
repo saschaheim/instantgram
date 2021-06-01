@@ -2,11 +2,11 @@ import { Program } from '../App'
 import { Module } from './Module'
 import localize from '../helpers/localize'
 import getBlobVideoUrl from '../helpers/getBlobVideoUrl'
-import getLoadingDots from '../helpers/getLoadingDots'
 import getPreLoader from '../helpers/getPreLoader'
 import isElementInViewport from '../helpers/isElementInViewport'
 import picoModal from '../helpers/picoModal'
 import showModal from '../helpers/showModal'
+import getLoadingDots from '../helpers/getLoadingDots'
 
 export class VideoInPost implements Module {
 
@@ -121,6 +121,8 @@ export class VideoInPost implements Module {
 							program.foundVideo = true
 							program.foundByModule = that.getName()
 
+							let loadingDots
+
 							picoModal({
 								width: 400,
 								content: "<div style='padding:20px'><h4 style='font-weight:bold;margin-top:0'>[instantgram]<span style='float:right;'>v" + program.VERSION + "</span></h4><br/>" +
@@ -131,11 +133,12 @@ export class VideoInPost implements Module {
 								closeButton: false,
 								overlayClose: false
 							}).afterCreate(modal => {
-								getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
+								loadingDots = getLoadingDots(modal.modalElem().querySelector('#loading_dot'))
 							}).afterShow(modal => {
 								setTimeout(function () {
-									getBlobVideoUrl(mediaEl, function (scrapedBlobVideoUrl) {
+									getBlobVideoUrl(mediaEl, $article[i], _currentSelectedControlIndex, function (scrapedBlobVideoUrl) {
 										modal.close()
+										clearInterval(loadingDots)
 
 										if (scrapedBlobVideoUrl) {
 											/* Fix error network error since mai 2021 cannot download */
