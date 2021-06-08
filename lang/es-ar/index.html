@@ -152,9 +152,8 @@
     var userLang = navigator.language || navigator.userLanguage;
     var regex = new RegExp(userLang.toLowerCase(), 'g');
     if (!regex.test(location.pathname)) {
-      window.location.href = '/' + userLang;
+      window.location.href = '/instantgram/lang/' + userLang.toLowerCase;
     }
-    alert ("The language is: " + userLang);
   </script>
 </body>
 </html>
