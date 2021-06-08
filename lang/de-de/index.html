@@ -152,7 +152,7 @@
     var userLang = navigator.language || navigator.userLanguage;
     var regex = new RegExp(userLang.toLowerCase(), 'g');
     if (!regex.test(location.pathname)) {
-      window.location.href = '/instantgram/lang/' + userLang.toLowerCase;
+      window.location.href = '/instantgram/lang/' + userLang.toLowerCase();
     }
   </script>
 </body>
