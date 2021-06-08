@@ -152,12 +152,16 @@
     var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
     var regex = new RegExp(language.toLowerCase(), 'g');
     if (!regex.test(location.pathname)) {
-      if(typeof language != 'undefined') {
+      if(typeof language !== 'undefined') {
         switch(language.substring(0,2)) {
           case 'de':
+            window.location.href = '/instantgram/lang/de-de/';
+            break;
           case 'pt':
+            window.location.href = '/instantgram/lang/pt-br/';
+            break;
           case 'es':
-            window.location.href = '/instantgram/lang/' + language.toLowerCase();
+            window.location.href = '/instantgram/lang/es-ar/';
             break;
           default:
             window.location.href = '/instantgram/';
