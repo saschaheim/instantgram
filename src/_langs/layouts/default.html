@@ -114,10 +114,17 @@
     }
     document.querySelector("[data-lang='" + defaultLang + "'] span").style.textDecoration = 'underline';
 
-    var userLang = navigator.language || navigator.userLanguage;
-    var regex = new RegExp(userLang.toLowerCase(), 'g');
-    if (!regex.test(location.pathname)) {
-      window.location.href = '/instantgram/lang/' + userLang.toLowerCase();
+    var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
+    if(typeof language != 'undefined') {
+      switch(language.substring(0,2)) {
+        case 'de':
+        case 'pt':
+        case 'es':
+          window.location.href = '/instantgram/lang/' + language.toLowerCase();
+          break;
+        default:
+          window.location.href = '/instantgram/';
+      }
     }
   </script>
 </body>
