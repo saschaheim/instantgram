@@ -171,7 +171,7 @@ export class VideoInFeed implements Module {
 
 							/* Fix error network error since mai 2021 cannot download */
 							let _newVideoUrl = videoLink.replace(/^[^.]*/, 'https://scontent')
-							//window.open(_newVideoUrl)
+							window.open(_newVideoUrl)
 
 							callback(found, program)
 						}
