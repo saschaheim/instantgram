@@ -276,8 +276,6 @@ export class ProfilePageDownload implements Module {
 			// Collect the media files of the posts
 			const mediaLinks: any[] = await this.collectMedia(postLinks);
 
-			console.log(mediaLinks);
-
 			this.displayEndModal();
 
 			let error = await downloadBulk(mediaLinks, this.getAccountName(document.body, '._7UhW9.fKFbl.yUEEX.KV-D4.fDxYl'), async (metadata) => {
