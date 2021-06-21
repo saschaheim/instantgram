@@ -129,7 +129,7 @@
 
     var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
     var regex = new RegExp(language.toLowerCase(), 'g');
-    if (!regex.test(location.pathname) && !GetQueryStringParams('force')) {
+    if (!regex.test(location.pathname) && !GetQueryStringParams('force') && !location.protocol == 'file:') {
       if(typeof language !== 'undefined') {
         switch(language.substring(0,2)) {
           case 'de':

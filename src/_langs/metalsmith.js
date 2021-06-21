@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const Metalsmith = require('Metalsmith')
 const Handlebars = require('handlebars')
@@ -53,7 +53,7 @@ Metalsmith(__dirname)
     'cache': false
   }))
   .use(permalinks(':lang/'))
-  .use(debug(true))        // *** NEW *** output debug information
+  //.use(debug(true))        // *** NEW *** output debug information
   .build(function (err) {
     if (err) {
       signale.fatal(err)

@@ -12,6 +12,23 @@ export default {
             'index#program#modalPost@alert_imageDontFound': 'We didn\'t find any image in this Instagram post.',
             'index#program#modalPost@alert_videoDontFound': 'We didn\'t find any video in this Instagram post.',
 
+            'index#program#profilePageDownload@str_analyzed_from_to': 'Analyzed ${data.size} Posts.',
+
+            'index#program#profilePageDownload@stop_collecting_modal_title': 'Download started',
+            'index#program#profilePageDownload@stop_collecting_modal_content_1': 'You can stop the download by clicking the stop button. If you stop the download, all the images already captured will be downloaded.',
+            'index#program#profilePageDownload@stop_collecting_modal_content_2': 'If you try to download a lot of pictures at once Instagram may block your IP or your account temporarily.',
+            'index#program#profilePageDownload@stop_collecting_modal_btn': 'Stop Download',
+
+            'index#program#profilePageDownload@collect_media_modal_title': 'Please Wait',
+            'index#program#profilePageDownload@collect_media_modal_content': 'Now images/videos will being collected',
+            'index#program#profilePageDownload@collect_media_modal_content_download_indicator': 'Collected ${this.resolvedContent} of ${postLinks.size} Posts.',
+            'index#program#profilePageDownload@collect_media_modal_btn': 'Stop collecting and start the download',
+
+            'index#program#profilePageDownload@collection_complete_modal_title': 'Media collection complete',
+            'index#program#profilePageDownload@collection_complete_modal_content_1': 'Please wait.',
+            'index#program#profilePageDownload@collection_complete_modal_content_2': 'The download will be now generated.',
+            'index#program#profilePageDownload@collection_complete_modal_btn': 'Close',
+
             'index#program@alert_dontFound': 'Did you open any Instagram post? Like for example<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
 
             'modules.modal@isLoading': 'Trying to load',
@@ -34,6 +51,23 @@ export default {
             'index#program#post@alert_videoDontFound': 'No pudimos encontrar ningún vídeo :-(',
             'index#program#modalPost@alert_imageDontFound': 'No encontramos ninguna imagen en este post de Instagram.',
             'index#program#modalPost@alert_videoDontFound': 'No hemos encontrado ningún vídeo en este post de Instagram.',
+
+            'index#program#profilePageDownload@str_analyzed_from_to': 'Había ${data.size} se analizaron los puestos.',
+
+            'index#program#profilePageDownload@stop_collecting_modal_title': 'Descarga iniciada',
+            'index#program#profilePageDownload@stop_collecting_modal_content_1': 'Puede detener la descarga haciendo clic en el botón "Detener la descarga". Cuando se detenga la descarga, se descargarán todas las imágenes que ya se hayan capturado.',
+            'index#program#profilePageDownload@stop_collecting_modal_content_2': 'Si intentas descargar muchas imágenes a la vez, Instagram puede bloquear temporalmente tu IP o tu cuenta.',
+            'index#program#profilePageDownload@stop_collecting_modal_btn': 'Detener la descarga',
+
+            'index#program#profilePageDownload@collect_media_modal_title': 'Espere, por favor',
+            'index#program#profilePageDownload@collect_media_modal_content': 'Ahora se recogen las imágenes/vídeos',
+            'index#program#profilePageDownload@collect_media_modal_content_download_indicator': 'Un total de ${this.resolvedContent} de ${postLinks.size} Puestos recogidos.',
+            'index#program#profilePageDownload@collect_media_modal_btn': 'Deja de coleccionar y empieza a descargar',
+
+            'index#program#profilePageDownload@collection_complete_modal_title': 'Colección de fotos/vídeos completa',
+            'index#program#profilePageDownload@collection_complete_modal_content_1': 'Por favor, espere.',
+            'index#program#profilePageDownload@collection_complete_modal_content_2': 'La descarga se genera ahora.',
+            'index#program#profilePageDownload@collection_complete_modal_btn': 'Cerrar',
 
             'index#program@alert_dontFound': '¿Has abierto algún post de Instagram? Como por ejemplo<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
 
@@ -58,6 +92,23 @@ export default {
             'index#program#modalPost@alert_imageDontFound': 'Wir konnten kein Bild in diesem Post finden.',
             'index#program#modalPost@alert_videoDontFound': 'Wir konnten kein Video in diesem Post finden.',
 
+            'index#program#profilePageDownload@str_analyzed_from_to': 'Es wurden ${data.size} Beiträge analysiert.',
+
+            'index#program#profilePageDownload@stop_collecting_modal_title': 'Download gestarted',
+            'index#program#profilePageDownload@stop_collecting_modal_content_1': 'Sie können den Download stoppen, indem Sie auf die Schaltfläche "Download stoppen" klicken. Wenn Sie das Herunterladen anhalten, werden alle bereits aufgenommenen Bilder heruntergeladen.',
+            'index#program#profilePageDownload@stop_collecting_modal_content_2': 'Wenn Sie versuchen, viele Bilder auf einmal herunterzuladen, kann Instagram Ihre IP oder Ihr Konto vorübergehend sperren.',
+            'index#program#profilePageDownload@stop_collecting_modal_btn': 'Download stoppen',
+
+            'index#program#profilePageDownload@collect_media_modal_title': 'Bitte warten',
+            'index#program#profilePageDownload@collect_media_modal_content': 'Bilder/Videos werden jetzt gesammelt',
+            'index#program#profilePageDownload@collect_media_modal_content_download_indicator': 'Insgesamt ${this.resolvedContent} von ${postLinks.size} Beiträgen gesammelt.',
+            'index#program#profilePageDownload@collect_media_modal_btn': 'Stoppen Sie das Sammeln und starten Sie den Download',
+
+            'index#program#profilePageDownload@collection_complete_modal_title': 'Bilder/Video-Sammlung komplett',
+            'index#program#profilePageDownload@collection_complete_modal_content_1': 'Bitte warten.',
+            'index#program#profilePageDownload@collection_complete_modal_content_2': 'Der Download wird nun erzeugt.',
+            'index#program#profilePageDownload@collection_complete_modal_btn': 'Schließen',
+
             'index#program@alert_dontFound': 'Hast du einen Instagram Post geöffnet? Zum Beispiel<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
 
             'modules.modal@isLoading': 'Wird versucht zu laden',
@@ -81,6 +132,23 @@ export default {
             'index#program#modalPost@alert_imageDontFound': 'Não foi possível encontrar uma foto neste post.',
             'index#program#modalPost@alert_videoDontFound': 'Não foi possível encontrar um vídeo neste post.',
 
+            'index#program#profilePageDownload@str_analyzed_from_to': 'Analyzed ${data.size} Posts.',
+
+            'index#program#profilePageDownload@stop_collecting_modal_title': 'Início do download',
+            'index#program#profilePageDownload@stop_collecting_modal_content_1': 'Você pode interromper o download clicando no botão de parada. Se você interromper o download, todas as imagens já capturadas serão baixadas.',
+            'index#program#profilePageDownload@stop_collecting_modal_content_2': 'Se você tentar baixar muitas imagens de uma vez, a Instagram poderá bloquear temporariamente seu IP ou sua conta.',
+            'index#program#profilePageDownload@stop_collecting_modal_btn': 'Parar Download',
+
+            'index#program#profilePageDownload@collect_media_modal_title': 'Por favor, aguarde',
+            'index#program#profilePageDownload@collect_media_modal_content': 'Agora imagens/videos serão coletados',
+            'index#program#profilePageDownload@collect_media_modal_content_download_indicator': 'Recolhido ${este.resolvedContent} de ${postLinks.size} Correios.',
+            'index#program#profilePageDownload@collect_media_modal_btn': 'Pare de coletar e inicie o download',
+
+            'index#program#profilePageDownload@collection_complete_modal_title': 'Coleção de mídia completa',
+            'index#program#profilePageDownload@collection_complete_modal_content_1': 'Por favor, aguarde.',
+            'index#program#profilePageDownload@collection_complete_modal_content_2': 'O download será agora gerado.',
+            'index#program#profilePageDownload@collection_complete_modal_btn': 'Fechar',
+
             'index#program@alert_dontFound': 'ops, você está em algum post do instagram? ex:<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
 
             'modules.modal@isLoading': 'Tentando carregar',
@@ -93,4 +161,4 @@ export default {
             'modules.update@determineIfGetUpdateIsNecessary_@load_update': 'Carga de actualização'
         }
     }
-}
+};

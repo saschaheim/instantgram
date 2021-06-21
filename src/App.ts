@@ -4,7 +4,7 @@ export type Program = {
   context: {
     hasMsg: boolean;
     msg: string;
-  };
+  }
 
   hostname: string;
   path: string;
@@ -12,6 +12,7 @@ export type Program = {
 
   regexHostname: RegExp;
   regexRootPath: RegExp;
+  regexProfilePath: RegExp;
   regexPostPath: RegExp;
   regexStoriesURI: RegExp;
 

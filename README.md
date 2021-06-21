@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v8.1.1
-![GitHub release](https://img.shields.io/badge/release-v8.1.1-blue)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v9.0.0
+![GitHub release](https://img.shields.io/badge/release-v9.0.0-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -20,11 +20,12 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 |       Browser        |     Compatible?    |
 | -------------------- | -------------------|
 | Google Chrome        | :white_check_mark: |
-| Mozilla Firefox >=38 | :white_check_mark: |
+| Mozilla Firefox**    | :warning:          |
 | Edge on chromium >=80 | :white_check_mark: |
 | Edge*                | :warning:          |
 | Internet Explorer 11 | :x: |
 *_apparently Edge doesn't allow you to drag a button to the bookmark bar_
+**_apparently Firefox doesn't allow you to drag a bookmarklet (link with `javascript:)` to the bookmark bar_
 
 ## Roadmap
 
@@ -37,6 +38,8 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v9.0.0 - [instangram] Now you can download a whole user profile. \
+But with limits it only works in Chrome, Opera, Safari. Firefox currently are not supported.  
 - v8.1.1 - [instangram] Fix video are not downloadable in feed in due of commented out variable.
 - v8.1.0 - [instangram] Re-designed video downloader to handle encrypted videos.
 - v8.0.2 - [instangram] Fixed updater that had displayed an old version.

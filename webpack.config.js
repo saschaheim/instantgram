@@ -1,13 +1,15 @@
 /* eslint-disable */
-const webpack = require('webpack')
 const path = require('path')
+const webpack = require('webpack')
+
 const pkg = require('./package.json')
 const ESLintPlugin = require('eslint-webpack-plugin')
 
 module.exports = function (env) {
-    const DEV = env && env.dev
+    const DEV = env && env.goal == 'dev'
 
     return {
+        cache: false,
         entry: ['./src/index.ts'],
         output: {
             path: path.resolve(__dirname, 'dist'),
@@ -54,9 +56,6 @@ module.exports = function (env) {
                 use: ['style-loader', 'css-loader']
             }
             ]
-        },
-        node: {
-            fs: 'empty'
         }
     }
 }
