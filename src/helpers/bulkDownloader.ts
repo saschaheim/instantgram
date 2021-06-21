@@ -85,18 +85,6 @@ export async function downloadBulk(urls: string[], accountName: string, callback
     let files: ZippedFile[] = [];
 
     let error: boolean = false;
-
-    // urls.forEach(function (item, index) {
-    //     (item as unknown as Array<string>).forEach(function (_item, index) {
-    //         console.log(_item);
-    //         if (typeof _item === "number") {
-
-    //         } else {
-
-    //         }
-    //     })
-    // });
-
     let createdTimestamp = null;
     let imageIndex = null;
     let url = null;
@@ -150,7 +138,6 @@ export async function downloadBulk(urls: string[], accountName: string, callback
     }
 
     if (!error) {
-        console.log(files);
         await _downloadZIP(files, accountName);
     }
 
