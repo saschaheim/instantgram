@@ -41,7 +41,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 ## Changelog
 - v10.0.1 - [instangram] Complete rewrite of the Project to support Firefox again. \
 By rewriting, we were also able to increase the speed noticeably. \
-Fix bug on some pages where nothing happens.
+Fixed bug on some pages where nothing happens.
 - v10.0.0 - [instangram] Complete rewrite of the Project to support Firefox again. \
 By rewriting, we were also able to increase the speed noticeably.
 - v9.0.0 - [instangram] Now you can download a whole user profile. \
