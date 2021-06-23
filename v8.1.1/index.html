@@ -167,7 +167,7 @@
 	console.log(!regex.test(location.pathname))
 	console.log(!GetQueryStringParams('force'))
 	console.log(!location.protocol == 'file:')
-	console.log(location.protocol)
+	console.log(location.protocol != 'file:')
     if (!regex.test(location.pathname) && !GetQueryStringParams('force') && !location.protocol == 'file:') {
       if(typeof language !== 'undefined') {
 	  console.log(language.substring(0,2))
