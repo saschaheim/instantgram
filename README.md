@@ -24,8 +24,8 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 | Edge on chromium >=80 | :white_check_mark: |
 | Edge*                | :warning:          |
 | Internet Explorer 11 | :x: |
-*_apparently Edge doesn't allow you to drag a button to the bookmark bar_
-**_apparently Supported again on [instantgram] verion >= 10.0.0
+* apparently Edge doesn't allow you to drag a button to the bookmark bar_
+** Supported again on [instantgram] verion >= 10.0.0
 
 ## Roadmap
 
