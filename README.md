@@ -20,12 +20,12 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 |       Browser        |     Compatible?    |
 | -------------------- | -------------------|
 | Google Chrome        | :white_check_mark: |
-| Mozilla Firefox**    | :warning:          |
+| Mozilla Firefox**    | :white_check_mark: |
 | Edge on chromium >=80 | :white_check_mark: |
 | Edge*                | :warning:          |
 | Internet Explorer 11 | :x: |
 *_apparently Edge doesn't allow you to drag a button to the bookmark bar_
-**_apparently Firefox doesn't allow you to drag a bookmarklet (link with `javascript:)` to the bookmark bar_
+**_apparently Supported again on [instantgram] verion >= 10.0.0
 
 ## Roadmap
 
