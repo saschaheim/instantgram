@@ -38,6 +38,8 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v10.0.0 - [instangram] Complete rewrite of the Project to support Firefox again. \
+By rewriting, we were also able to increase the speed noticeably.
 - v9.0.0 - [instangram] Now you can download a whole user profile. \
 But with limits it only works in Chrome, Opera, Safari. Firefox currently are not supported.  
 - v8.1.1 - [instangram] Fix video are not downloadable in feed in due of commented out variable.

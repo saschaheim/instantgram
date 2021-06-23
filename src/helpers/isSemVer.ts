@@ -9,7 +9,7 @@ const isSemVer = (function () {
             '"' +
             (matches[2] + '.0.0')
                 .match(/\d+(?:\.\d+){0,2}/)[0]
-                .replace(/(?:^|\.)(\d+)/g, function (a, b) {
+                .replace(/(?:^|\.)(\d+)/g, function (_a, b) {
                     return Array(9 - b.length).join('0') + b
                 }) +
             (matches[3] || '~') +
@@ -18,7 +18,7 @@ const isSemVer = (function () {
             (include_cmp ? '==0' : 1);
     }
 
-    return function (base_ver, ...args: any[]) {
+    return function (base_ver, ..._args: any[]) {
         base_ver = get_val(base_ver, null);
 
         for (var arg, i = 1; arg = arguments[i++];) {

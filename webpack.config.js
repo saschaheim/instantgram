@@ -1,9 +1,11 @@
 /* eslint-disable */
-const path = require('path')
-const webpack = require('webpack')
+const path = require('path');
+const webpack = require('webpack');
 
-const pkg = require('./package.json')
-const ESLintPlugin = require('eslint-webpack-plugin')
+const pkg = require('./package.json');
+const ESLintPlugin = require('eslint-webpack-plugin');
+//const ClosurePlugin = require('closure-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = function (env) {
     const DEV = env && env.goal == 'dev'
@@ -22,6 +24,30 @@ module.exports = function (env) {
             }),
             new ESLintPlugin()
         ],
+        optimization: {
+            minimizer: [
+                new TerserPlugin({
+                    terserOptions: {
+                        output: {
+                            comments: false,
+                        },
+                    },
+                }),
+            ],
+        },
+        // optimization: {
+        //     minimizer: [
+        //         new ClosurePlugin({ mode: 'STANDARD' }, {
+        //             // compiler flags here
+        //             //
+        //             // for debugging help, try these:
+        //             //
+        //             //formatting: 'PRETTY_PRINT',
+        //             //debug: true,
+        //             // renaming: false
+        //         })
+        //     ]
+        // },
         resolve: {
             extensions: ['.ts'],
             modules: ['node_modules']
@@ -56,6 +82,11 @@ module.exports = function (env) {
                 use: ['style-loader', 'css-loader']
             }
             ]
+        },
+        stats: {
+            assetsSpace: 50,
+            modulesSpace: 50,
+            orphanModules: true,
         }
     }
 }

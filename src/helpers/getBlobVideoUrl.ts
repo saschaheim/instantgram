@@ -1,6 +1,6 @@
 import getDataFromUrl from './getDataFromUrl'
 
-async function getBlobVideoUrl(el: HTMLVideoElement, article: Element, pos: number, callback: any) {
+async function getBlobVideoUrl(el: HTMLVideoElement, article: any, pos: number, callback: any) {
 
     if (Object.keys(el).length > 0) {
         const instanceKey = Object.keys(el).find(key => key.includes('Instance'));
@@ -40,7 +40,6 @@ async function getBlobVideoUrl(el: HTMLVideoElement, article: Element, pos: numb
                         userProfileUrlResponseData = userProfileUrlResponseData.replace(/(\r\n|\n|\r)/gm, '');
 
                         let m;
-                        let entries;
                         let regex = /profilePage_([0-9]+)/gm;
                         while ((m = regex.exec(userProfileUrlResponseData)) !== null) {
                             // This is necessary to avoid infinite loops with zero-width matches
@@ -49,7 +48,7 @@ async function getBlobVideoUrl(el: HTMLVideoElement, article: Element, pos: numb
                             }
 
                             // The result can be accessed through the `m`-variable.
-                            m.forEach((match, groupIndex) => {
+                            m.forEach((match) => {
                                 userId = match;
                             })
                         }

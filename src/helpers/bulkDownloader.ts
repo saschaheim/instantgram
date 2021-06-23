@@ -2,7 +2,6 @@ import { Alert } from '../components/Alert';
 import { ContentResponse } from '../model/extension';
 import { GraphqlQuery, ShortcodeMedia } from '../model/post';
 import { downloadZip } from 'client-zip';
-//import * as JSZip from 'jszip';
 import saveData from './saveData';
 
 // tslint:disable-next-line:ban-types
@@ -49,6 +48,7 @@ export function extractAccountName(shortcodeMedia: ShortcodeMedia): string {
 
 export function extractImage(shortcodeMedia: ShortcodeMedia, index: number | null = null): string[] {
     let mediaURL: string[];
+
     if (shortcodeMedia.__typename === 'GraphImage') {
         mediaURL = [shortcodeMedia.display_url];
     } else if (shortcodeMedia.__typename === 'GraphVideo') {
@@ -80,8 +80,6 @@ export interface ZippedFile {
 }
 
 export async function downloadBulk(urls: string[], accountName: string, callback?: any): Promise<boolean> {
-    //let zip;
-    //const zip: JSZip = new JSZip();
     let files: ZippedFile[] = [];
 
     let error: boolean = false;
@@ -111,7 +109,7 @@ export async function downloadBulk(urls: string[], accountName: string, callback
                 } else {
                     return Promise.reject(response);
                 }
-            }).catch(function (err) {
+            }).catch(function () {
                 console.warn('Cannot fetch a media url');
             })
 
@@ -149,7 +147,7 @@ export async function downloadBulk(urls: string[], accountName: string, callback
  * @param zip The JSZip file which should be downloaded
  * @param accountName The account name
  */
-export async function _downloadZIP(files: ZippedFile[], accountName: string, callback?: any): Promise<void> {
+export async function _downloadZIP(files: ZippedFile[], accountName: string): Promise<void> {
     const archive = downloadZip(files)
     const blob = await archive.blob()
 

@@ -1,45 +1,28 @@
 
 import { Program } from './App';
-import localize from './helpers/localize';
-import Update from './modules/Update';
-import { ImageVideoInStories } from './modules/ImageVideoInStories';
-import { VideoInFeed } from './modules/VideoInFeed';
-import { ImageInFeed } from './modules/ImageInFeed';
-import { VideoInPost } from './modules/VideoInPost';
-import { ImageInPost } from './modules/ImageInPost';
-import { VideoInModalPost } from './modules/VideoInModalPost';
-import { ImageInModalPost } from './modules/ImageInModalPost';
+import { MediaScanner } from './modules/MediaScanner';
 import { ProfilePageDownload } from './modules/ProfilePageDownload';
 import { Modal } from './components/Modal';
+import Update from './modules/Update';
+import localize from './helpers/localize';
 
 console.clear();
 
 const program: Program = {
     VERSION: process.env.VERSION as string,
 
-    context: {
-        hasMsg: false,
-        msg: ''
-    },
-
     hostname: window.location.hostname,
     path: window.location.pathname,
-    videos: document.querySelectorAll('video'),
 
     regexHostname: /instagram\.com/,
     regexRootPath: /^\/+$/,
-    regexProfilePath: /^\/([A-Za-z0-9_]{2,3})+\/$/,
+    regexProfilePath: /^\/([A-Za-z0-9._]{2,3})+\/$/,
     regexPostPath: /^\/p\//,
     regexStoriesURI: /stories\/(.*)+/,
 
     foundByModule: null,
     foundVideo: false,
-    foundImage: false,
-    imageLink: false,
-
-    setImageLink: function (link) {
-        this.imageLink = link;
-    }
+    foundImage: false
 }
 
 if (process.env.DEV) {
@@ -52,175 +35,62 @@ if (process.env.DEV) {
 // verify if are running on instagram site
 if (program.regexHostname.test(program.hostname)) {
 
-    // Feed -> instagram.com/
-    if (program.regexRootPath.test(program.path)) {
-        if (process.env.DEV) {
-            console.log('Root domain');
-        }
-
-        new VideoInFeed().execute(program, function (vInFeed: boolean, vInFeedProgram: Program) {
-            if (process.env.DEV) {
-                console.log('videoInFeed', vInFeed);
-            }
-
-            if (typeof vInFeedProgram.foundVideo !== 'undefined' && typeof vInFeedProgram.foundByModule !== 'undefined') {
-                if (process.env.DEV) {
-                    console.log('foundVideo', vInFeedProgram.foundVideo);
-                    console.log('foundByModule', vInFeedProgram.foundByModule);
-                }
-
-                program.foundVideo = vInFeedProgram.foundVideo;
-                program.foundByModule = vInFeedProgram.foundByModule;
-            }
-
-            if (vInFeed === false) {
-                new ImageInFeed().execute(program, function (imgInFeed: boolean, imgInFeedProgram: Program) {
+    new MediaScanner().execute(program, function (found: boolean, scannerProgram: Program) {
+        if (found == false) {
+            // Profile page -> instagram.com/instagram/
+            if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
+                new ProfilePageDownload().execute(scannerProgram, function (profilePageDownload: boolean, profilePageDownloadProgram: Program) {
                     if (process.env.DEV) {
-                        console.log('imageInFeed', imgInFeed);
+                        console.log('profilePageDownload', profilePageDownload);
                     }
 
-                    if (typeof imgInFeedProgram.foundImage !== 'undefined' && typeof imgInFeedProgram.foundByModule !== 'undefined') {
-                        if (process.env.DEV) {
-                            console.log('foundImage', imgInFeedProgram.foundImage);
-                            console.log('foundByModule', imgInFeedProgram.foundByModule);
-                        }
-
-                        program.foundImage = imgInFeedProgram.foundImage;
-                        program.foundByModule = imgInFeedProgram.foundByModule;
-                    }
-
-                    if (imgInFeed === false) {
-                        program.context.hasMsg = false;
+                    if (profilePageDownload == false) {
+                        new Modal({
+                            heading: [
+                                `<h5>[instantgram] <span style="float:right">v${profilePageDownloadProgram.VERSION}</span></h5>`
+                            ],
+                            content: [
+                                localize('index#program#profilePageDownload@cannot_download')
+                            ],
+                            contentStyle: 'text-align:center',
+                            buttonList: [{
+                                active: true,
+                                text: 'Ok'
+                            }]
+                        }).open();
                     }
                 });
             }
-        });
-    }
+        }
 
-    // Profile page -> instagram.com/instagram/
-    if (program.regexProfilePath.test(program.path)) {
-        new ProfilePageDownload().execute(program, function (profilePageDownload: boolean, profilePageDownloadProgram: Program) {
+        if (typeof scannerProgram.foundVideo !== 'undefined' && typeof scannerProgram.foundByModule !== 'undefined') {
             if (process.env.DEV) {
-                console.log('profilePageDownload', profilePageDownload);
+                console.log('foundVideo', scannerProgram.foundVideo);
+                console.log('foundImage', scannerProgram.foundImage);
+                console.log('foundByModule', scannerProgram.foundByModule);
             }
 
-            if (profilePageDownload === false) {
+            program.foundVideo = scannerProgram.foundVideo;
+            program.foundImage = scannerProgram.foundImage;
+            program.foundByModule = scannerProgram.foundByModule;
+
+            if (program.foundVideo == false && program.foundImage == false) {
                 new Modal({
                     heading: [
-                        `[instantgram] v${program.VERSION}</div>`
+                        `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
                     ],
                     content: [
-                        'Profil konnte nicht runtergeladen werden.'
+                        localize('index#program@alert_dontFound')
                     ],
+                    contentStyle: 'text-align:center',
                     buttonList: [{
                         active: true,
                         text: 'Ok'
                     }]
                 }).open();
             }
-        });
-    }
-
-    // Post -> instagram.com/p/post id/
-    if (program.regexPostPath.test(program.path)) {
-        if (process.env.DEV) {
-            console.log('Post domain');
         }
-
-        new VideoInPost().execute(program, function (vInPost: boolean, vInPostProgram: Program) {
-            if (process.env.DEV) {
-                console.log('videoInPost', vInPost);
-            }
-
-            if (typeof vInPostProgram.foundVideo !== 'undefined' && typeof vInPostProgram.foundByModule !== 'undefined') {
-                if (process.env.DEV) {
-                    console.log('foundVideo', vInPostProgram.foundVideo);
-                    console.log('foundByModule', vInPostProgram.foundByModule);
-                }
-
-                program.foundVideo = vInPostProgram.foundVideo;
-                program.foundByModule = vInPostProgram.foundByModule;
-            }
-
-            if (vInPost === false) {
-                new VideoInModalPost().execute(program, function (vInModalPost: boolean, vInModalPostProgram: Program) {
-                    if (process.env.DEV) {
-                        console.log('videoInModalPost', vInModalPost);
-                    }
-
-                    if (typeof vInModalPostProgram.foundVideo !== 'undefined' && typeof vInModalPostProgram.foundByModule !== 'undefined') {
-                        program.foundVideo = vInModalPostProgram.foundVideo;
-                        program.foundByModule = vInModalPostProgram.foundByModule;
-                    }
-
-                    if (vInModalPost === false) {
-                        new ImageInPost().execute(program, function (imgInPost: boolean, imgInPostProgram: Program) {
-                            if (process.env.DEV) {
-                                console.log('imageInPost', imgInPost);
-                            }
-
-                            if (typeof imgInPostProgram.foundImage !== 'undefined' && typeof imgInPostProgram.foundByModule !== 'undefined') {
-                                if (process.env.DEV) {
-                                    console.log('foundImage', imgInPostProgram.foundImage);
-                                    console.log('foundByModule', imgInPostProgram.foundByModule);
-                                }
-
-                                program.foundImage = imgInPostProgram.foundImage;
-                                program.foundByModule = imgInPostProgram.foundByModule;
-                            }
-
-                            if (imgInPost === false) {
-                                new ImageInModalPost().execute(program, function (imgInModalPost: boolean, imgInModalPostProgram: Program) {
-                                    if (process.env.DEV) {
-                                        console.log('imageInModalPost', imgInModalPost);
-                                    }
-
-                                    if (typeof imgInModalPostProgram.foundImage !== 'undefined' && typeof imgInModalPostProgram.foundByModule !== 'undefined') {
-                                        if (process.env.DEV) {
-                                            console.log('foundImage', imgInModalPostProgram.foundImage);
-                                            console.log('foundByModule', imgInModalPostProgram.foundByModule);
-                                        }
-
-                                        program.foundImage = imgInModalPostProgram.foundImage;
-                                        program.foundByModule = imgInModalPostProgram.foundByModule;
-                                    }
-
-                                    if (imgInModalPost === false) {
-                                        program.context.hasMsg = false;
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    // Stories -> instagram.com/stories/user name/id/
-    if (program.regexStoriesURI.test(program.path)) {
-        if (new ImageVideoInStories().execute(program).then(res => res === false ? true : false)) {
-            program.context.hasMsg = false;
-        }
-    }
-
-    if (program.regexRootPath.test(program.path) == false &&
-        program.regexProfilePath.test(program.path) == false &&
-        program.regexPostPath.test(program.path) == false &&
-        program.regexStoriesURI.test(program.path) == false) {
-        new Modal({
-            heading: [
-                `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
-            ],
-            content: [
-                localize('index#program@alert_dontFound')
-            ],
-            buttonList: [{
-                active: true,
-                text: 'Ok'
-            }]
-        }).open();
-    }
+    });
 
     // In due of Access control it only works when using on instagram
     Update(program.VERSION);
@@ -232,6 +102,7 @@ if (program.regexHostname.test(program.hostname)) {
         content: [
             localize('index@alert_onlyWorks')
         ],
+        contentStyle: 'text-align:center',
         buttonList: [{
             active: true,
             text: 'Ok'

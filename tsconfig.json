@@ -2,9 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "module": "ES2015",
-    "target": "ES2018",
-    "strictFunctionTypes": true,
-    "noImplicitReturns": true,
+    "target": "ES2020",
     "lib": [
       "DOM",
       "ES2015",
@@ -14,6 +12,24 @@
       "ES2019",
       "ES2020",
       "ESNext"
-    ]
+    ],
+    "allowJs": false,
+    "allowSyntheticDefaultImports": false,
+    "checkJs": false,
+    "downlevelIteration": true,
+    "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "jsx": "react",
+    "noImplicitAny": false,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "skipLibCheck": false,
+    "sourceMap": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true
   }
 }

@@ -43,7 +43,7 @@ export class ProfilePageDownload implements Module {
 	 */
 
 	/**
-	 * Collect all images of an account by scrolling down
+	 * Collect all posts of an account by scrolling down
 	 */
 	private async collectImageLinks(downloadSpeed: number): Promise<Set<string>> {
 
@@ -73,15 +73,11 @@ export class ProfilePageDownload implements Module {
 			this.downloadIndicator.innerText = `${localize('index#program#profilePageDownload@str_analyzed_from_to').replace('${data.size}', String(postLinkSet.size))}`;
 
 			// Check for classes which indicate the end of the image loading
-			loadingIndicator = document.querySelectorAll('.By4nA').length > 0;
+			loadingIndicator = document.querySelectorAll('section > main > div:first-child > div > article > div:nth-child(2) svg').length > 0;
 			interruptClass = document.querySelectorAll('._0mzm-.sqdOP.yWX7d').length === 0;
 		} while (this.continueImageLoading && loadingIndicator && interruptClass || !this.atBottom() && this.continueImageLoading);
 
 		this.collectPostLinks(postLinkSet);
-
-		if (process.env.DEV) {
-			console.log(['Collected bulk links:', postLinkSet]);
-		}
 
 		return postLinkSet;
 	}
@@ -112,12 +108,14 @@ export class ProfilePageDownload implements Module {
 	 */
 	private collectPostLinks(postLinkSet: Set<string>): void {
 		// Get all images which are displayed
-		const images = Array.from(document.querySelectorAll('._bz0w, .pKKVh, .Tjpra > a')) as HTMLElement[];
+		const images = Array.from(document.querySelectorAll('section > main > div:first-child > div > article a')) as HTMLElement[];
+
 		images.forEach((imageElement) => {
 			// Add the image links to the images
 
 			// @ts-ignore
 			const downloadLink = 'href' in imageElement ? imageElement.href : imageElement.firstChild?.href;
+
 			if (validURL(downloadLink)) {
 				postLinkSet.add(downloadLink);
 			}
@@ -161,7 +159,6 @@ export class ProfilePageDownload implements Module {
 		for (const link of postLinks) {
 			const response = await getMedia(link);
 			await sleep(2500);
-			//mediaList.push(...response.mediaURL);
 			mediaList.push([
 				...response.mediaURL,
 				response.timestamp
@@ -200,6 +197,29 @@ export class ProfilePageDownload implements Module {
 				this.modal.close()
 			},
 			text: localize('index#program#profilePageDownload@collection_complete_modal_btn')
+		}];
+		this.modal.open();
+	}
+
+	/**
+	 * Display the end of download modal
+	 */
+	private displayIsPrivateModal(): void {
+		this.modal.heading = [
+			`<h5>[instantgram] <span>${localize('index#program#profilePageDownload@is_private_modal_title')}</span><span style="float:right">v${this.program.VERSION}</span></h5>`
+		];
+		this.modal.content = [
+			localize('index#program#profilePageDownload@is_private_modal_content')
+		];
+		this.modal.contentStyle = 'text-align:center';
+		this.modal.buttonList = [{
+			active: true,
+			callback: () => {
+				document.getElementById('instantgram-bulk-downloader').remove()
+				document.getElementById('instantgram-bulk-downloader-download').remove()
+				this.modal.close()
+			},
+			text: localize('index#program#profilePageDownload@is_private_modal_btn')
 		}];
 		this.modal.open();
 	}
@@ -260,14 +280,23 @@ export class ProfilePageDownload implements Module {
 			this.program = program;
 
 			// Check temporary indicator to prevent multiple calls
-			let existsElement = document.getElementById('instantgram-bulk-downloader');
-			if (existsElement) {
-				existsElement.parentNode.removeChild(existsElement);
+			let bulkDownloaderExistsElement = document.getElementById('instantgram-bulk-downloader');
+			let modalExistsElement = document.getElementsByClassName('instantgram-modal-overlay');
+			if (bulkDownloaderExistsElement && modalExistsElement) {
+				return;
 			} else {
 				// Add temporary indicator to prevent multiple calls
 				let createExistsElement = document.createElement('div');
 				createExistsElement.id = 'instantgram-bulk-downloader';
 				document.body.appendChild(createExistsElement);
+			}
+
+			// Detect profile is private
+			if (document.querySelector('section > main > div:first-child > div > article > div:nth-child(1)').classList.length == 2) {
+				this.displayIsPrivateModal();
+
+				callback(false, program);
+				return;
 			}
 
 			// Get all links of content posts
@@ -278,7 +307,7 @@ export class ProfilePageDownload implements Module {
 
 			this.displayEndModal();
 
-			let error = await downloadBulk(mediaLinks, this.getAccountName(document.body, '._7UhW9.fKFbl.yUEEX.KV-D4.fDxYl'), async (metadata) => {
+			let error = await downloadBulk(mediaLinks, this.getAccountName(document.body, 'section > main > div:first-child > header > section > div:first-child > h2'), async (metadata) => {
 				this.updateProgress(metadata);
 			});
 
@@ -286,10 +315,10 @@ export class ProfilePageDownload implements Module {
 			document.getElementById('instantgram-bulk-downloader-download').remove();
 			this.modal.close();
 
-			if (error) {
-				callback(false, program);
-			} else {
+			if (error == false) {
 				callback(true, program);
+			} else {
+				callback(false, program);
 			}
 		}
 		catch (e) {
