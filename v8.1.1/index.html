@@ -164,8 +164,12 @@
 
     var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
     var regex = new RegExp(language.toLowerCase(), 'g');
+	console.log(!regex.test(location.pathname))
+	console.log(!GetQueryStringParams('force'))
+	console.log(!location.protocol == 'file:')
     if (!regex.test(location.pathname) && !GetQueryStringParams('force') && !location.protocol == 'file:') {
       if(typeof language !== 'undefined') {
+	  console.log(language.substring(0,2))
         switch(language.substring(0,2)) {
           case 'de':
             window.location.href = '/instantgram/v8.1.1/lang/de-de/';
