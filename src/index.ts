@@ -63,7 +63,7 @@ if (program.regexHostname.test(program.hostname)) {
             }
         }
 
-        if (typeof scannerProgram.foundVideo !== 'undefined' && typeof scannerProgram.foundByModule !== 'undefined') {
+        if (typeof scannerProgram.foundVideo !== 'undefined' && scannerProgram.foundByModule == undefined) {
             if (process.env.DEV) {
                 console.log('foundVideo', scannerProgram.foundVideo);
                 console.log('foundImage', scannerProgram.foundImage);

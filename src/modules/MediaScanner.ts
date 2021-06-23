@@ -429,6 +429,12 @@ export class MediaScanner implements Module {
 					break;
 
 				default:
+					found = false;
+					program.foundImage = false;
+					program.foundVideo = false;
+					program.foundByModule = undefined;
+
+					callback(found, program);
 					break;
 			}
 		} catch (e) {
