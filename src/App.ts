@@ -13,4 +13,5 @@ export type Program = {
   foundByModule: null | string;
   foundVideo: boolean;
   foundImage: boolean;
+  foundProfile: boolean;
 }

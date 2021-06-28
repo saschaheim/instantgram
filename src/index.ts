@@ -22,7 +22,8 @@ const program: Program = {
 
     foundByModule: null,
     foundVideo: false,
-    foundImage: false
+    foundImage: false,
+    foundProfile: false
 }
 
 if (process.env.DEV) {
@@ -35,14 +36,26 @@ if (process.env.DEV) {
 // verify if are running on instagram site
 if (program.regexHostname.test(program.hostname)) {
 
-    new MediaScanner().execute(program, function (found: boolean, scannerProgram: Program) {
-        if (found == false) {
+    new MediaScanner().execute(program, function (scannerFound: boolean, scannerProgram: Program) {
+        if (process.env.DEV) {
+            console.log('scannerFound', scannerFound);
+        }
+
+        program.foundVideo = scannerProgram.foundVideo;
+        program.foundImage = scannerProgram.foundImage;
+        program.foundByModule = scannerProgram.foundByModule;
+
+        if (scannerFound == false) {
             // Profile page -> instagram.com/instagram/
             if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
                 new ProfilePageDownload().execute(scannerProgram, function (profilePageDownload: boolean, profilePageDownloadProgram: Program) {
                     if (process.env.DEV) {
                         console.log('profilePageDownload', profilePageDownload);
                     }
+
+                    program.foundVideo = profilePageDownloadProgram.foundVideo;
+                    program.foundImage = profilePageDownloadProgram.foundImage;
+                    program.foundByModule = profilePageDownloadProgram.foundByModule;
 
                     if (profilePageDownload == false) {
                         new Modal({
@@ -63,16 +76,12 @@ if (program.regexHostname.test(program.hostname)) {
             }
         }
 
-        if (typeof scannerProgram.foundVideo !== 'undefined' && scannerProgram.foundByModule == undefined) {
+        if (program.foundByModule == undefined) {
             if (process.env.DEV) {
-                console.log('foundVideo', scannerProgram.foundVideo);
-                console.log('foundImage', scannerProgram.foundImage);
-                console.log('foundByModule', scannerProgram.foundByModule);
+                console.log('foundVideo', program.foundVideo);
+                console.log('foundImage', program.foundImage);
+                console.log('foundByModule', program.foundByModule);
             }
-
-            program.foundVideo = scannerProgram.foundVideo;
-            program.foundImage = scannerProgram.foundImage;
-            program.foundByModule = scannerProgram.foundByModule;
 
             if (program.foundVideo == false && program.foundImage == false) {
                 new Modal({

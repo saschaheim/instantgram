@@ -295,9 +295,15 @@ export class ProfilePageDownload implements Module {
 			if (document.querySelector('section > main > div:first-child > div > article > div:nth-child(1)').classList.length == 2) {
 				this.displayIsPrivateModal();
 
+				program.foundProfile = false;
+
 				callback(false, program);
 				return;
 			}
+
+			// Set some neccessary things
+			program.foundProfile = true;
+			program.foundByModule = this.getName();
 
 			// Get all links of content posts
 			const postLinks: Set<string> = await this.collectImageLinks(parseInt('1', 0) % 3);
@@ -316,8 +322,14 @@ export class ProfilePageDownload implements Module {
 			this.modal.close();
 
 			if (error == false) {
+				program.foundProfile = true;
+				program.foundByModule = this.getName();
+
 				callback(true, program);
 			} else {
+				program.foundProfile = false;
+				program.foundByModule = undefined;
+
 				callback(false, program);
 			}
 		}
