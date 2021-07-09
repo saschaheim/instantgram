@@ -177,8 +177,12 @@ export class ProfilePageDownload implements Module {
 	/**
 	 * Display the end of download modal
 	 */
-	private displayEndModal(): void {
-		this.downloadIndicator.innerText = '';
+	private displayEndModal(mediaLinks: any[], postLinksLength: number): void {
+		if (this.resolvedContent == Number.MAX_VALUE) {
+			this.downloadIndicator.innerText = localize('index#program#profilePageDownload@collection_complete_modal_title').replace('${this.resolvedContent}', String(mediaLinks.length)).replace('${postLinks.size}', String(postLinksLength));
+		} else {
+			this.downloadIndicator.innerText = '';
+		}
 
 		this.modal.heading = [
 			`<h5>[instantgram] <span>${localize('index#program#profilePageDownload@collection_complete_modal_title')}</span><span style="float:right">v${this.program.VERSION}</span></h5>`
@@ -192,9 +196,8 @@ export class ProfilePageDownload implements Module {
 		this.modal.buttonList = [{
 			active: true,
 			callback: () => {
-				document.getElementById('instantgram-bulk-downloader').remove()
-				document.getElementById('instantgram-bulk-downloader-download').remove()
-				this.modal.close()
+				this.cleanUp();
+				this.modal.close();
 			},
 			text: localize('index#program#profilePageDownload@collection_complete_modal_btn')
 		}];
@@ -215,9 +218,8 @@ export class ProfilePageDownload implements Module {
 		this.modal.buttonList = [{
 			active: true,
 			callback: () => {
-				document.getElementById('instantgram-bulk-downloader').remove()
-				document.getElementById('instantgram-bulk-downloader-download').remove()
-				this.modal.close()
+				this.cleanUp();
+				this.modal.close();
 			},
 			text: localize('index#program#profilePageDownload@is_private_modal_btn')
 		}];
@@ -247,27 +249,39 @@ export class ProfilePageDownload implements Module {
 			this.inProgress = true;
 		}
 
-		const text = `${metadata.type === 'download' ? 'Downloading' : 'Compression'} progress at ${metadata.percent}%`;
+		const text = `${localize('index#program#profilePageDownload@' + metadata.type + '_progress_at')} ${metadata.percent}%`;
 
 		// Remove the message button and set the progress to false
 		if (metadata.isLast) {
 			this.inProgress = false;
-			this.downloadIndicator.innerText = text;
+			this.downloadIndicator.innerHTML = text;
 		}
 
 		if (metadata.error) {
 			this.downloadIndicator.setAttribute('style', 'color:red;');
-			this.downloadIndicator.innerText = 'Download failed';
+			this.downloadIndicator.innerHTML = localize('index#program#profilePageDownload@download_failed');
 		}
 
 		// Prevent async messages which arrive after the last message to change the number
 		if (this.inProgress) {
-			this.downloadIndicator.textContent = text;
+			this.downloadIndicator.innerHTML = text;
 
 			if (metadata.error) {
 				this.downloadIndicator.setAttribute('style', 'color:red;');
-				this.downloadIndicator.innerText = 'Download failed';
+				this.downloadIndicator.innerText = localize('index#program#profilePageDownload@download_failed');
 			}
+		}
+	}
+
+	private cleanUp() {
+		let instantgram_bulk_downloader_elem = document.getElementById('instantgram-bulk-downloader');
+		if (typeof (instantgram_bulk_downloader_elem) != 'undefined' && instantgram_bulk_downloader_elem != null) {
+			instantgram_bulk_downloader_elem.remove();
+		}
+
+		let instantgram_bulk_downloader_dl_elem = document.getElementById('instantgram-bulk-downloader-download');
+		if (typeof (instantgram_bulk_downloader_dl_elem) != 'undefined' && instantgram_bulk_downloader_dl_elem != null) {
+			instantgram_bulk_downloader_dl_elem.remove();
 		}
 	}
 
@@ -311,14 +325,13 @@ export class ProfilePageDownload implements Module {
 			// Collect the media files of the posts
 			const mediaLinks: any[] = await this.collectMedia(postLinks);
 
-			this.displayEndModal();
+			this.displayEndModal(mediaLinks, postLinks.size);
 
 			let error = await downloadBulk(mediaLinks, this.getAccountName(document.body, 'section > main > div:first-child > header > section > div:first-child > h2'), async (metadata) => {
 				this.updateProgress(metadata);
 			});
 
-			document.getElementById('instantgram-bulk-downloader').remove();
-			document.getElementById('instantgram-bulk-downloader-download').remove();
+			this.cleanUp();
 			this.modal.close();
 
 			if (error == false) {

@@ -24,6 +24,9 @@ export default {
             'index#program#profilePageDownload@collection_complete_modal_content_2': 'The download will be now generated.',
             'index#program#profilePageDownload@collection_complete_modal_btn': 'Close',
             'index#program#profilePageDownload@cannot_download': 'Profile could not be downloaded.',
+            'index#program#profilePageDownload@download_progress_at': 'Download progress at',
+            'index#program#profilePageDownload@compression_progress_at': 'Compression progress at',
+            'index#program#profilePageDownload@download_failed': 'Download failed',
 
             'modules.modal@isLoading': 'Trying to load',
 
@@ -92,6 +95,9 @@ export default {
             'index#program#profilePageDownload@collection_complete_modal_content_2': 'Der Download wird nun erzeugt.',
             'index#program#profilePageDownload@collection_complete_modal_btn': 'Schließen',
             'index#program#profilePageDownload@cannot_download': 'Profil konnte nicht runtergeladen werden.',
+            'index#program#profilePageDownload@download_progress_at': 'Download-Fortschritt bei',
+            'index#program#profilePageDownload@compression_progress_at': 'Komprimierungs-Fortschritt bei',
+            'index#program#profilePageDownload@download_failed': 'Download fehlgeschlagen',
 
             'modules.modal@isLoading': 'Wird versucht zu laden',
 

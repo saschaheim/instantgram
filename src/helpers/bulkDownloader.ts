@@ -77,66 +77,76 @@ export interface ZippedFile {
     name: string
     lastModified: Date
     input: string | Blob
+    fetchResponse: Response
 }
 
 export async function downloadBulk(urls: string[], accountName: string, callback?: any): Promise<boolean> {
     let files: ZippedFile[] = [];
-
     let error: boolean = false;
-    let createdTimestamp = null;
-    let imageIndex = null;
-    let url = null;
 
-    for (var i = 0, l1 = urls.length; i < l1; i++) {
+    // Used for precise download progress calculation
+    let urlsWithoutTimestamp = [].concat.apply([], urls).flatMap(val => {
+        return typeof val == "number" ? [] : [val];
+    });
+
+    let urlsOnlyTimestamp = [];
+    for (let i = 0; i < urls.length; i++) {
         // This loop is for inner-array
         for (var j = 0, l2 = urls[i].length; j < l2; j++) {
             // Accessing each elements of inner-array
-            if (typeof urls[i][j] === "string") {
-                imageIndex = j;
-                createdTimestamp = urls[i][urls[i].length - 1];
-                url = urls[i][j];
-            } else {
-                break;
+            if (typeof urls[i][j] === "string" && typeof urls[i][j] !== "number") {
+                urlsOnlyTimestamp.push(urls[i][urls[i].length - 1]);
             }
-
-            const response = await fetch(url, {
-                headers: {
-                    'User-Agent': 'curl/7.64.1',
-                }
-            }).then(function (response) {
-                if (response.ok) {
-                    return response;
-                } else {
-                    return Promise.reject(response);
-                }
-            }).catch(function () {
-                console.warn('Cannot fetch a media url');
-            })
-
-            // If cannot fetch, warn
-            if (response) {
-                error = false;
-                files.push({
-                    name: getImageId(url),
-                    lastModified: new Date(createdTimestamp * 1000),
-                    input: await response.blob()
-                });
-            } else {
-                error = true;
-            }
-
-            callback({
-                percent: Number((imageIndex + 1 / urls[i].length).toFixed(2)),
-                isFirst: imageIndex === 0,
-                isLast: imageIndex + 1 === urls[i].length,
-                type: 'download',
-                error: error
-            });
         }
+    }
+    // Flaten timestamp array
+    urlsOnlyTimestamp = [].concat.apply([], urlsOnlyTimestamp);
+
+    let timeStarted: string = new Date().toISOString();
+
+    for (const [imageIndex, url] of urlsWithoutTimestamp.entries()) {
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'curl/7.64.1',
+            }
+        }).then(function (response) {
+            if (response.ok) {
+                return response;
+            } else {
+                return Promise.reject(response);
+            }
+        }).catch(function () {
+            console.warn('Cannot fetch a media url');
+        })
+
+        // If cannot fetch, warn
+        if (response) {
+            error = false;
+
+            files.push({
+                name: getImageId(url),
+                lastModified: new Date(urlsOnlyTimestamp[imageIndex] * 1000),
+                input: await response.blob(),
+                fetchResponse: response
+            });
+        } else {
+            error = true;
+        }
+
+        callback({
+            percent: Number((Math.round(((imageIndex + 1) / urlsWithoutTimestamp.length) * 100)).toFixed(2)),
+            isFirst: imageIndex === 0,
+            isLast: imageIndex + 1 === urlsWithoutTimestamp.length,
+            type: 'download',
+            currentMediaPos: imageIndex + 1,
+            totalMediaFiles: urlsWithoutTimestamp.length,
+            started: timeStarted,
+            error: error
+        });
     }
 
     if (!error) {
-        await _downloadZIP(files, accountName);
+        await _downloadZIP(files, accountName, callback);
     }
 
     return error;
@@ -147,9 +157,49 @@ export async function downloadBulk(urls: string[], accountName: string, callback
  * @param zip The JSZip file which should be downloaded
  * @param accountName The account name
  */
-export async function _downloadZIP(files: ZippedFile[], accountName: string): Promise<void> {
-    const archive = downloadZip(files)
-    const blob = await archive.blob()
+export async function _downloadZIP(files: ZippedFile[], accountName: string, callback?: any): Promise<void> {
+    let isFirst = true;
+    // Calculate total download size by summing up the HTTP header `Content-Length` + the length
+    // of the UTF-8 encoded file name + 92 Bytes
+    let totalBytes = 0;
+    files.forEach(file => {
+        const contentLength = +file.fetchResponse.headers.get('Content-Length');
+        const fileNameSizeInBytes = (new TextEncoder().encode(file.name)).length;
+        totalBytes += contentLength + fileNameSizeInBytes + 92;
+    });
+    totalBytes += 22;
+
+    const response = downloadZip(files);
+    const reader = response.body.getReader();
+
+    let receivedBytes = 0;
+    const chunks = [];
+    while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+            isFirst = false;
+            break;
+        }
+
+        chunks.push(value);
+        receivedBytes += value.length;
+
+        //console.log(`Received ${receivedBytes} of ${totalBytes} Bytes -> ${(receivedBytes / totalBytes * 100).toFixed()} %`);
+
+        callback({
+            percent: Number((receivedBytes / totalBytes * 100).toFixed()),
+            isFirst,
+            isLast: (receivedBytes / totalBytes * 100) === 100,
+            type: 'compression',
+            error: false
+        });
+    }
+
+    //console.log(['isFirst', isFirst]);
+    //console.log(['isLast', (receivedBytes / totalBytes * 100) === 100]);
+
+    const blob = new Blob(chunks);
 
     if (accountName) {
         saveData(blob, `${accountName}.zip`);
