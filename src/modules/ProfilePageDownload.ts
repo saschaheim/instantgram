@@ -14,7 +14,7 @@ export class ProfilePageDownload implements Module {
 	private continueImageLoading: boolean = true;
 
 	private readonly downloadIndicator: HTMLParagraphElement;
-	private resolvedContent: number = 0;
+	private resolvedContent: number = 1;
 
 	private inProgress = false;
 
@@ -153,7 +153,7 @@ export class ProfilePageDownload implements Module {
 	 * @param postLinks All the image links on the page
 	 */
 	private async collectDownloadLinks(postLinks: Set<string>): Promise<any[]> {
-		this.resolvedContent = 0;
+		this.resolvedContent = 1;
 
 		const mediaList: any[] = [];
 		for (const link of postLinks) {

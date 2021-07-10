@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v10.0.2
-![GitHub release](https://img.shields.io/badge/release-v10.0.2-green)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v10.0.3
+![GitHub release](https://img.shields.io/badge/release-v10.0.3-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -39,6 +39,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v10.0.3 - [instangram] Fix profile page downloading/compression calculation.
 - v10.0.2 - [instangram] Complete rewrite of the Project to support Firefox again. \
 By rewriting, we were also able to increase the speed noticeably. \
 Fixed bug on profile page modal showed twice.
