@@ -2,9 +2,10 @@ import { Program } from '../App';
 import { Module } from './Module';
 import { Modal } from '../components/Modal';
 import getHighestResImg from '../helpers/getHighestResImg';
-import isElementInViewport from '../helpers/isElementInViewport';
 import getBlobVideoUrl from '../helpers/getBlobVideoUrl';
+import getPath from '../helpers/getPath';
 import getPreLoader from '../helpers/getPreLoader';
+import isElementInViewport from '../helpers/isElementInViewport';
 import localize from '../helpers/localize';
 
 enum MediaType {
@@ -384,7 +385,7 @@ export class MediaScanner implements Module {
 
 									if (scrapedBlobVideoUrl) {
 										/* Fix error network error since mai 2021 cannot download */
-										let _newVideoUrl = scrapedBlobVideoUrl.replace(/^[^.]*/, 'https://scontent');
+										let _newVideoUrl = 'https://scontent.cdninstagram.com' + getPath(scrapedBlobVideoUrl, 'unknown');
 										window.open(_newVideoUrl);
 
 										callback(found, program);
@@ -413,7 +414,7 @@ export class MediaScanner implements Module {
 							program.foundByModule = this.getName();
 
 							/* Fix error network error since mai 2021 cannot download */
-							let _newVideoUrl = mediaLink.replace(/^[^.]*/, 'https://scontent');
+							let _newVideoUrl = 'https://scontent.cdninstagram.com' + getPath(mediaLink, 'unknown');
 							window.open(_newVideoUrl);
 
 							callback(found, program);

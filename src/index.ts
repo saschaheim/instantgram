@@ -1,4 +1,3 @@
-
 import { Program } from './App';
 import { MediaScanner } from './modules/MediaScanner';
 import { ProfilePageDownload } from './modules/ProfilePageDownload';
@@ -53,11 +52,12 @@ if (program.regexHostname.test(program.hostname)) {
                         console.log('profilePageDownload', profilePageDownload);
                     }
 
-                    program.foundVideo = profilePageDownloadProgram.foundVideo;
                     program.foundImage = profilePageDownloadProgram.foundImage;
+                    program.foundProfile = profilePageDownloadProgram.foundProfile;
+                    program.foundVideo = profilePageDownloadProgram.foundVideo;
                     program.foundByModule = profilePageDownloadProgram.foundByModule;
 
-                    if (profilePageDownload == false) {
+                    if (profilePageDownload == false && program.foundProfile) {
                         new Modal({
                             heading: [
                                 `<h5>[instantgram] <span style="float:right">v${profilePageDownloadProgram.VERSION}</span></h5>`

@@ -310,6 +310,7 @@ export class ProfilePageDownload implements Module {
 				this.displayIsPrivateModal();
 
 				program.foundProfile = false;
+				program.foundByModule = this.getName();
 
 				callback(false, program);
 				return;
