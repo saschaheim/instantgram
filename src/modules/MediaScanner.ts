@@ -169,17 +169,9 @@ export class MediaScanner implements Module {
 						let controlsArray;
 						// Change structure if is on main feed
 						if (program.regexRootPath.test(program.path)) {
-							// Selected article
-							//console.log($article[cVPI]);
-							
-							//console.log(($article[cVPI] as HTMLElement).children[0].children[1].children[0].children[1].children)
-							controlsArray = Array.from(($article[cVPI] as HTMLElement).children[0].children[1].children[0].children[1].children);
+							controlsArray = Array.from(($article[cVPI] as HTMLElement).children[2].querySelector('div > div').children[1].children);
 						} else {
-							// Selected article
-							//console.log($article);
-							
-							//console.log(($article as HTMLElement).children[0].children[0].children[0].children[1].children);
-							controlsArray = Array.from(($article as HTMLElement).children[0].children[0].children[0].children[1].children);
+							controlsArray = Array.from(($article as HTMLElement).children[2].querySelector('div > div').children[1].children);
 						}
 
 						// Detect current image index

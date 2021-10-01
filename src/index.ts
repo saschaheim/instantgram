@@ -82,24 +82,22 @@ if (program.regexHostname.test(program.hostname)) {
                 console.log('foundImage', program.foundImage);
                 console.log('foundByModule', program.foundByModule);
             }
-			
-			if (!process.env.DEV) {
-				if (program.foundVideo == false && program.foundImage == false) {
-					new Modal({
-						heading: [
-							`<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
-						],
-						content: [
-							localize('index#program@alert_dontFound')
-						],
-						contentStyle: 'text-align:center',
-						buttonList: [{
-							active: true,
-							text: 'Ok'
-						}]
-					}).open();
-				}
-			}
+
+            if (program.foundVideo == false && program.foundImage == false) {
+                new Modal({
+                    heading: [
+                        `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
+                    ],
+                    content: [
+                        localize('index#program@alert_dontFound')
+                    ],
+                    contentStyle: 'text-align:center',
+                    buttonList: [{
+                        active: true,
+                        text: 'Ok'
+                    }]
+                }).open();
+            }
         }
     });
 
