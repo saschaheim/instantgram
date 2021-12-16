@@ -1,11 +1,11 @@
 import { Program } from '../App';
 import { Module } from './Module';
 import { Modal } from '../components/Modal';
-import getHighestResImg from '../helpers/getHighestResImg';
 import getBlobVideoUrl from '../helpers/getBlobVideoUrl';
+import getElementPercentage from '../helpers/getElementPercentage';
+import getHighestResImg from '../helpers/getHighestResImg';
 import getPath from '../helpers/getPath';
 import getPreLoader from '../helpers/getPreLoader';
-import isElementInViewport from '../helpers/isElementInViewport';
 import localize from '../helpers/localize';
 
 enum MediaType {
@@ -123,7 +123,7 @@ export class MediaScanner implements Module {
 
 						let i1 = 0;
 						for (i1 = 0; i1 < $article.length; i1++) {
-							if (isElementInViewport($article[i1])) {
+							if (getElementPercentage($article[i1]) > 50) {
 								isCarousel = $article[i1].querySelector('button > .coreSpriteLeftChevron') !== null || $article[i1].querySelector('button > .coreSpriteRightChevron') !== null;
 								break;
 							}
@@ -152,7 +152,7 @@ export class MediaScanner implements Module {
 						$article = $container.querySelectorAll('div > div > div > article');
 
 						for (cVPI = 0; cVPI < $article.length; cVPI++) {
-							if (isElementInViewport($article[cVPI])) {
+							if (getElementPercentage($article[cVPI]) > 50) {
 								break;
 							}
 						}
@@ -299,7 +299,7 @@ export class MediaScanner implements Module {
 
 						if ($article) {
 							for (var i = 0; i < ($article as NodeListOf<Element>).length; i++) {
-								if (isElementInViewport($article[i])) {
+								if (getElementPercentage($article[i]) > 50) {
 									let isVideo = $article[i].querySelector('video') !== null;
 									let isImage = $article[i].querySelector('.KL4Bh > img[src]') !== null || $article[i].querySelector('.KL4Bh > img[srcset]') !== null;
 
