@@ -39,6 +39,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v10.0.6 - [instangram] Fix #15 Instantgram often grabs avatars/profile pics
 - v10.0.5 - [instangram] Fix carousel not working
 - v10.0.4 - [instangram] Fix reels not working.
 - v10.0.3 - [instangram] Fix profile page downloading/compression calculation.
