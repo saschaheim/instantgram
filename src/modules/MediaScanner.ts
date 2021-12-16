@@ -267,7 +267,7 @@ export class MediaScanner implements Module {
 						$article = document.getElementsByTagName('article')[predictNeededElementIndex];
 
 						let isVideo = $article.querySelector('video') !== null;
-						let isImage = $article.querySelector('img[src]') !== null || $article.querySelector('img[srcset]') !== null;
+						let isImage = $article.querySelector('.KL4Bh > img[src]') !== null || $article.querySelector('.KL4Bh > img[srcset]') !== null;
 
 						if (isVideo) {
 							// Set media type
@@ -279,11 +279,11 @@ export class MediaScanner implements Module {
 							mediaType = MediaType.Image;
 
 							// Sometimes there exists no source set so be careful
-							if ($article.querySelector('img[srcset]') !== null) {
-								$mediaEl = $article.querySelector('img[srcset]');
+							if ($article.querySelector('.KL4Bh > img[srcset]') !== null) {
+								$mediaEl = $article.querySelector('.KL4Bh > img[srcset]');
 							} else {
 								// Use source
-								$mediaEl = $article.querySelector('img[src]');
+								$mediaEl = $article.querySelector('.KL4Bh > img[src]');
 							}
 						}
 					} else {
@@ -300,8 +300,8 @@ export class MediaScanner implements Module {
 						if ($article) {
 							for (var i = 0; i < ($article as NodeListOf<Element>).length; i++) {
 								if (isElementInViewport($article[i])) {
-									let isVideo = $article[i].querySelector('div > div > div > div > video') !== null;
-									let isImage = $article[i].querySelector('div > div > div > div > img[src]') !== null || $article[i].querySelector('div > div > div > div > img[srcset]') !== null;
+									let isVideo = $article[i].querySelector('video') !== null;
+									let isImage = $article[i].querySelector('.KL4Bh > img[src]') !== null || $article[i].querySelector('.KL4Bh > img[srcset]') !== null;
 
 									if (isVideo) {
 										// Set media type
@@ -313,11 +313,11 @@ export class MediaScanner implements Module {
 										mediaType = MediaType.Image;
 
 										// Sometimes there exists no source set so be careful
-										if ($article[i].querySelector('img[srcset]') !== null) {
-											$mediaEl = $article[i].querySelector('img[srcset]');
+										if ($article[i].querySelector('.KL4Bh > img[srcset]') !== null) {
+											$mediaEl = $article[i].querySelector('.KL4Bh > img[srcset]');
 										} else {
 											// Use source
-											$mediaEl = $article[i].querySelector('img[src]');
+											$mediaEl = $article[i].querySelector('.KL4Bh > img[src]');
 										}
 									}
 								}
