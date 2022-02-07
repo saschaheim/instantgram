@@ -175,7 +175,34 @@ export interface EdgeWebMediaToRelatedMedia {
 export interface GraphqlQuery {
     graphql: {
         shortcode_media: ShortcodeMedia;
-    }
+    };
+}
+
+export interface Candidate {
+    width: number;
+    height: number;
+    url: string;
+}
+
+export interface ImageVersions {
+    candidates: Candidate[];
+}
+
+export interface CarouselMedia {
+    image_versions2: ImageVersions;
+    video_versions?: Candidate[];
+}
+
+export interface PostItem {
+    carousel_media_count?: number;
+    carousel_media?: CarouselMedia[];
+    image_versions2?: ImageVersions;
+    user: Pick<Owner4, 'username' | 'is_private' | 'profile_pic_url'>;
+    video_versions?: Candidate[];
+}
+
+export interface PostQuery {
+    items: PostItem[];
 }
 
 export interface ShortcodeMedia {
@@ -224,6 +251,7 @@ export interface ShortcodeMedia {
     video_duration: number;
     thumbnail_src: string;
     edge_sidecar_to_children: EdgeSidecarToChildren;
+
 }
 
 export interface EdgeSidecarToChildren {

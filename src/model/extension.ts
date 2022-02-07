@@ -1,8 +1,8 @@
-import { ShortcodeMedia } from './post';
+import { PostItem, ShortcodeMedia } from './post';
 
 export interface ContentResponse {
     accountName: string;
     mediaURL: string[];
-    original: ShortcodeMedia;
+    originalResponse: PostItem | ShortcodeMedia;
     timestamp: number;
 }

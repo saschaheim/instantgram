@@ -1,8 +1,10 @@
 import { Alert } from '../components/Alert';
 import { ContentResponse } from '../model/extension';
-import { GraphqlQuery, ShortcodeMedia } from '../model/post';
+import { GraphqlQuery, PostItem, PostQuery, ShortcodeMedia } from '../model/post';
 import { downloadZip } from 'client-zip';
 import saveData from './saveData';
+
+const isShortcodeMedia = (media: ShortcodeMedia | PostItem): media is ShortcodeMedia => '__typename' in media;
 
 // tslint:disable-next-line:ban-types
 export function LogIGRequest<T extends Function>(method: T): T {
@@ -28,7 +30,7 @@ export async function getMedia(contentURL: string, index: number | null = null):
         mediaURL: extractImage(response, index),
         accountName: extractAccountName(response),
         timestamp: extractTakenTimestamp(response),
-        original: response
+        originalResponse: response,
     };
 }
 
@@ -36,41 +38,72 @@ export async function getMedia(contentURL: string, index: number | null = null):
  * Make a request to the instagram API and return the result
  * @param contentURL The api url to query
  */
-export const makeRequest = LogIGRequest(async (contentURL: string): Promise<ShortcodeMedia> =>
-    (await (await fetch(`${contentURL}?__a=1`)).json() as GraphqlQuery).graphql.shortcode_media);
+export const makeRequest = LogIGRequest(async (contentURL: string): Promise<PostItem | ShortcodeMedia> => {
+    const response = await (await fetch(`${contentURL}?__a=1`)).json() as PostQuery | GraphqlQuery;
+    if ('graphql' in response && response.graphql) {
+        return response.graphql.shortcode_media;
+    }
+
+    return (response as PostQuery).items[0];
+});
 
 /**
  * Extract the account name of an API response
  */
-export function extractAccountName(shortcodeMedia: ShortcodeMedia): string {
-    return shortcodeMedia.owner.username;
+export function extractAccountName(shortcodeMedia: ShortcodeMedia | PostItem): string {
+    const user = isShortcodeMedia(shortcodeMedia) ? shortcodeMedia.owner: shortcodeMedia.user
+
+    return user.username;
 }
 
-export function extractImage(shortcodeMedia: ShortcodeMedia, index: number | null = null): string[] {
+export function extractImage(shortcodeMedia: ShortcodeMedia | PostItem, index: number | null = null): string[] {
     let mediaURL: string[];
 
-    if (shortcodeMedia.__typename === 'GraphImage') {
-        mediaURL = [shortcodeMedia.display_url];
-    } else if (shortcodeMedia.__typename === 'GraphVideo') {
-        mediaURL = [shortcodeMedia.video_url];
-    } else if (index === -1) {
-        mediaURL = [shortcodeMedia.display_url];
-    } else if (index === null) {
-        mediaURL = [];
-        for (const i of Array(shortcodeMedia.edge_sidecar_to_children.edges.length).keys()) {
-            mediaURL.push(
-                extractImage(shortcodeMedia, i)[0],
-            );
+    if (isShortcodeMedia(shortcodeMedia)) {
+        if (shortcodeMedia.__typename === 'GraphImage') {
+            mediaURL = [shortcodeMedia.display_url];
+        } else if (shortcodeMedia.__typename === 'GraphVideo') {
+            mediaURL = [shortcodeMedia.video_url];
+        } else if (index === -1) {
+            mediaURL = [shortcodeMedia.display_url];
+        } else if (index === null) {
+            mediaURL = [];
+            for (const i of Array(shortcodeMedia.edge_sidecar_to_children.edges.length).keys()) {
+                mediaURL.push(
+                    extractImage(shortcodeMedia, i)[0],
+                );
+            }
+        } else {
+            mediaURL = extractImage(shortcodeMedia.edge_sidecar_to_children.edges[index].node as ShortcodeMedia);
         }
     } else {
-        mediaURL = extractImage(shortcodeMedia.edge_sidecar_to_children.edges[index].node as ShortcodeMedia);
+        const imageIndex = index === -1 ? 0 : index;
+        if (shortcodeMedia.video_versions) {
+            // Post is a video
+            mediaURL = [shortcodeMedia.video_versions[0].url];
+        } else if (shortcodeMedia.image_versions2) {
+            // Post is an image
+            mediaURL = [shortcodeMedia.image_versions2.candidates[0].url];
+        } else {
+            // Multiple posts are present and optionally uses an index
+            const urls = shortcodeMedia.carousel_media!.map(media => {
+                const mediaObject = media.video_versions ? media.video_versions[0] : media.image_versions2.candidates[0];
+
+                return mediaObject.url;
+            });
+            mediaURL = imageIndex != null ? [urls[imageIndex]] : urls;
+        }
     }
 
     return mediaURL;
 }
 
-export function extractTakenTimestamp(shortcodeMedia: ShortcodeMedia): number {
-    return shortcodeMedia.taken_at_timestamp;
+export function extractTakenTimestamp(shortcodeMedia: ShortcodeMedia | PostItem): number {
+	if(isShortcodeMedia(shortcodeMedia)) {
+		return shortcodeMedia.taken_at_timestamp;
+	} else {
+		return 0;
+	}
 }
 
 export interface ZippedFile {

@@ -39,6 +39,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v10.1.1 - [instangram] Fix profile page downloading doesn't work anymore.
 - v10.1.0 - [instangram] New image detection algorithm. Image with highest percent in feed and visible in viewport will be grabed by the scanner.
 - v10.0.6 - [instangram] Fix #15 Instantgram often grabs avatars/profile pics
 - v10.0.5 - [instangram] Fix carousel not working
