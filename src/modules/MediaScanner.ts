@@ -258,11 +258,9 @@ export class MediaScanner implements Module {
 						}
 					}
 					/*
-					* For single image
+					* For single image/video
 					*/
 				} else {
-					let $article: Element | NodeListOf<Element>;
-
 					if (isModal) {
 						$article = document.getElementsByTagName('article')[predictNeededElementIndex];
 
@@ -296,13 +294,13 @@ export class MediaScanner implements Module {
 								$article = $container.querySelectorAll('div > div > article');
 							}
 						}
-
+						
 						if ($article) {
 							for (var i = 0; i < ($article as NodeListOf<Element>).length; i++) {
 								if (getElementPercentage($article[i]) > 50) {
 									let isVideo = $article[i].querySelector('video') !== null;
 									let isImage = $article[i].querySelector('.KL4Bh > img[src]') !== null || $article[i].querySelector('.KL4Bh > img[srcset]') !== null;
-
+									
 									if (isVideo) {
 										// Set media type
 										mediaType = MediaType.Video;
@@ -326,7 +324,7 @@ export class MediaScanner implements Module {
 					}
 				}
 			}
-
+			
 			if (process.env.DEV) {
 				console.log(['mediaType', mediaType]);
 			}
