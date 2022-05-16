@@ -402,7 +402,6 @@ export class MediaScanner implements Module {
 
 										callback(found, program)
 									} else {
-										console.log('HEUTE FICK')
 										that.modal.heading = [
 											`<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
 										];
