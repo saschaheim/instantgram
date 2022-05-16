@@ -35,7 +35,7 @@ export class MediaScanner implements Module {
 			let isModal: boolean = false;
 			let isCarousel: boolean = false;
 
-			let $mediaEl = null;
+			let mediaEl = null;
 			let mediaType: MediaType = MediaType.undefined;
 			let mediaLink: string = null;
 
@@ -50,6 +50,9 @@ export class MediaScanner implements Module {
 
 			// Article
 			let $article: Element | NodeListOf<Element>;
+
+			// Media selector
+			let mediaSelector: string = '.kPFhm';
 
 			// Handle specific modules
 			if (program.regexProfilePath.test(program.path)) {
@@ -80,14 +83,14 @@ export class MediaScanner implements Module {
 								// Set media type
 								mediaType = MediaType.Video;
 
-								$mediaEl = storys[i].querySelector('video');
+								mediaEl = storys[i].querySelector('video');
 							} else if (isImage) {
 								// Set media type
 								mediaType = MediaType.Image;
 
 								// Sometimes there exists no source set so be careful
 								if (storys[i].querySelectorAll('img')[0] !== null) {
-									$mediaEl = storys[i].querySelectorAll('img')[0];
+									mediaEl = storys[i].querySelectorAll('img')[0];
 								}
 							}
 
@@ -97,7 +100,7 @@ export class MediaScanner implements Module {
 				}
 			}
 
-			if ($mediaEl == null) {
+			if (mediaEl == null) {
 				// Detect modal post
 				isModal = document.querySelectorAll('[role="dialog"]').length > 0;
 				if (process.env.DEV) {
@@ -135,6 +138,7 @@ export class MediaScanner implements Module {
 
 				if (process.env.DEV) {
 					console.log(['isCarousel', isCarousel]);
+					console.log(['predictNeededElementIndex', predictNeededElementIndex]);
 				}
 
 				/*
@@ -143,7 +147,7 @@ export class MediaScanner implements Module {
 				if (isCarousel) {
 					$article = document.getElementsByTagName('article')[predictNeededElementIndex];
 
-					let multiImage: Element[] | NodeListOf<Element>;
+					let multiMedia: Element[] | NodeListOf<Element>;
 
 					// Change structure if is on main feed
 					let cVPI = 0;
@@ -157,13 +161,13 @@ export class MediaScanner implements Module {
 							}
 						}
 
-						multiImage = Array.from($article[cVPI].querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')).filter(el => (el.firstChild != null && el.classList.length > 0));
+						multiMedia = Array.from($article[cVPI].querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')).filter(el => (el.firstChild != null && el.classList.length > 0));
 					} else {
-						multiImage = Array.from($article.querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')).filter(el => (el.firstChild != null && el.classList.length > 0));
+						multiMedia = Array.from($article.querySelectorAll('div > div > div > div > div > div > div > ul:first-child > li')).filter(el => (el.firstChild != null && el.classList.length > 0));
 					}
 
-					if (multiImage != null && multiImage.length > 0) {
-						$mediaEl = null;
+					if (multiMedia != null && multiMedia.length > 0) {
+						mediaEl = null;
 						mediaLink = null;
 
 						let controlsArray;
@@ -171,13 +175,13 @@ export class MediaScanner implements Module {
 						if (program.regexRootPath.test(program.path)) {
 							// Selected article
 							//console.log($article[cVPI]);
-							
+
 							//console.log(($article[cVPI] as HTMLElement).children[0].children[1].children[0].children[1].children)
 							controlsArray = Array.from(($article[cVPI] as HTMLElement).children[0].children[1].children[0].children[1].children);
 						} else {
 							// Selected article
 							//console.log($article);
-							
+
 							//console.log(($article as HTMLElement).children[0].children[0].children[0].children[1].children);
 							controlsArray = Array.from(($article as HTMLElement).children[0].children[0].children[0].children[1].children);
 						}
@@ -196,61 +200,61 @@ export class MediaScanner implements Module {
 							}
 						}
 
-						for (let i = 0; i < multiImage.length; i++) {
+						for (let i = 0; i < multiMedia.length; i++) {
 							// First
-							if (multiImage.length == 2) {
+							if (multiMedia.length == 2) {
 								if (isLastMedia) {
-									$mediaEl = multiImage[1];
+									mediaEl = multiMedia[1];
 								} else {
-									$mediaEl = multiImage[0];
+									mediaEl = multiMedia[0];
 								}
-							} else if (multiImage.length == 3) {
+							} else if (multiMedia.length == 3) {
 								if (isLastMedia) {
-									$mediaEl = multiImage[2];
+									mediaEl = multiMedia[2];
 								} else {
-									$mediaEl = multiImage[1];
+									mediaEl = multiMedia[1];
 								}
-							} else if (multiImage.length == 4) {
+							} else if (multiMedia.length == 4) {
 								if (isLastMedia) {
-									$mediaEl = multiImage[2];
+									mediaEl = multiMedia[2];
 								} else {
 									if (controlsArray.length > 6 && selectedControlIndex == 4) {
-										$mediaEl = multiImage[1];
+										mediaEl = multiMedia[1];
 									} else if (controlsArray.length > 6 && selectedControlIndex == 5) {
-										$mediaEl = multiImage[2];
+										mediaEl = multiMedia[2];
 									} else if (controlsArray.length > 6 && selectedControlIndex == 6) {
-										$mediaEl = multiImage[2];
+										mediaEl = multiMedia[2];
 									} else if (controlsArray.length > 6 && selectedControlIndex == 7) {
-										$mediaEl = multiImage[1];
+										mediaEl = multiMedia[1];
 									} else if (controlsArray.length > 6 && selectedControlIndex == 8) {
-										$mediaEl = multiImage[2];
+										mediaEl = multiMedia[2];
 									} else {
-										$mediaEl = multiImage[selectedControlIndex - 1];
+										mediaEl = multiMedia[selectedControlIndex - 1];
 									}
 								}
 							}
 
 							// Detect media type
-							if ($mediaEl != null) {
-								let isVideo = $mediaEl.querySelector('video') !== null;
-								let isImage = $mediaEl.querySelector('img[src]') !== null || $mediaEl.querySelector('img[srcset]') !== null;
+							if (mediaEl != null) {
+								let isVideo = mediaEl.querySelector('video') !== null;
+								let isImage = mediaEl.querySelector('img[src]') !== null || mediaEl.querySelector('img[srcset]') !== null;
 
 								if (isVideo) {
 									// Set media type
 									mediaType = MediaType.Video;
 
-									$mediaEl = $mediaEl.querySelector('video');
+									mediaEl = mediaEl.querySelector('video');
 									break;
 								} else if (isImage) {
 									// Set media type
 									mediaType = MediaType.Image;
 
 									// Sometimes there exists no source set so be careful
-									if ($mediaEl.querySelector('img[srcset]') !== null) {
-										$mediaEl = $mediaEl.querySelector('img[srcset]');
+									if (mediaEl.querySelector('img[srcset]') !== null) {
+										mediaEl = mediaEl.querySelector('img[srcset]');
 									} else {
 										// Use source
-										$mediaEl = $mediaEl.querySelector('img[src]');
+										mediaEl = mediaEl.querySelector('img[src]');
 									}
 									break;
 								}
@@ -264,24 +268,28 @@ export class MediaScanner implements Module {
 					if (isModal) {
 						$article = document.getElementsByTagName('article')[predictNeededElementIndex];
 
+						if (process.env.DEV) {
+							console.log(['article', $article]);
+						}
+
 						let isVideo = $article.querySelector('video') !== null;
-						let isImage = $article.querySelector('.KL4Bh > img[src]') !== null || $article.querySelector('.KL4Bh > img[srcset]') !== null;
+						let isImage = $article.querySelector(`${mediaSelector} > img[src]`) !== null || $article.querySelector(`${mediaSelector} > img[srcset]`) !== null;
 
 						if (isVideo) {
 							// Set media type
 							mediaType = MediaType.Video;
 
-							$mediaEl = $article.querySelector('video');
+							mediaEl = $article.querySelector('video');
 						} else if (isImage) {
 							// Set media type
 							mediaType = MediaType.Image;
 
 							// Sometimes there exists no source set so be careful
-							if ($article.querySelector('.KL4Bh > img[srcset]') !== null) {
-								$mediaEl = $article.querySelector('.KL4Bh > img[srcset]');
+							if ($article.querySelector(`${mediaSelector} > img[srcset]`) !== null) {
+								mediaEl = $article.querySelector(`${mediaSelector} > img[srcset]`);
 							} else {
 								// Use source
-								$mediaEl = $article.querySelector('.KL4Bh > img[src]');
+								mediaEl = $article.querySelector(`${mediaSelector} > img[src]`);
 							}
 						}
 					} else {
@@ -294,28 +302,28 @@ export class MediaScanner implements Module {
 								$article = $container.querySelectorAll('div > div > article');
 							}
 						}
-						
+
 						if ($article) {
 							for (var i = 0; i < ($article as NodeListOf<Element>).length; i++) {
 								if (getElementPercentage($article[i]) > 50) {
 									let isVideo = $article[i].querySelector('video') !== null;
-									let isImage = $article[i].querySelector('.KL4Bh > img[src]') !== null || $article[i].querySelector('.KL4Bh > img[srcset]') !== null;
-									
+									let isImage = $article[i].querySelector(`${mediaSelector} > img[src]`) !== null || $article[i].querySelector(`${mediaSelector} > img[srcset]`) !== null;
+
 									if (isVideo) {
 										// Set media type
 										mediaType = MediaType.Video;
 
-										$mediaEl = $article[i].querySelector('video');
+										mediaEl = $article[i].querySelector('video');
 									} else if (isImage) {
 										// Set media type
 										mediaType = MediaType.Image;
 
 										// Sometimes there exists no source set so be careful
-										if ($article[i].querySelector('.KL4Bh > img[srcset]') !== null) {
-											$mediaEl = $article[i].querySelector('.KL4Bh > img[srcset]');
+										if ($article[i].querySelector(`${mediaSelector} > img[srcset]`) !== null) {
+											mediaEl = $article[i].querySelector(`${mediaSelector} > img[srcset]`);
 										} else {
 											// Use source
-											$mediaEl = $article[i].querySelector('.KL4Bh > img[src]');
+											mediaEl = $article[i].querySelector(`${mediaSelector} > img[src]`);
 										}
 									}
 								}
@@ -324,7 +332,7 @@ export class MediaScanner implements Module {
 					}
 				}
 			}
-			
+
 			if (process.env.DEV) {
 				console.log(['mediaType', mediaType]);
 			}
@@ -332,88 +340,90 @@ export class MediaScanner implements Module {
 			switch (mediaType) {
 				case MediaType.Image:
 					// Get highest image if possible
-					let helperResult = await getHighestResImg($mediaEl);
+					let helperResult = await getHighestResImg(mediaEl);
 					if (typeof helperResult === 'string') {
 						mediaLink = helperResult;
 					}
 
 					if (mediaLink != null && mediaLink.length > 10) {
-						found = true;
-						program.foundImage = true;
-						program.foundVideo = false;
-						program.foundByModule = this.getName();
+						found = true
+						program.foundImage = true
+						program.foundVideo = false
+						program.foundByModule = this.getName()
 
-						window.open(mediaLink);
+						window.open(mediaLink)
 
-						callback(found, program);
+						callback(found, program)
 					} else {
-						found = false;
-						program.foundImage = false;
-						program.foundVideo = false;
-						program.foundByModule = undefined;
+						found = false
+						program.foundImage = false
+						program.foundVideo = false
+						program.foundByModule = undefined
 
-						callback(found, program);
+						callback(found, program)
 					}
 					break;
 				case MediaType.Video:
-					if (typeof ($mediaEl as HTMLVideoElement).src === 'undefined' || ($mediaEl as HTMLVideoElement).src.length == 0) {
-						$mediaEl = $mediaEl.querySelectorAll('source');
-						mediaLink = ($mediaEl as HTMLVideoElement)[0].src;
+					if (typeof (mediaEl as HTMLVideoElement).src === 'undefined' || (mediaEl as HTMLVideoElement).src.length == 0) {
+						mediaEl = mediaEl.querySelectorAll('source')
+						mediaLink = (mediaEl as HTMLVideoElement)[0].src
 					} else {
-						mediaLink = ($mediaEl as HTMLVideoElement).src;
+						mediaLink = (mediaEl as HTMLVideoElement).src
 					}
 
 					if (mediaLink != null && mediaLink.length > 10) {
-						// Fix url timestamp error or signature mismatch
-						mediaLink = mediaLink.replace('amp;', '&');
-
 						if (mediaLink.indexOf('blob:') !== -1) {
-							const that = this;
+							const that = this
 
-							found = true;
-							program.foundImage = false;
-							program.foundVideo = true;
-							program.foundByModule = that.getName();
+							found = true
+							program.foundImage = false
+							program.foundVideo = true
+							program.foundByModule = that.getName()
 
 							this.modal.heading = [
 								`<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
-							];
+							]
 							this.modal.content = [
 								"<p style='margin:0;text-align:center'>" + getPreLoader() + "</p>",
 								"<h4 style='font-weight:bold;text-align:center'>" + localize('modules.modal@isLoading') + "<span id='loading_dot' style='position:fixed;'></span></h4>"
-							];
+							]
 							this.modal.open();
 
 							setTimeout(function () {
-								getBlobVideoUrl($mediaEl, $article, selectedControlIndex, function (scrapedBlobVideoUrl: string) {
-									that.modal.close();
+								getBlobVideoUrl(mediaEl, $article, selectedControlIndex, function (scrapedBlobVideoUrl: string) {
 									//clearInterval(loadingDots)
 
 									if (scrapedBlobVideoUrl) {
+										that.modal.close();
+
 										/* Fix error network error since mai 2021 cannot download */
 										let _newVideoUrl = 'https://scontent.cdninstagram.com' + getPath(scrapedBlobVideoUrl, 'unknown');
 										window.open(_newVideoUrl);
 
-										callback(found, program);
+										callback(found, program)
 									} else {
+										console.log('HEUTE FICK')
 										that.modal.heading = [
 											`<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
 										];
 										that.modal.content = [
 											localize('index#program#blob@alert_cannotDownload')
 										];
-										that.modal.contentStyle = 'text-align:center',
-											that.modal.buttonList = [{
-												active: true,
-												text: localize('index#program#blob@alert_cannotDownload')
-											}];
-										that.modal.open();
+										that.modal.contentStyle = 'text-align:center'
+										that.modal.buttonList = [{
+											active: true,
+											text: 'Ok'
+										}]
+										that.modal.open()
 
-										callback(found, program);
+										callback(found, program)
 									}
 								});
 							}, 500);
 						} else {
+							// Fix url timestamp error or signature mismatch
+							mediaLink = mediaLink.replace('amp;', '&');
+
 							found = true;
 							program.foundImage = false;
 							program.foundVideo = true;

@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v10.1.2
-![GitHub release](https://img.shields.io/badge/release-v10.1.2-green)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v10.1.3
+![GitHub release](https://img.shields.io/badge/release-v10.1.3-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -39,6 +39,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v10.1.3 - [instangram] Fix saving videos on some post types.
 - v10.1.2 - [instangram] Fix issue #17 can't save most types of videos anymore.
 - v10.1.1 - [instangram] Fix profile page downloading doesn't work anymore.
 - v10.1.0 - [instangram] New image detection algorithm. Image with highest percent in feed and visible in viewport will be grabed by the scanner.

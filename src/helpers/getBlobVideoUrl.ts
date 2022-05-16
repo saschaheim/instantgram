@@ -1,7 +1,6 @@
 import getDataFromUrl from './getDataFromUrl'
 
 async function getBlobVideoUrl(el: HTMLVideoElement, article: any, pos: number, callback: any) {
-
 	/* Will be used only for single video posts */
 	let isMultiVideo = (pos != null) ? true : false;
 	if (!isMultiVideo) {
@@ -16,14 +15,26 @@ async function getBlobVideoUrl(el: HTMLVideoElement, article: any, pos: number, 
 			videoPosterUrl = decoded;
 		}
 		var videoPosterFilename = videoPosterUrl.split('/').pop().split('#')[0].split('?')[0];
+
+		if (process.env.DEV) {
+			console.log(['getBlobVideoUrl(): videoPosterFilename', videoPosterFilename]);
+		}
 	}
-	
-	if(article != null && article.length > 0) {
+
+	if (article != null) {
 		/* Step 1 */
 		/* Fetch user id from element */
 		let userId = null;
-		let userProfileUrl = (article[0].querySelectorAll('header > div > div > div > div > span > a')[0] as HTMLLinkElement).href;
-		
+		let userProfileUrl = '';
+		if (article !== undefined && article.length > 0) {
+			userProfileUrl = (article[0].querySelectorAll('header > div > div > div > div > span > a')[0] as HTMLLinkElement).href;
+		} else {
+			userProfileUrl = (article.querySelectorAll('header > div > div > div > div > span > a')[0] as HTMLLinkElement).href;
+		}
+		if (process.env.DEV) {
+			console.log(['getBlobVideoUrl(): userProfileUrl', userProfileUrl]);
+		}
+
 		let userProfileUrlResponseData = await getDataFromUrl(userProfileUrl);
 		if (userProfileUrlResponseData) {
 			userProfileUrlResponseData = userProfileUrlResponseData.replace(/(\r\n|\n|\r)/gm, '');
@@ -76,10 +87,10 @@ async function getBlobVideoUrl(el: HTMLVideoElement, article: any, pos: number, 
 				}
 			}
 		}
-		
-		callback(videoUrl ? videoUrl : false);
+
+		callback(videoUrl ? videoUrl : null);
 	} else {
-		callback(false);
+		callback(null);
 	}
 }
 export default getBlobVideoUrl;
