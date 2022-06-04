@@ -36,7 +36,7 @@ if (process.env.DEV) {
 if (program.regexHostname.test(program.hostname)) {
 
     new MediaScanner().execute(program, function (scannerFound: boolean, scannerProgram: Program) {
-        if (process.env.DEV) {
+		if (process.env.DEV) {
             console.log('scannerFound', scannerFound);
         }
 
@@ -44,37 +44,37 @@ if (program.regexHostname.test(program.hostname)) {
         program.foundImage = scannerProgram.foundImage;
         program.foundByModule = scannerProgram.foundByModule;
 
-        if (scannerFound == false) {
-            // Profile page -> instagram.com/instagram/
-            if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
-                new ProfilePageDownload().execute(scannerProgram, function (profilePageDownload: boolean, profilePageDownloadProgram: Program) {
-                    if (process.env.DEV) {
-                        console.log('profilePageDownload', profilePageDownload);
-                    }
+        // if (scannerFound == false) {
+           // Profile page -> instagram.com/instagram/
+            // if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
+                // new ProfilePageDownload().execute(scannerProgram, function (profilePageDownload: boolean, profilePageDownloadProgram: Program) {
+                    // if (process.env.DEV) {
+                        // console.log('profilePageDownload', profilePageDownload);
+                    // }
 
-                    program.foundImage = profilePageDownloadProgram.foundImage;
-                    program.foundProfile = profilePageDownloadProgram.foundProfile;
-                    program.foundVideo = profilePageDownloadProgram.foundVideo;
-                    program.foundByModule = profilePageDownloadProgram.foundByModule;
+                    // program.foundImage = profilePageDownloadProgram.foundImage;
+                    // program.foundProfile = profilePageDownloadProgram.foundProfile;
+                    // program.foundVideo = profilePageDownloadProgram.foundVideo;
+                    // program.foundByModule = profilePageDownloadProgram.foundByModule;
 
-                    if (profilePageDownload == false && program.foundProfile) {
-                        new Modal({
-                            heading: [
-                                `<h5>[instantgram] <span style="float:right">v${profilePageDownloadProgram.VERSION}</span></h5>`
-                            ],
-                            content: [
-                                localize('index#program#profilePageDownload@cannot_download')
-                            ],
-                            contentStyle: 'text-align:center',
-                            buttonList: [{
-                                active: true,
-                                text: 'Ok'
-                            }]
-                        }).open();
-                    }
-                });
-            }
-        }
+                    // if (profilePageDownload == false && program.foundProfile) {
+                        // new Modal({
+                            // heading: [
+                                // `<h5>[instantgram] <span style="float:right">v${profilePageDownloadProgram.VERSION}</span></h5>`
+                            // ],
+                            // content: [
+                                // localize('index#program#profilePageDownload@cannot_download')
+                            // ],
+                            // contentStyle: 'text-align:center',
+                            // buttonList: [{
+                                // active: true,
+                                // text: 'Ok'
+                            // }]
+                        // }).open();
+                    // }
+                // });
+            // }
+        // }
 
         if (program.foundByModule == undefined) {
             if (process.env.DEV) {

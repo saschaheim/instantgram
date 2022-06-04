@@ -8,7 +8,7 @@ import { downloadBulk, getMedia } from '../helpers/bulkDownloader';
 
 export class ProfilePageDownload implements Module {
 
-	private program: Program
+	private program: Program;
 
 	private modal: Modal = new Modal();
 	private continueImageLoading: boolean = true;
@@ -289,16 +289,17 @@ export class ProfilePageDownload implements Module {
 		/* =====================================
 		 =   End of collect media in profile   =
 		 ==================================== */
-		try {
-			// Reference program
+		 // Reference program
 			this.program = program;
 
 			// Check temporary indicator to prevent multiple calls
 			let bulkDownloaderExistsElement = document.getElementById('instantgram-bulk-downloader');
 			let modalExistsElement = document.getElementsByClassName('instantgram-modal-overlay');
 			if (bulkDownloaderExistsElement && modalExistsElement) {
+				console.log('YYYY');
 				return;
 			} else {
+				console.log('sss');
 				// Add temporary indicator to prevent multiple calls
 				let createExistsElement = document.createElement('div');
 				createExistsElement.id = 'instantgram-bulk-downloader';
@@ -346,8 +347,11 @@ export class ProfilePageDownload implements Module {
 
 				callback(false, program);
 			}
+		try {
+			
 		}
 		catch (e) {
+			console.log(e.lineNumber);
 			console.error(this.getName() + '()', `[instantgram] ${program.VERSION}`, e);
 		}
 		/* =====  End of collect media in profile  ======*/
