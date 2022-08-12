@@ -4,9 +4,10 @@ export default {
             'helpers.localize_defaultlang': '[instantgram] set language: ${LANG_DEFAULT} \n For more information about available languages please check http://thinkbig-company.github.io/instantgram',
 
             'index@alert_onlyWorks': 'Works only on instagram.com',
+            'index@profilepage_downloader_disabled': 'Sorry the ProfilePage downloader is currently disabled because instagram changed their system.\n\nMaybe in the future there will be a solution to fix the problem.',
+            
             'index#program@alert_dontFound': 'Did you open any Instagram post? Like for example<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
             'index#program#blob@alert_cannotDownload': 'An error has occurred!<br/><br/>Unfortunately we could not download the video try another one.',
-
             'index#program#profilePageDownload@str_analyzed_from_to': 'Analyzed ${data.size} Posts.',
             'index#program#profilePageDownload@is_private_modal_title': 'Profile private',
             'index#program#profilePageDownload@is_private_modal_content': 'Sorry but this profile is private and can not be downloaded. <br>Try another profile.',
@@ -41,9 +42,10 @@ export default {
             'helpers.localize_defaultlang': '[instantgram] establecer idioma: ${LANG_DEFAULT} \n Para más información sobre los idiomas disponibles, consulte http://thinkbig-company.github.io/instantgram',
 
             'index@alert_onlyWorks': 'Sólo funciona en instagram.com',
+            'index@profilepage_downloader_disabled': 'Lo siento, la descarga de ProfilePage está deshabilitada actualmente porque Instagram cambió su sistema.\n\nTal vez en el futuro haya una solución para solucionar el problema.',
+            
             'index#program@alert_dontFound': '¿Has abierto algún post de Instagram? Como por ejemplo<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
             'index#program#blob@alert_cannotDownload': 'Se ha producido un error.<br/><br/>Desgraciadamente no hemos podido descargar el vídeo, inténtalo con otro.',
-
             'index#program#profilePageDownload@str_analyzed_from_to': 'Había ${data.size} se analizaron los puestos.',
             'index#program#profilePageDownload@is_private_modal_title': 'Profile private',
             'index#program#profilePageDownload@is_private_modal_content': 'Sorry but this profile is private and can not be downloaded. <br>Try another profile.',
@@ -75,9 +77,10 @@ export default {
             'helpers.localize_defaultlang': 'Ausgewählte Sprache: ${LANG_DEFAULT} \n Weitere Informationen zu den unterstützten Sprachen findest du auf http://thinkbig-company.github.io/instantgram',
 
             'index@alert_onlyWorks': 'Funktioniert nur auf instagram.com',
+            'index@profilepage_downloader_disabled': 'Leider ist der ProfilePage-Downloader derzeit deaktiviert, da Instagram sein System geändert hat.\n\nVielleicht gibt es in Zukunft eine Lösung für dieses Problem.',
+            
             'index#program@alert_dontFound': 'Hast du einen Instagram Post geöffnet? Zum Beispiel<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
             'index#program#blob@alert_cannotDownload': 'Es ist ein fehler aufgetreten!<br/><br/>Wir konnten das Video leider nicht Downloaden versuchen Sie ein anderes.',
-
             'index#program#profilePageDownload@str_analyzed_from_to': 'Es wurden ${data.size} Beiträge analysiert.',
             'index#program#profilePageDownload@is_private_modal_title': 'Profil ist Privat',
             'index#program#profilePageDownload@is_private_modal_content': 'Sorry, aber dieses Profil ist privat und kann nicht heruntergeladen werden. <br>Versuchen Sie ein anderes Profil.',
@@ -112,9 +115,10 @@ export default {
             'helpers.localize_defaultlang': '[instantgram] idioma configurado: ${LANG_DEFAULT} \npara mais informações sobre os idiomas suportados, acesse http://thinkbig-company.github.io/instantgram',
 
             'index@alert_onlyWorks': '[instantgram] somente funciona no instagram.com',
+            'index@profilepage_downloader_disabled': 'Lamentamos que o programa de download ProfilePage esteja atualmente desativado porque o programa mudou seu sistema.\n\nTalvez, no futuro, haja uma solução para resolver o problema.',
+            
             'index#program@alert_dontFound': 'ops, você está em algum post do instagram? ex:<br/><div style="text-align:center"><a href="https://www.instagram.com/p/CIGrv1VMBkS/" target="_blank" onMouseOver="this.style.textDecoration=\'underline\'" onMouseOut="this.style.textDecoration=\'initial\'">https://www.instagram.com/p/CIGrv1VMBkS/</a></div>',
             'index#program#blob@alert_cannotDownload': 'Ocorreu um erro!<br/><br/>Não pudemos baixar o vídeo infelizmente tentar outro.',
-
             'index#program#profilePageDownload@str_analyzed_from_to': 'Analyzed ${data.size} Posts.',
             'index#program#profilePageDownload@is_private_modal_title': 'Profile private',
             'index#program#profilePageDownload@is_private_modal_content': 'Sorry but this profile is private and can not be downloaded. <br>Try another profile.',
