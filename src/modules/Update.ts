@@ -1,17 +1,17 @@
-import localize from '../helpers/localize';
-import isSemVer from '../helpers/isSemVer';
-import { Modal } from '../components/Modal';
+import localize from '../helpers/localize'
+import isSemVer from '../helpers/isSemVer'
+import { Modal } from '../components/Modal'
 
 function informOutdatedVersion_In_DevConsole(data: any) {
-    console.warn(localize('modules.update@consoleWarnOutdatedInfo'));
-    console.warn(localize('modules.update@consoleWarnOutdatedInfoVersions').replace('${data.version}', data.version).replace('${data.onlineVersion}', data.onlineVersion));
+    console.warn(localize('modules.update@consoleWarnOutdatedInfo'))
+    console.warn(localize('modules.update@consoleWarnOutdatedInfoVersions').replace('${data.version}', data.version).replace('${data.onlineVersion}', data.onlineVersion))
 }
 
 function determineIfGetUpdateIsNecessary(localVersion: string) {
-    var data = window.localStorage.getItem('instantgram') as string;
+    var data = window.localStorage.getItem('instantgram') as string
 
     if (typeof data === 'string') {
-        let _data = JSON.parse(data) as any;
+        let _data = JSON.parse(data) as any
 
         // Sync installed version with localStorage
         window.localStorage.setItem('instantgram', JSON.stringify({
@@ -19,21 +19,21 @@ function determineIfGetUpdateIsNecessary(localVersion: string) {
             onlineVersion: _data.onlineVersion,
             lastVerification: _data.lastVerification,
             dateExpiration: _data.dateExpiration
-        }));
+        }))
 
         // compare versions cached
         if (isSemVer(_data.onlineVersion, '> ' + _data.version)) {
-            informOutdatedVersion_In_DevConsole(_data);
+            informOutdatedVersion_In_DevConsole(_data)
         }
 
         // compare date now with expiration
         if (Date.now() > _data.dateExpiration) {
-            return true; // must have update new informations from github
+            return true // must have update new informations from github
         } else {
-            return false; // have localStorage and is on the date
+            return false // have localStorage and is on the date
         }
     } else {
-        return true; // dont have localStorage
+        return true // dont have localStorage
     }
 }
 
@@ -41,22 +41,22 @@ async function update(localVersion: string) {
     if (determineIfGetUpdateIsNecessary(localVersion)) {
         console.info(localize('modules.update@determineIfGetUpdateIsNecessary_contacting'))
         await fetch('https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={%22id%22:45423705413,%22first%22:100}').then(function (response) {
-            return response.json();
+            return response.json()
         }).then(function (data) {
-            let changelog = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
-            let onlineVersion = changelog.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0];
-            let limitDate = new Date();
+            let changelog = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text
+            let onlineVersion = changelog.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0]
+            let limitDate = new Date()
             // verify update each 2 days
-            limitDate.setDate(limitDate.getDate() + 2);
+            limitDate.setDate(limitDate.getDate() + 2)
 
             window.localStorage.setItem('instantgram', JSON.stringify({
                 version: localVersion,
                 onlineVersion: onlineVersion,
                 lastVerification: Date.now(),
                 dateExpiration: limitDate.valueOf()
-            }));
+            }))
 
-            console.info(localize('modules.update@determineIfGetUpdateIsNecessary_updated'));
+            console.info(localize('modules.update@determineIfGetUpdateIsNecessary_updated'))
 
             // if instagram post had a update, notify in console and in a modal
             if (isSemVer(onlineVersion, '> ' + localVersion)) {
@@ -77,17 +77,17 @@ async function update(localVersion: string) {
                         active: true,
                         text: 'Ok'
                     }]
-                }).open();
+                }).open()
 
-                let data = JSON.parse(window.localStorage.getItem('instantgram'));
-                informOutdatedVersion_In_DevConsole(data);
+                let data = JSON.parse(window.localStorage.getItem('instantgram'))
+                informOutdatedVersion_In_DevConsole(data)
             } else {
-                console.info(window.localStorage.getItem('instantgram'));
+                console.info(window.localStorage.getItem('instantgram'))
             }
         }).catch((error) => {
-            console.error('Error:', error);
+            console.error('Error:', error)
         })
     }
 }
 
-export default update;
+export default update

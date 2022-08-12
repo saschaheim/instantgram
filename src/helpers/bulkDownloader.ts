@@ -20,11 +20,11 @@ export function LogIGRequest<T extends Function>(method: T): T {
 
 /**
  * Get the media file links for a post
- * @param contentURL The post URL
+ * @param postURL The post URL
  * @param index null for every media, -1 for the image in case of a GraphSidecar any other index for the index of the GraphSidecar
  */
-export async function getMedia(contentURL: string, index: number | null = null): Promise<ContentResponse> {
-    const response = await makeRequest(contentURL);
+export async function getMedia(postURL: string, index: number | null = null): Promise<ContentResponse> {
+    const response = await makeRequest(postURL);
 
     return {
         mediaURL: extractImage(response, index),
@@ -36,10 +36,10 @@ export async function getMedia(contentURL: string, index: number | null = null):
 
 /**
  * Make a request to the instagram API and return the result
- * @param contentURL The api url to query
+ * @param postURL The api url to query
  */
-export const makeRequest = LogIGRequest(async (contentURL: string): Promise<PostItem | ShortcodeMedia> => {
-    const response = await (await fetch(`${contentURL}?__a=1`)).json() as PostQuery | GraphqlQuery;
+export const makeRequest = LogIGRequest(async (postURL: string): Promise<PostItem | ShortcodeMedia> => {
+    const response = await (await fetch(`${postURL}?__a=1`)).json() as PostQuery | GraphqlQuery;
     if ('graphql' in response && response.graphql) {
         return response.graphql.shortcode_media;
     }

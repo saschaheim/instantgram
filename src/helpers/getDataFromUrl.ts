@@ -1,7 +1,7 @@
 export default async function getDataFromUrl(url: string) {
-    let response = await fetch(url);
+    let response = await fetch(url)
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
     }
-    return await response.text();
+    return await response.text()
 }
