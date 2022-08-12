@@ -48,12 +48,14 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
 
         if (scannerFound == false) {
             if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
+                program.foundByModule = 'CUSTOM'
+
                 new Modal({
                     heading: [
                         `<h5>[instantgram] ProfilePage downloader <span style="float:right">v${program.VERSION}</span></h5>`
                     ],
                     content: [
-                        'Sorry the ProfilePage downloader is currently disabled because instagram changed their system.\n\nHopefully in the future exists a fix.'
+                        localize('index@profilepage_downloader_disabled')
                     ],
                     contentStyle: 'text-align:center',
                     buttonList: [{
