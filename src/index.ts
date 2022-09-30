@@ -105,6 +105,11 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
             }
         }
     })
+
+    // Check everytime for an update on calling this
+    if (!process.env.DEV) {
+        Update(program.VERSION)
+    }
 } else {
     new Modal({
         heading: [
@@ -119,9 +124,5 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
             text: 'Ok'
         }]
     }).open()
-}
-// Check everytime for an update on calling this
-if (!process.env.DEV) {
-    Update(program.VERSION)
 }
 /* =====  End of Program  ======*/
