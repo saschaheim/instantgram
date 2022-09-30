@@ -5,10 +5,16 @@ import { Modal } from './components/Modal'
 import Update from './modules/Update'
 import localize from './helpers/localize'
 
+import { detect } from "detect-browser"
+// Init browser detection
+const browser = detect()
+
 console.clear()
 
 const program: Program = {
     VERSION: process.env.VERSION as string,
+
+    browser: browser,
 
     hostname: window.location.hostname,
     path: window.location.pathname,
@@ -27,6 +33,12 @@ const program: Program = {
 
 if (process.env.DEV) {
     console.info(['Developer Mode Caution!', program])
+
+    if (program.browser) {
+        console.info(['Browser Name', program.browser.name])
+        console.info(['Browser Version', program.browser.version])
+        console.info(['Browser OS', program.browser.os])
+    }
 }
 
 /* ===============================

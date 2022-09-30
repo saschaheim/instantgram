@@ -21,9 +21,8 @@ export class PostScanner implements Module {
 
             let mediaEl = null
             let mediaType: MediaType = MediaType.UNDEFINED
-            let mediaURL: string = null
 
-            let selectedCarouselIndex: number
+            let selectedCarouselMediaSlideIndex: number
             let isLastMedia: boolean = false
 
             // Container
@@ -35,8 +34,8 @@ export class PostScanner implements Module {
             // Media selector
             let mediaSelector: string = "._aagv"
 
-            let carouselLeftButtonSelector: string = "._aahh"
-            let carouselRightButtonSelector: string = "._aahi"
+            let carouselLeftButtonSelector: string = "._9zm0"
+            let carouselRightButtonSelector: string = "._9zm2"
 
             // Scanner begins
             if (isModal) {
@@ -50,209 +49,333 @@ export class PostScanner implements Module {
                 isCarousel = $article.querySelectorAll(carouselLeftButtonSelector).length !== 0 || $article.querySelectorAll(carouselRightButtonSelector).length !== 0
             }
 
-            console.log(["$article", $article])
-
             /* Series images in a modal */
             if (isCarousel) {
-                let multiMedia: any = Array.from(
+                let carouselMediaSlideElements: any = Array.from(
                     ($article as any).querySelectorAll(
                         "div > :first-child > :first-child > :first-child > ul li"
                     )
                 ).filter((el: any) => el.firstChild != null && el.classList.length > 0)
 
-                if (multiMedia != null && multiMedia.length > 0) {
-                    mediaEl = null
-                    mediaURL = null
-
-                    if (process.env.DEV) {
-                        console.log(["multiMedia", multiMedia])
-                        console.log(["multiMedia.length", multiMedia.length])
-                    }
-
-                    let carouselControlsArray: any = ($article as HTMLElement).querySelectorAll("article > :first-child > :first-child > :first-child > div:nth-child(2) > div")
+                if (carouselMediaSlideElements != null && carouselMediaSlideElements.length > 0) {
+                    let carouselControlsArray: any = Array.from(
+                        ($article as HTMLElement).querySelectorAll(
+                            "article > :first-child > :first-child > :first-child > div:nth-child(2) > div"
+                        )
+                    ).filter((el: any) => el.classList.length <= 2)
 
                     // Detect current image index of carousel
                     for (let i = 0; i < carouselControlsArray.length; i++) {
-                        if (carouselControlsArray[i].classList.length >= 2) {
-                            selectedCarouselIndex = i
+                        if (carouselControlsArray[i].classList.length == 2) {
+                            selectedCarouselMediaSlideIndex = i
                         }
 
                         // Is last media
-                        if (selectedCarouselIndex == carouselControlsArray.length - 1) {
+                        if (selectedCarouselMediaSlideIndex == carouselControlsArray.length - 1) {
                             isLastMedia = true
                             break
                         }
                     }
 
-                    selectedCarouselIndex++
+                    selectedCarouselMediaSlideIndex++
 
                     if (process.env.DEV) {
                         console.log(["carouselControlsArray", carouselControlsArray])
                         console.log(["carouselControlsArray.length", carouselControlsArray.length])
-                        console.log(["selectedCarouselIndex", selectedCarouselIndex])
+                        console.log(["selectedCarouselMediaSlideIndex", selectedCarouselMediaSlideIndex])
                         console.log(["isLastMedia", isLastMedia])
                     }
 
-                    for (let i = 0; i < multiMedia.length; i++) {
-                        if (multiMedia.length == 2) {
+                    let M = carouselMediaSlideElements
+                    let S = selectedCarouselMediaSlideIndex
+                    for (let i = 0; i < M.length; i++) {
+                        if (M.length == 2) {
                             if (isLastMedia) {
-                                mediaEl = multiMedia[1]
+                                mediaEl = M[1]
                             } else {
-                                mediaEl = multiMedia[0]
+                                mediaEl = M[0]
                             }
-                        } else if (multiMedia.length == 3) {
+                        } else if (M.length == 3) {
                             if (isLastMedia) {
-                                mediaEl = multiMedia[2]
+                                mediaEl = M[2]
                             } else {
-                                mediaEl = multiMedia[1]
-                                console.log('ff')
-                                console.log(mediaEl);
-
+                                mediaEl = M[1]
                             }
-                        } else if (multiMedia.length == 4) {
+                        } else if (M.length == 4) {
                             if (isLastMedia) {
-                                mediaEl = multiMedia[2]
+                                mediaEl = M[2]
                             } else {
                                 // Dont mess with me Instagram!!!
                                 if (isModal && Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0) < 445) {
                                     switch (carouselControlsArray.length) {
                                         case 4:
-                                            if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 2) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (S == 3) {
+                                                mediaEl = M[Math.ceil(M.length / 2)]
+                                            } else if (S == 2) {
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
                                             }
                                             break
                                         case 5:
-                                            if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 6:
-                                            if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 2) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (S == 4) {
+                                                mediaEl = M[Math.ceil(M.length / 2)]
+                                            } else if (S == 3) {
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                            } else if (S == 2) {
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                                mediaEl = M[Math.ceil(M.length / 2)]
                                             }
                                             break
                                         case 7:
-                                            if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 8:
-                                            if (selectedCarouselIndex == 7) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 6) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 10:
-                                            if (selectedCarouselIndex == 9) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 8) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 9) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 9) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                     }
                                 } else {
                                     switch (carouselControlsArray.length) {
                                         case 4:
-                                            if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 2) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (S == 3) {
+                                                mediaEl = M[Math.ceil(M.length / 2)]
+                                            } else if (S == 2) {
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                mediaEl = M[Math.ceil(M.length / 2) - 1]
                                             }
                                             break
                                         case 5:
-                                            if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 6:
-                                            if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 2) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 2) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                                if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 2) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                }
                                             }
                                             break
                                         case 7:
-                                            if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 8:
-                                            if (selectedCarouselIndex == 6) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                         case 10:
-                                            if (selectedCarouselIndex == 8) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 5) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
-                                            } else if (selectedCarouselIndex == 4) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
-                                            } else if (selectedCarouselIndex == 3) {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2)]
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 9) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             } else {
-                                                mediaEl = multiMedia[Math.ceil(multiMedia.length / 2) - 1]
+                                                if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
                                             }
                                             break
                                     }

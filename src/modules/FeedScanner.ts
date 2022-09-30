@@ -25,9 +25,6 @@ export class FeedScanner implements Module {
       let selectedCarouselMediaSlideIndex: number
       let isLastMedia: boolean = false
 
-      // Container
-      let $container = document.querySelector("main")
-
       // Selected Article
       let $article: Element
 
@@ -37,20 +34,16 @@ export class FeedScanner implements Module {
       // Media selector
       let mediaSelector: string = "._aagv"
 
-      let carouselLeftButtonSelector: string = "._aahh"
-      let carouselRightButtonSelector: string = "._aahi"
+      let carouselLeftButtonSelector: string = "._9zm0"
+      let carouselRightButtonSelector: string = "._9zm2"
 
+      // Scanner begins
       if (mediaEl == null) {
-        $container = document.querySelector("main section > div:first-child > div:last-child > div:first-child > div:first-child")
-        //$articles = $container.querySelectorAll("article")
         $articles = document.getElementsByTagName("article")
 
         let mediaElInfos: any[] = []
         for (let i1 = 0; i1 < $articles.length; i1++) {
           let isCarousel = $articles[i1].querySelector(carouselLeftButtonSelector) !== null || $articles[i1].querySelector(carouselRightButtonSelector) !== null
-
-          //console.log([`article ${i1 + 1}`, $articles[i1]])
-          //console.log([`isCarousel ${i1 + 1}`, isCarousel])
 
           let mediaEl: any
           if (isCarousel) {
@@ -86,11 +79,15 @@ export class FeedScanner implements Module {
         ).filter((el: any) => el.firstChild != null && el.classList.length > 0)
 
         if (carouselMediaSlideElements != null && carouselMediaSlideElements.length > 0) {
-          let carouselControlsArray: any = ($article as HTMLElement).querySelectorAll(":first-child > div:nth-child(2) > div > div:nth-child(2) > div")
+          let carouselControlsArray: any = Array.from(
+            ($article as HTMLElement).querySelectorAll(
+              ":first-child > div:nth-child(2) > div > div:nth-child(2) > div"
+            )
+          ).filter((el: any) => el.classList.length <= 2)
 
           // Detect current image index of carousel
           for (let i = 0; i < carouselControlsArray.length; i++) {
-            if (carouselControlsArray[i].classList.length >= 2) {
+            if (carouselControlsArray[i].classList.length == 2) {
               selectedCarouselMediaSlideIndex = i
             }
 
@@ -140,60 +137,157 @@ export class FeedScanner implements Module {
                     }
                     break
                   case 5:
-                    if (S == 4) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 3) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
+                    if (program.browser.name == "firefox") {
+                      if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     } else {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     }
                     break
                   case 6:
-                    if (S == 4) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
-                    } else if (S == 3) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 2) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
+                    if (program.browser.name == "firefox") {
+                      if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 2) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      }
                     } else {
-                      mediaEl = M[Math.ceil(M.length / 2)]
+                      if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 2) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      }
                     }
                     break
                   case 7:
-                    if (S == 5) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 4) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
-                    } else if (S == 3) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
+                    if (program.browser.name == "firefox") {
+                      if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     } else {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     }
                     break
                   case 8:
-                    if (S == 6) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
-                    } else if (S == 5) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 4) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
-                    } else if (S == 3) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
+                    if (program.browser.name == "firefox") {
+                      if (S == 7) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 6) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     } else {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      if (S == 6) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
+                    }
+                    break
+                  case 9:
+                    if (program.browser.name == "firefox") {
+                      if (S == 7) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 6) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
+                    } else {
+                      if (S == 6) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     }
                     break
                   case 10:
-                    if (S == 8) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 5) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
-                    } else if (S == 4) {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
-                    } else if (S == 3) {
-                      mediaEl = M[Math.ceil(M.length / 2)]
+                    if (program.browser.name == "firefox") {
+                      if (S == 9) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 8) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 7) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     } else {
-                      mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      if (S == 8) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 5) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else if (S == 4) {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      } else if (S == 3) {
+                        mediaEl = M[Math.ceil(M.length / 2)]
+                      } else {
+                        mediaEl = M[Math.ceil(M.length / 2) - 1]
+                      }
                     }
                     break
                 }

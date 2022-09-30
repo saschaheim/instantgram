@@ -1,6 +1,8 @@
 export type Program = {
   VERSION: string
 
+  browser: any
+
   hostname: string
   path: string
 
