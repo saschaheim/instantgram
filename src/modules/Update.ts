@@ -39,15 +39,16 @@ function determineIfGetUpdateIsNecessary(localVersion: string) {
 
 async function update(localVersion: string) {
     if (determineIfGetUpdateIsNecessary(localVersion)) {
-        console.info(localize('modules.update@determineIfGetUpdateIsNecessary_contacting'))
         await fetch('https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={%22id%22:45423705413,%22first%22:100}').then(function (response) {
             return response.json()
         }).then(function (data) {
             let changelog = data.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text
             let onlineVersion = changelog.match(/(\*|\d+(\.\d+){0,2}(\.\*)?)+/gm)[0]
-            let limitDate = new Date()
+
             // verify update each 2 days
-            limitDate.setDate(limitDate.getDate() + 2)
+            let limitDate = new Date()
+            //limitDate.setDate(limitDate.getDate() + 2)
+            limitDate.setTime(limitDate.getTime() + 6 * 60 * 60 * 1000)
 
             window.localStorage.setItem('instantgram', JSON.stringify({
                 version: localVersion,

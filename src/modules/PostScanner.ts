@@ -80,6 +80,7 @@ export class PostScanner implements Module {
                     selectedCarouselMediaSlideIndex++
 
                     if (process.env.DEV) {
+                        console.log(["isCarousel", isCarousel])
                         console.log(["carouselControlsArray", carouselControlsArray])
                         console.log(["carouselControlsArray.length", carouselControlsArray.length])
                         console.log(["selectedCarouselMediaSlideIndex", selectedCarouselMediaSlideIndex])
@@ -105,7 +106,7 @@ export class PostScanner implements Module {
                             if (isLastMedia) {
                                 mediaEl = M[2]
                             } else {
-                                // Dont mess with me Instagram!!!
+                                // Dont mess with me Instagram!!!                                
                                 if (isModal && Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0) < 445) {
                                     switch (carouselControlsArray.length) {
                                         case 4:
@@ -262,7 +263,7 @@ export class PostScanner implements Module {
                                                 if (S == 4) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 3) {
-                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 }
@@ -271,7 +272,7 @@ export class PostScanner implements Module {
                                         case 6:
                                             if (program.browser.name == "firefox") {
                                                 if (S == 4) {
-                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 3) {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else if (S == 2) {
@@ -300,7 +301,7 @@ export class PostScanner implements Module {
                                                 } else if (S == 4) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 3) {
-                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 }
@@ -321,13 +322,13 @@ export class PostScanner implements Module {
                                                 if (S == 7) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 6) {
-                                                    mediaEl = M[Math.ceil(M.length / 2)]
-                                                } else if (S == 5) {
-                                                    mediaEl = M[Math.ceil(M.length / 2)]
-                                                } else if (S == 4) {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
-                                                } else if (S == 3) {
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 4) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 }
@@ -345,16 +346,30 @@ export class PostScanner implements Module {
                                                 }
                                             }
                                             break
-                                        case 10:
+                                        case 9:
                                             if (program.browser.name == "firefox") {
                                                 if (S == 9) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 8) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 7) {
-                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
-                                                } else if (S == 6) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
+                                            } else {
+                                                if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else if (S == 5) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 4) {
@@ -364,15 +379,40 @@ export class PostScanner implements Module {
                                                 } else {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 }
-                                            } else {
-                                                if (S == 8) {
+                                            }
+                                            break
+                                        case 10:
+                                            if (program.browser.name == "firefox") {
+                                                if (S == 9) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 6) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 5) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 4) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                }
+                                            } else {
+                                                if (S == 9) {
+                                                    mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 8) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
+                                                } else if (S == 7) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else if (S == 5) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
                                                 } else if (S == 4) {
-                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
-                                                } else if (S == 3) {
                                                     mediaEl = M[Math.ceil(M.length / 2)]
+                                                } else if (S == 3) {
+                                                    mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 } else {
                                                     mediaEl = M[Math.ceil(M.length / 2) - 1]
                                                 }

@@ -5,7 +5,7 @@ import { PostScanner } from "./PostScanner"
 import { StoryScanner } from "./StoryScanner"
 import { Modal } from "../components/Modal"
 import { MediaType } from "../model/mediaType"
-import getBlobVideoUrl from "../helpers/getBlobVideoUrl"
+import getVideoUrl from "../helpers/getVideoUrl"
 import getHighestResImg from "../helpers/getHighestResImg"
 import getPath from "../helpers/getPath"
 import localize from "../helpers/localize"
@@ -70,7 +70,7 @@ export class MediaScanner implements Module {
         }
 
         if (program.regexPostPath.test(program.path)) {
-          new PostScanner().execute(program, isModal, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {            
+          new PostScanner().execute(program, isModal, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
             mediaObj.mediaEl = foundMediaElem
             mediaObj.mediaType = foundMediaType
           })
@@ -110,76 +110,42 @@ export class MediaScanner implements Module {
           }
 
           if (mediaURL != null && mediaURL.length > 10) {
-            if (mediaURL.indexOf("blob:") !== -1) {
-              const that = this
+            let that = this
 
+            getVideoUrl(mediaObj.mediaEl, function (callbackData: any) {
               found = true
               program.foundImage = false
               program.foundVideo = true
               program.foundByModule = that.getName()
 
-              this.modal.heading = [
-                `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`,
-              ]
-              this.modal.content = [
-                "<p style='margin:0;text-align:center'>" +
-                "<img src='https://i.giphy.com/SolJ197tbbfTqcdbzq.gif' alt='Loading' />" +
-                "</p>",
-                "<h4 style='font-weight:bold;text-align:center'>" +
-                localize("modules.modal@isLoading") +
-                "<span id='loading_dot' style='position:fixed'></span></h4>",
-              ]
-              this.modal.open()
+              let videoURL
+              if (typeof callbackData === 'string' || callbackData instanceof String) {
+                videoURL = callbackData
+              } else {
+                videoURL = callbackData[0].baseUrl && callbackData[0].baseUrl.length > 80 ? callbackData[0].baseUrl : null
+              }
 
-              setTimeout(function () {
-                //that.modal.close()
+              if (videoURL) {
+                callback(found, videoURL, program)
+              } else {
+                that.modal.heading = [
+                  `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`,
+                ]
+                that.modal.content = [
+                  localize("index#program#blob@alert_cannotDownload"),
+                ]
+                that.modal.contentStyle = "text-align:center"
+                that.modal.buttonList = [
+                  {
+                    active: true,
+                    text: "Ok",
+                  },
+                ]
+                that.modal.open()
 
-                getBlobVideoUrl(mediaObj.mediaEl, $articles, selectedCarouselIndex,
-                  function (scrapedBlobVideoUrl: string) {
-                    //clearInterval(loadingDots)
-
-                    if (scrapedBlobVideoUrl) {
-                      that.modal.close()
-
-                      /* Fix error network error since mai 2021 cannot download */
-                      let _newVideoUrl = "https://scontent.cdninstagram.com" + getPath(scrapedBlobVideoUrl, "unknown")
-
-                      callback(found, _newVideoUrl, program)
-                    } else {
-                      that.modal.heading = [
-                        `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`,
-                      ]
-                      that.modal.content = [
-                        localize("index#program#blob@alert_cannotDownload"),
-                      ]
-                      that.modal.contentStyle = "text-align:center"
-                      that.modal.buttonList = [
-                        {
-                          active: true,
-                          text: "Ok",
-                        },
-                      ]
-                      that.modal.open()
-
-                      callback(found, null, program)
-                    }
-                  }
-                )
-              }, 500)
-            } else {
-              // Fix url timestamp error or signature mismatch
-              mediaURL = mediaURL.replace("amp", "&")
-
-              found = true
-              program.foundImage = false
-              program.foundVideo = true
-              program.foundByModule = this.getName()
-
-              /* Fix error network error since mai 2021 cannot download */
-              let _newVideoUrl = "https://scontent.cdninstagram.com" + getPath(mediaURL, "unknown")
-
-              callback(found, _newVideoUrl, program)
-            }
+                callback(found, null, program)
+              }
+            })
           } else {
             found = false
             program.foundImage = false

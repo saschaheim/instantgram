@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v12.1.0 :rocket: Launch to the moon
-![GitHub release](https://img.shields.io/badge/release-v12.1.0-green)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2022.10.28 :rocket: Launch into the sun
+![GitHub release](https://img.shields.io/badge/release-v2022.10.28-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -39,6 +39,10 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v2022.10.28 - [instangram] Support for the latest backend version of instagram. \
+New versioning.
+Fixed stories video detection. #23
+Fixed wrong order capturing. #24
 - v12.1.0 - [instangram] Support for the latest backend version of instagram.
 - v12.0.0 - [instangram] Rewrite of instantgram to support last backend of insta. \
 Profile page bulk downloader dropped because insta deleted all api around them.

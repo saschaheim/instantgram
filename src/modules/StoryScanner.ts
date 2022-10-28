@@ -39,7 +39,7 @@ export class StoryScanner implements Module {
               console.log(["isStoryVideo", isVideo])
             }
 
-            if (isVideo && isImage) {
+            if (isVideo) {
               // Set media type
               mediaType = MediaType.Video
 
