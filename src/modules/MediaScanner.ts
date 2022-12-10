@@ -34,11 +34,6 @@ export class MediaScanner implements Module {
       }
       let mediaURL: string = null
 
-      let selectedCarouselIndex: number
-
-      // Articles
-      var $articles: Element | NodeListOf<Element>
-
       // Handle specific modules
       if (program.regexProfilePath.test(program.path)) {
         found = false
@@ -55,6 +50,10 @@ export class MediaScanner implements Module {
         new StoryScanner().execute(program, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
           mediaObj.mediaEl = foundMediaElem
           mediaObj.mediaType = foundMediaType
+
+          if (_scannerFound) {
+            program.foundByModule = new StoryScanner().getName()
+          }
         })
       }
 
@@ -66,6 +65,10 @@ export class MediaScanner implements Module {
           new FeedScanner().execute(program, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
             mediaObj.mediaEl = foundMediaElem
             mediaObj.mediaType = foundMediaType
+
+            if (_scannerFound) {
+              program.foundByModule = new FeedScanner().getName()
+            }
           })
         }
 
@@ -73,6 +76,10 @@ export class MediaScanner implements Module {
           new PostScanner().execute(program, isModal, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
             mediaObj.mediaEl = foundMediaElem
             mediaObj.mediaType = foundMediaType
+
+            if (_scannerFound) {
+              program.foundByModule = new PostScanner().getName()
+            }
           })
         }
       }
@@ -89,14 +96,12 @@ export class MediaScanner implements Module {
             found = true
             program.foundImage = true
             program.foundVideo = false
-            program.foundByModule = this.getName()
 
             callback(found, mediaURL, program)
           } else {
             found = false
             program.foundImage = false
             program.foundVideo = false
-            program.foundByModule = undefined
 
             callback(found, null, program)
           }
@@ -116,7 +121,6 @@ export class MediaScanner implements Module {
               found = true
               program.foundImage = false
               program.foundVideo = true
-              program.foundByModule = that.getName()
 
               let videoURL
               if (typeof callbackData === 'string' || callbackData instanceof String) {
@@ -124,6 +128,9 @@ export class MediaScanner implements Module {
               } else {
                 videoURL = callbackData[0].baseUrl && callbackData[0].baseUrl.length > 80 ? callbackData[0].baseUrl : null
               }
+
+              /* Fix error network error since mai 2021 cannot download */
+              videoURL = "https://scontent.cdninstagram.com" + getPath(videoURL, "unknown")
 
               if (videoURL) {
                 callback(found, videoURL, program)

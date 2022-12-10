@@ -23,9 +23,10 @@ export class StoryScanner implements Module {
       let $container = document.querySelector("main")
 
       // Scanner begins
-      $container = document.querySelector("body > div")
+      $container = document.querySelector("body > div:nth-child(2)")
 
       let storys = $container.querySelectorAll("section > div > div > div")
+
       for (let i = 0; i < (<any>storys).length; i++) {
         let scaleX = Number((Math.round((storys[i].getBoundingClientRect().width / (<HTMLElement>storys[i]).offsetWidth) * 100) / 100).toFixed(2))
 
@@ -57,6 +58,10 @@ export class StoryScanner implements Module {
             break
           }
         }
+      }
+
+      if (mediaType == MediaType.Image || mediaType == MediaType.Video && mediaEl) {
+        found = true
       }
 
       callback(found, mediaEl, mediaType, program)

@@ -476,6 +476,10 @@ export class PostScanner implements Module {
                 }
             }
 
+            if (mediaType == MediaType.Image || mediaType == MediaType.Video && mediaEl) {
+                found = true
+            }
+
             callback(found, mediaEl, mediaType, program)
         } catch (e) {
             console.error(this.getName() + "()", `[instantgram] ${program.VERSION}`, e)
