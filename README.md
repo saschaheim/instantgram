@@ -1,4 +1,4 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2022.12.10 :rocket: Launch into the sun
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2022.12.10 :love_you_gesture: Service update
 ![GitHub release](https://img.shields.io/badge/release-v2022.12.10-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
