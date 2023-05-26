@@ -94,7 +94,10 @@ export class ReelsScanner implements Module {
 
             // Scanner begins
             if (mediaEl == null) {
-                $articles = document.querySelectorAll('section > main > div > div:has(*)')
+                $articles = document.querySelectorAll('section > main > div > div')
+                $articles = Array.from($articles).filter(function (element) {
+                    return (<any>element).children.length > 0
+                })
 
                 let mediaElInfos: any[] = []
                 // Find needed post
