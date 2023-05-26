@@ -16,7 +16,7 @@ module.exports = function (env) {
             path: path.resolve(__dirname, 'dist'),
         },
         mode: DEV ? 'development' : 'production',
-        devtool: DEV ? 'eval-cheap-module-source-map' : 'nosources-source-map',
+        devtool: DEV ? 'cheap-module-source-map' : 'nosources-source-map',
         plugins: [
             new webpack.DefinePlugin({
                 'process.env.VERSION': JSON.stringify(pkg.version),
@@ -31,7 +31,7 @@ module.exports = function (env) {
                     parallel: true,
                     extractComments: false,
                     terserOptions: {
-                        compress: { drop_console: true },
+                        compress: { drop_console: false },
                         output: { comments: false },
                         sourceMap: true,
                         module: true,

@@ -1,7 +1,7 @@
 import { Program } from './App'
 import { MediaScanner } from './modules/MediaScanner'
 import { Modal } from './components/Modal'
-import Update from './modules/Update'
+import update from './modules/Update'
 import localize from './helpers/localize'
 
 import { detect } from "detect-browser"
@@ -96,7 +96,7 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
 
     // Check everytime for an update on calling this
     if (!process.env.DEV) {
-        Update(program.VERSION)
+        update(program.VERSION)
     }
 } else {
     new Modal({

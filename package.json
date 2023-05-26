@@ -15,7 +15,7 @@
     "start": "npm run dev",
     "dev:watch": "nodemon --watch dist/main.js --exec \"npm run build:release:dev\"",
     "dev:webpack": "webpack -w --env goal=dev --mode development",
-    "build:webpack": "webpack --mode production --devtool false",
+    "build:webpack": "webpack --mode production",
     "build:pages": "node \"src\\_langs\\metalsmith.js\"",
     "build:bookmarklet": "node scripts/bookmarkletify.js",
     "build:bookmarklet:dev": "node scripts/bookmarkletify.js --dev",
