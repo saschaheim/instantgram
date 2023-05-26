@@ -1,18 +1,13 @@
 import { Program } from "../App"
 import { Module } from "./Module"
-import { FeedScanner } from "./FeedScanner"
-import { PostScanner } from "./PostScanner"
-import { StoryScanner } from "./StoryScanner"
-import { Modal } from "../components/Modal"
+import { cssCarouselSlider, cssGeneral, jsCarouselSlider } from "../components/Interconnect"
 import { MediaType } from "../model/mediaType"
-import getVideoUrl from "../helpers/getVideoUrl"
-import getHighestResImg from "../helpers/getHighestResImg"
-import getPath from "../helpers/getPath"
-import localize from "../helpers/localize"
+import { FeedScanner } from "./FeedScanner"
+import { PostReelScanner } from "./PostReelScanner"
+import { ReelsScanner } from "./ReelsScanner"
+import { StoriesScanner } from "./StoriesScanner"
 
 export class MediaScanner implements Module {
-  private modal: Modal = new Modal()
-
   public getName(): string {
     return "MediaScanner"
   }
@@ -22,23 +17,80 @@ export class MediaScanner implements Module {
     let found = false
 
     /* =====================================
-     =         MediaScanner          =
+     =         MediaScanner                =
      ==================================== */
     try {
       // Define default variables
-      let isModal: boolean = false
-
       let mediaObj = {
+        mediaType: MediaType.UNDEFINED,
         mediaEl: undefined,
-        mediaType: MediaType.UNDEFINED
+        mediaURL: undefined,
       }
-      let mediaURL: string = null
+
+      // Scanner begins
+      // Cancel execution when modal already opened
+      const instantgramRunning = document.querySelector('div.instantgram-modal-overlay.instantgram-modal-visible.instantgram-modal-show')
+      if (instantgramRunning) {
+        let iModal: any = document.querySelector('.instantgram-modal')
+        iModal.style.animation = 'horizontal-shaking 0.25s linear infinite'
+
+        // Stop shaking
+        setTimeout(function () {
+          iModal.style.animation = null
+        }, 1000)
+        return
+      }
+      // Remove previous executed bookmarklet stuff
+      const dataScripts = document.querySelectorAll('#cssGeneral, #cssCarouselSlider, #jsCarouselSlider, #jsDataDownload')
+      // loop through each element and remove any inline style attributes or class names
+      dataScripts.forEach((el) => {
+        el.remove()
+      })
+
+      // Create new needed stuff
+      const generalStyle = document.createElement("style")
+      generalStyle.id = "cssGeneral"
+      // Set the innerHTML property to the JavaScript code
+      generalStyle.innerHTML = cssGeneral
+      // Append the script element to the document
+      document.body.appendChild(generalStyle)
+
+      const carouselSliderStyle = document.createElement("style")
+      carouselSliderStyle.id = "cssCarouselSlider"
+      // Set the innerHTML property to the JavaScript code
+      carouselSliderStyle.innerHTML = cssCarouselSlider
+      // Append the script element to the document
+      document.body.appendChild(carouselSliderStyle)
+
+      const carouselSliderScript = document.createElement("script")
+      carouselSliderScript.id = "jsCarouselSlider"
+      // Set the innerHTML property to the JavaScript code
+      carouselSliderScript.innerHTML = jsCarouselSlider
+      // Append the script element to the document
+      document.body.appendChild(carouselSliderScript)
+
+      const dataDownloadScript = document.createElement("script")
+      dataDownloadScript.id = "jsDataDownload"
+      // Set the innerHTML property to the JavaScript code
+      dataDownloadScript.innerHTML = `async function toDataURL(url) {
+          const blob = await fetch(url).then(res => res.blob());
+          return URL.createObjectURL(blob);
+      }
+      async function downloadFromHref(url, filename) {
+          const a = document.createElement("a");
+          a.href = await toDataURL(url);
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+      }`
+      // Append the script element to the document
+      document.body.appendChild(dataDownloadScript)
 
       // Handle specific modules
+      // Detect profile root path
       if (program.regexProfilePath.test(program.path)) {
         found = false
-        program.foundImage = false
-        program.foundVideo = false
         program.foundByModule = undefined
 
         callback(found, null, program)
@@ -47,131 +99,56 @@ export class MediaScanner implements Module {
 
       // Detect story video/image
       if (program.regexStoriesURI.test(program.path)) {
-        new StoryScanner().execute(program, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
-          mediaObj.mediaEl = foundMediaElem
+        new StoriesScanner().execute(program, function (_scannerFound: boolean, foundMediaType: MediaType, foundMediaUrl: string, _scannerProgram: Program) {
           mediaObj.mediaType = foundMediaType
+          mediaObj.mediaURL = foundMediaUrl
 
           if (_scannerFound) {
-            program.foundByModule = new StoryScanner().getName()
+            found = true
+            program.foundByModule = new StoriesScanner().getName()
           }
         })
       }
 
       if (mediaObj.mediaEl == null) {
-        // Detect modal post
-        isModal = document.querySelectorAll('[role="dialog"]').length > 0
-
         if (program.regexRootPath.test(program.path)) {
-          new FeedScanner().execute(program, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
-            mediaObj.mediaEl = foundMediaElem
+          new FeedScanner().execute(program, function (_scannerFound: boolean, foundMediaType: MediaType, foundMediaUrl: string, _scannerProgram: Program) {
             mediaObj.mediaType = foundMediaType
+            mediaObj.mediaURL = foundMediaUrl
 
             if (_scannerFound) {
+              found = true
               program.foundByModule = new FeedScanner().getName()
             }
           })
         }
 
-        if (program.regexPostPath.test(program.path)) {
-          new PostScanner().execute(program, isModal, function (_scannerFound: boolean, foundMediaElem: any, foundMediaType: MediaType, _scannerProgram: Program) {
-            mediaObj.mediaEl = foundMediaElem
+        if (program.regexReelsURI.test(program.path)) {
+          new ReelsScanner().execute(program, function (_scannerFound: boolean, foundMediaType: MediaType, foundMediaUrl: string, _scannerProgram: Program) {
             mediaObj.mediaType = foundMediaType
+            mediaObj.mediaURL = foundMediaUrl
 
             if (_scannerFound) {
-              program.foundByModule = new PostScanner().getName()
+              found = true
+              program.foundByModule = new ReelsScanner().getName()
+            }
+          })
+        }
+
+        if (program.regexPostPath.test(program.path) || program.regexReelURI.test(program.path)) {
+          new PostReelScanner().execute(program, function (_scannerFound: boolean, foundMediaType: MediaType, foundMediaUrl: string, _scannerProgram: Program) {
+            mediaObj.mediaType = foundMediaType
+            mediaObj.mediaURL = foundMediaUrl
+
+            if (_scannerFound) {
+              found = true
+              program.foundByModule = new PostReelScanner().getName()
             }
           })
         }
       }
 
-      switch (mediaObj.mediaType) {
-        case MediaType.Image:
-          // Get highest image if possible          
-          var helperResult = await getHighestResImg(mediaObj.mediaEl)
-          if (typeof helperResult === "string") {
-            mediaURL = helperResult
-          }
-
-          if (mediaURL != null && mediaURL.length > 10) {
-            found = true
-            program.foundImage = true
-            program.foundVideo = false
-
-            callback(found, mediaURL, program)
-          } else {
-            found = false
-            program.foundImage = false
-            program.foundVideo = false
-
-            callback(found, null, program)
-          }
-          break
-        case MediaType.Video:
-          if (typeof (mediaObj.mediaEl as HTMLVideoElement).src === "undefined" || (mediaObj.mediaEl as HTMLVideoElement).src.length == 0) {
-            mediaObj.mediaEl = mediaObj.mediaEl.querySelectorAll("source")
-            mediaURL = (mediaObj.mediaEl as HTMLVideoElement)[0].src
-          } else {
-            mediaURL = (mediaObj.mediaEl as HTMLVideoElement).src
-          }
-
-          if (mediaURL != null && mediaURL.length > 10) {
-            let that = this
-
-            getVideoUrl(mediaObj.mediaEl, function (callbackData: any) {
-              found = true
-              program.foundImage = false
-              program.foundVideo = true
-
-              let videoURL
-              if (typeof callbackData === 'string' || callbackData instanceof String) {
-                videoURL = callbackData
-              } else {
-                videoURL = callbackData[0].baseUrl && callbackData[0].baseUrl.length > 80 ? callbackData[0].baseUrl : null
-              }
-
-              /* Fix error network error since mai 2021 cannot download */
-              videoURL = "https://scontent.cdninstagram.com" + getPath(videoURL, "unknown")
-
-              if (videoURL) {
-                callback(found, videoURL, program)
-              } else {
-                that.modal.heading = [
-                  `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`,
-                ]
-                that.modal.content = [
-                  localize("index#program#blob@alert_cannotDownload"),
-                ]
-                that.modal.contentStyle = "text-align:center"
-                that.modal.buttonList = [
-                  {
-                    active: true,
-                    text: "Ok",
-                  },
-                ]
-                that.modal.open()
-
-                callback(found, null, program)
-              }
-            })
-          } else {
-            found = false
-            program.foundImage = false
-            program.foundVideo = false
-            program.foundByModule = undefined
-
-            callback(found, null, program)
-          }
-          break
-
-        default:
-          found = false
-          program.foundImage = false
-          program.foundVideo = false
-          program.foundByModule = undefined
-
-          callback(found, null, program)
-          break
-      }
+      callback(found, mediaObj.mediaType, mediaObj.mediaURL, program)
     } catch (e) {
       console.error(this.getName() + "()", `[instantgram] ${program.VERSION}`, e)
       callback(false, null, program)

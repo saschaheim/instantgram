@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2023.04.12 :love_you_gesture: Service update
-![GitHub release](https://img.shields.io/badge/release-v2023.04.12-green)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2023.06.01 :kiss: Complete New
+![GitHub release](https://img.shields.io/badge/release-v2023.06.01-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -39,6 +39,11 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+- v2023.06.01 - [instangram] Complete rewrite of instantgram changed the way this software detects images/videos.\
+No more problems if Instagram changes their frontend!\
+Added for every post/story a modal to easier select the needed image/video.\
+Also it is now possible to click on download and it will starts donwloading instead of open a new tab.\
+In the future, options will be introduced with which one can make personal settings that will be taken into account at the next call.
 - v2023.04.12 - [instangram] Fixed issue #29 [Sound getting stripped from some videos]. \
 Have done some spring cleaning.
 - v2022.12.10 - [instangram] Fixed issue #27 [Stories completely nonfunctional]. \

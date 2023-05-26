@@ -3,20 +3,25 @@ import { Module } from "./Module"
 import { MediaType } from "../model/mediaType"
 import { htmlSpinnerMarkup } from "../components/Interconnect"
 import { Modal } from "../components/Modal"
-import getElementInViewPercentage from "../helpers/getElementInViewPercentage"
 import localize from "../helpers/localize"
 
-export class FeedScanner implements Module {
+export class PostReelScanner implements Module {
   private selectedSidecarIndex: number
 
   public getName(): string {
-    return "FeedScanner"
+    return "PostReelScanner"
   }
 
   public getPostId(): string {
     const url = window.location.href
-    const regex = /\/p\/([a-zA-Z0-9_-]+)/
-    const postId = url.match(regex)?.[1]
+    let regex = /\/p\/([a-zA-Z0-9_-]+)/
+    let postId = url.match(regex)?.[1]
+
+    // Fallback, is it a reel?
+    if (typeof postId === 'undefined') {
+      regex = /\/reel\/([a-zA-Z0-9_-]+)/
+      postId = url.match(regex)?.[1]
+    }
 
     return postId
   }
@@ -77,7 +82,7 @@ export class FeedScanner implements Module {
     let found = false
 
     /* =====================================
-     =              FeedScanner            =
+     =              PostScanner            =
      ==================================== */
     try {
       // Define default variables
@@ -93,28 +98,26 @@ export class FeedScanner implements Module {
       let mediaUrl: string
 
       // Scanner begins
+      // The order is very important
+      const postId = this.getPostId()
+
       if (mediaEl == null) {
         $articles = document.getElementsByTagName("article")
 
-        let mediaElInfos: any[] = []
-        // Find needed post
-        for (let i1 = 0; i1 < $articles.length; i1++) {
-          let mediaEl = $articles[i1]
+        // For modal
+        // Will be in the future completly removed
+        if (document.querySelectorAll('[role="dialog"]').length > 0) {
+          console.log('MODAL');
 
-          if (mediaEl != null && typeof mediaEl.getBoundingClientRect() != null) {
-            let elemVisiblePercentage = getElementInViewPercentage(mediaEl)
-            mediaElInfos.push({ i1, mediaEl, elemVisiblePercentage })
-          } else {
-            mediaElInfos.push({ i1, mediaEl, elemVisiblePercentage: 0 })
-          }
+          $article = document.querySelectorAll('[role="dialog"]')[1]
+        } else {
+          console.log('NO MODAL');
+          $article = document.querySelector("section main > div > :first-child > :first-child")
         }
-
-        let objMax = mediaElInfos.reduce((max, current) => max.elemVisiblePercentage > current.elemVisiblePercentage ? max : current)
-        $article = $articles[objMax.i1]
       }
 
       if (typeof $article !== 'undefined' || $article !== null || $article !== '') {
-        const $reactPostEl = [...Array.from($article.querySelectorAll('*'))].filter((element) => {
+        const $reactPostEl = [...Array.from(document.querySelectorAll('*'))].filter((element) => {
           const instanceKey = Object.keys(element).find((key) => key.includes('Instance') || key.includes('Fiber'))
           const $react = element[instanceKey]
           return $react?.return?.return?.return?.memoizedProps.post ?? false
@@ -123,6 +126,12 @@ export class FeedScanner implements Module {
         const $reactPostNode = $reactPostEl[$reactInstanceKey]
 
         const userName = this.getUserName($reactPostNode)
+
+        // Check requirements are met
+        if (postId == null || userName == null) {
+          return
+        }
+        // END
 
         let modal: Modal
         modal = new Modal({
@@ -151,7 +160,7 @@ export class FeedScanner implements Module {
           found = true
           mediaType = MediaType.Carousel
 
-          // Sometimes instagram pre-selects image indexes on carousels
+          // Sometimes instagram pre-selects image position on carousels
           // to not confuse the user find the selected index
           const controlElements = $article.querySelectorAll('div._aamj._acvz._acnc._acng div')
           controlElements.forEach((div: { classList: string | any[] }, i: number) => {
@@ -223,6 +232,6 @@ export class FeedScanner implements Module {
       console.error(this.getName() + "()", `[instantgram] ${program.VERSION}`, e)
       callback(false, null, program)
     }
-    /* =====  End of FeedScanner ======*/
+    /* =====  End of PostScanner ======*/
   }
 }

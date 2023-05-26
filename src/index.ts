@@ -1,11 +1,11 @@
 import { Program } from './App'
 import { MediaScanner } from './modules/MediaScanner'
-//import { ProfilePageDownload } from './modules/ProfilePageDownload'
 import { Modal } from './components/Modal'
 import Update from './modules/Update'
 import localize from './helpers/localize'
 
 import { detect } from "detect-browser"
+import { MediaType } from './model/mediaType'
 // Init browser detection
 const browser = detect()
 
@@ -23,12 +23,11 @@ const program: Program = {
     regexRootPath: /^\/+$/,
     regexProfilePath: /^\/([A-Za-z0-9._]{2,3})+\/$/,
     regexPostPath: /^\/p\//,
+    regexReelURI: /reel\/(.*)+/,
+    regexReelsURI: /reels\/(.*)+/,
     regexStoriesURI: /stories\/(.*)+/,
 
-    foundByModule: null,
-    foundVideo: false,
-    foundImage: false,
-    foundProfile: false
+    foundByModule: null
 }
 
 if (process.env.DEV) {
@@ -46,17 +45,13 @@ if (process.env.DEV) {
  ===============================*/
 // verify if are running on instagram site
 if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.com') {
-    new MediaScanner().execute(program, function (scannerFound: boolean, foundMediaURL: string, scannerProgram: Program) {
-        program.foundVideo = scannerProgram.foundVideo
-        program.foundImage = scannerProgram.foundImage
+    new MediaScanner().execute(program, function (scannerFound: boolean, foundMediaType: MediaType, _foundMediaUrl: string, scannerProgram: Program) {
         program.foundByModule = scannerProgram.foundByModule
 
-        if (process.env.DEV) {
-            console.log('scannerFound', scannerFound)
-            console.log('foundVideo', program.foundVideo)
-            console.log('foundImage', program.foundImage)
-            console.log('foundByModule', program.foundByModule)
-        }
+        //if (process.env.DEV) {
+        console.log('scannerFound', scannerFound)
+        console.log('foundByModule', program.foundByModule)
+        //}
 
         if (scannerFound == false) {
             if (scannerProgram.regexProfilePath.test(scannerProgram.path)) {
@@ -66,10 +61,10 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
                     heading: [
                         `<h5>[instantgram] ProfilePage downloader <span style="float:right">v${program.VERSION}</span></h5>`
                     ],
-                    content: [
+                    body: [
                         localize('index@profilepage_downloader_disabled')
                     ],
-                    contentStyle: 'text-align:center',
+                    bodyStyle: 'text-align:center',
                     buttonList: [{
                         active: true,
                         text: 'Ok'
@@ -78,24 +73,17 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
             }
         }
 
-        if (scannerFound && foundMediaURL !== null) {
-            if (process.env.DEV) {
-                console.log('foundMediaURL', foundMediaURL)
-            }
-            window.open(foundMediaURL)
-        }
-
         if (program.foundByModule == undefined) {
             if (!process.env.DEV) {
-                if (program.foundVideo == false && program.foundImage == false) {
+                if (foundMediaType == MediaType.UNDEFINED) {
                     new Modal({
                         heading: [
                             `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
                         ],
-                        content: [
+                        body: [
                             localize('index#program@alert_dontFound')
                         ],
-                        contentStyle: 'text-align:center',
+                        bodyStyle: 'text-align:center',
                         buttonList: [{
                             active: true,
                             text: 'Ok'
@@ -115,10 +103,10 @@ if (program.hostname == 'instagram.com' || program.hostname == 'www.instagram.co
         heading: [
             `<h5>[instantgram] <span style="float:right">v${program.VERSION}</span></h5>`
         ],
-        content: [
+        body: [
             localize('index@alert_onlyWorks')
         ],
-        contentStyle: 'text-align:center',
+        bodyStyle: 'text-align:center',
         buttonList: [{
             active: true,
             text: 'Ok'
