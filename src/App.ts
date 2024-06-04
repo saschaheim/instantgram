@@ -1,9 +1,9 @@
-import { BrowserInfo, SearchBotDeviceInfo, BotInfo, NodeInfo, ReactNativeInfo } from "detect-browser"
-
 export type Program = {
+  NAME: string
+  STORAGE_NAME: string
   VERSION: string
 
-  browser: BrowserInfo | SearchBotDeviceInfo | BotInfo | NodeInfo | ReactNativeInfo | null
+  browser: { name: string, version: string }
 
   hostname: string
   path: string

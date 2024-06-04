@@ -1,16 +1,16 @@
 'use strict'
 
-const Metalsmith = require('Metalsmith')
+const Metalsmith = require('metalsmith')
 const Handlebars = require('handlebars')
 const fs = require('fs')
 const signale = require('signale')
 
 // plugins
 const define = require('metalsmith-define')
-const layouts = require('metalsmith-layouts')
-const markdown = require('metalsmith-markdown')
-const permalinks = require('metalsmith-permalinks')
-
+const discoverPartials = require('metalsmith-discover-partials')
+const layouts = require('@metalsmith/layouts')
+const markdown = require('@metalsmith/markdown')
+const permalinks = require('@metalsmith/permalinks')
 
 // data
 const langs = require('./langs.json')
@@ -18,58 +18,94 @@ const jsonpkg = require('../../package.json')
 
 // handlebars helpers
 Handlebars.registerHelper('to_lowercase', str => str.toLowerCase())
+
 signale.pending('Build page initiated...')
+// DEV
+// Metalsmith(__dirname)
+//   .env('DEBUG', true)
+//   .clean(true) // clean the build directory
+//   .source('./src/') // the page source directory
+//   .destination('../../lang') // the destination directory
+//   .use(console.log)
+//   .use(define({
+//     'langs': langs,
+//     'version': jsonpkg.version
+//   }))
+//   .use((files, metalsmith, done) => {
+//     console.log('Before markdown:', Object.keys(files));
+//     done();
+//   })
+//   .use(markdown())
+//   .use((files, metalsmith, done) => {
+//     console.log('After markdown:', Object.keys(files));
+//     done();
+//   })
+//   .use(console.log)
+//   .use(discoverPartials({
+//     directory: 'layouts',
+//     pattern: /\.hbs$/
+//   }))
+//   .use(console.log)
+//   .use(layouts({
+//     engine: 'handlebars',
+//     directory: 'layouts'
+//   }))
+//   .use(permalinks(':lang/'))
+//   .build(function (err) {
+//     if (err) {
+//       signale.fatal(err);
+//       throw err;
+//     }
 
-function debug(logToConsole) {
-  return function (files, metalsmith, done) {
-    if (logToConsole) {
-      console.log('\nMETADATA:')
-      console.log(metalsmith.metadata())
+//     const source = fs.createReadStream('./lang/en-us/index.html');
+//     const dest = fs.createWriteStream('./index.html');
+//     source.pipe(dest);
 
-      for (var f in files) {
-        console.log('\nFILE:')
-        console.log(files[f])
-      }
-    }
+//     source.on('end', function () {
+//       signale.success('Build page complete');
+//     });
 
-    done()
-  }
-}
-
+//     source.on('error', function (err) {
+//       if (err) {
+//         signale.fatal(err);
+//       }
+//     });
+//   });
 Metalsmith(__dirname)
-  .clean(true)             // clean the build directory
-  .source('html/')         // the page source directory
-  .destination('../../lang')   // the destination directory
+  .clean(true) // clean the build directory
+  .source('./src/') // the page source directory
+  .destination('../../lang') // the destination directory
   .use(define({
     'langs': langs,
     'version': jsonpkg.version
   }))
-  .use(markdown())         // convert Markdown to HTML
+  .use(markdown())
+  .use(discoverPartials({
+    directory: 'layouts',
+    pattern: /\.hbs$/
+  }))
   .use(layouts({
-    'engine': 'handlebars',
-    'partials': 'partials',
-    'pattern': '**/*.html',
-    'default': 'default.html',
-    'cache': false
+    engine: 'handlebars',
+    directory: 'layouts'
   }))
   .use(permalinks(':lang/'))
-  //.use(debug(true))        // *** NEW *** output debug information
   .build(function (err) {
     if (err) {
-      signale.fatal(err)
+      signale.fatal(err);
+      throw err;
     }
 
-    const source = fs.createReadStream('./lang/en-us/index.html')
-    const dest = fs.createWriteStream('./index.html')
-    source.pipe(dest)
+    const source = fs.createReadStream('./lang/en-us/index.html');
+    const dest = fs.createWriteStream('./index.html');
+    source.pipe(dest);
 
     source.on('end', function () {
-      signale.success('Build page complete')
-    })
+      signale.success('Build page complete');
+    });
 
     source.on('error', function (err) {
       if (err) {
-        signale.fatal(err)
+        signale.fatal(err);
       }
-    })
-  })
+    });
+  });

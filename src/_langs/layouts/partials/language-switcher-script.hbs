@@ -1,0 +1,51 @@
+<script type="text/javascript">
+    function GetQueryStringParams(sParam) {
+        var sPageURL = window
+            .location
+            .search
+            .substring(1);
+        var sURLVariables = sPageURL.split('&');
+
+        for (var i = 0; i < sURLVariables.length; i++) {
+            var sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam) {
+                return sParameterName[1];
+            }
+        }
+    }
+
+    // identify which language's page
+    var switchesLang = document.querySelectorAll('.language-bar a');
+    var defaultLang = "en-US";
+    for (var i = switchesLang.length - 1; i >= 0; i--) {
+        var lang = switchesLang[i].dataset.lang;
+        var regex = new RegExp(lang.toLowerCase(), 'g');
+        if (regex.test(location.pathname)) {
+            defaultLang = lang;
+        }
+    }
+    document
+        .querySelector("[data-lang='" + defaultLang + "'] span")
+        .style
+        .textDecoration = 'underline';
+
+    var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
+    var regex = new RegExp(language.toLowerCase(), 'g');
+    if (!regex.test(location.pathname) && !GetQueryStringParams('force') && !location.protocol == 'file:') {
+        if (typeof language !== 'undefined') {
+            switch (language.substring(0, 2)) {
+                case 'de':
+                    window.location.href = '/instantgram/lang/de-de/';
+                    break;
+                case 'pt':
+                    window.location.href = '/instantgram/lang/pt-br/';
+                    break;
+                case 'es':
+                    window.location.href = '/instantgram/lang/es-ar/';
+                    break;
+                default:
+                    window.location.href = '/instantgram/';
+            }
+        }
+    }
+</script>
