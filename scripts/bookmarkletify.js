@@ -46,7 +46,7 @@ const bookmarkletify = (code) => {
 };
 
 const hash = () => (process.argv.includes('--dev') ? ` ${Math.random().toString(36).substring(5, 15)}` : ` ${pkg.version}`);
-const button = (bookmarklet) => `<a href="${bookmarklet}" class="btn" style="cursor: move;">[instantgram-${hash()}]</a>`;
+const button = (bookmarklet) => `<a href="${bookmarklet}" class="btn" style="cursor: move;">[instantgram ${hash()}]</a>`;
 
 (async () => {
   try {
