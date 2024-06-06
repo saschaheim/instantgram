@@ -113,13 +113,10 @@ export async function generateModalBody(el: HTMLElement, program: Program) {
     const postId = findPostId(el)
     let userName = getIGUsername(window.location.href)
     let userLink = null
-    console.log("generateModalBody() postId", postId, "userName", userName)
     const userId = window.location.pathname.startsWith("/stories/") ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName: userName })).data.user.id : null
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const mediaInfo: any | null = await getMediaInfo(el, postId, userId)
     if (!mediaInfo) return null
-    console.log("generateModalBody() mediaInfo", mediaInfo)
-    console.log('userName == postId', userName == postId)
     const isPathMatch = path => window.location.pathname.startsWith(path)
     if (userName === postId && (isPathMatch("/p/") || isPathMatch("/reels/"))) {
         if (mediaInfo.items && mediaInfo.items[0] && mediaInfo.items[0].user) {
@@ -136,7 +133,6 @@ export async function generateModalBody(el: HTMLElement, program: Program) {
             userName = userFromReels ? mediaInfo.reels_media[0].user.username : mediaInfo.items[0].user.username
             userLink = resolveUserLink('https://www.instagram.com', window.location.pathname, userName)
         }
-        console.log('userName', userName)
     }
     // if (mediaInfo && mediaInfo.user && mediaInfo.user.username) {
     //     userName = mediaInfo.user.username
@@ -145,7 +141,6 @@ export async function generateModalBody(el: HTMLElement, program: Program) {
     //     const usernameMatch = mediaInfoText.match(/"username":"(.*?)"/)
     //     userName = usernameMatch ? usernameMatch[1] : null
     // }
-    // console.log("generateModalBody() userName", userName)
     return await generateModalBodyHelper(el, mediaInfo, userName, userLink, program)
 }
 export async function generateModalBodyHelper(el: HTMLElement, mediaInfo, userName: string, userLink: string, program: Program): Promise<MediaScanResult | null> {
@@ -159,11 +154,7 @@ export async function generateModalBodyHelper(el: HTMLElement, mediaInfo, userNa
         noMultiStories: localStorage.getItem(`${program.STORAGE_NAME}_settings_stories_3`) === "true"
     }
 
-    console.log(localStorage.getItem(`${program.STORAGE_NAME}_settings_general_4`));
-    console.log(settings.formattedFilenameInput);
-
-    const addMediaToBody = (media, index) => {
-        console.log('GOOO')
+    const addMediaToBody = (media: { width: any; height: any; url: string }, index: number) => {
         let URL: string
         let FORMATTED_FILENAME: string
         if (media && media.width && media.height && media.url) {
@@ -216,7 +207,6 @@ export function getBrowserInfo() {
 export function getCurrentStory(el: HTMLElement) {
     // Handle the case where the element might not be found
     if (!el) {
-        console.log("Element not found")
         return 0
     }
     // Initialize variables to keep track of the tallest element and its height
@@ -310,7 +300,6 @@ export async function getMediaInfo(el: HTMLElement, postId: string, userId: stri
     }
 }
 export function processMediaInfo(mediaInfo, callback) {
-    console.log("processMediaInfo() mediaInfo", mediaInfo)
     let count = 0
     if (mediaInfo.reels_media && mediaInfo.reels_media.length > 0 && mediaInfo.reels_media[0].items) {
         mediaInfo.reels_media[0].items.forEach(callback)
@@ -390,13 +379,12 @@ export function resolveCurrentSliderIndex(el: HTMLElement): number {
 //     }
 //     return -1 // Return -1 if no such div is found
 // }
-export function resolveElementMediaType(mediaArray) {
+export function resolveElementMediaType(mediaArray: { width?: any; height?: any; url?: string; carousel_media?: any; video_dash_manifest?: any; video_duration?: any; video_versions?: any }) {
     if (mediaArray.carousel_media !== undefined) {
         return MediaType.Carousel
-    } else if (mediaArray.video_dash_manifest !== undefined) {
+    } else if (mediaArray.video_dash_manifest !== undefined || mediaArray.video_duration !== undefined || mediaArray.video_versions !== undefined) {
         return MediaType.Video
-    }
-    else {
+    } else {
         return MediaType.Image
     }
 }
@@ -412,8 +400,6 @@ export async function secureFetch(url, appId) {
             credentials: 'include',
             mode: 'cors',
         })
-        console.log('response', response)
-
         if (response.status !== 200) {
             console.log(`Fetch API failed with status code: ${response.status}`)
             return null

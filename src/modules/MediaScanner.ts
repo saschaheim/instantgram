@@ -44,7 +44,6 @@ export class MediaScanner implements Module {
         // Handle checkboxes
         Array.from(el.querySelectorAll<HTMLInputElement>('label.slideon input[type="checkbox"]')).forEach((checkbox) => {
             const checkboxKey = `${program.STORAGE_NAME}_${checkbox.id.replace(/-/g, "_")}`
-            console.log(checkboxKey)
             checkbox.checked = localStorage.getItem(checkboxKey) === "true"
             checkbox.addEventListener("change", () => {
                 localStorage.setItem(checkboxKey, String(checkbox.checked))
@@ -232,7 +231,6 @@ export class MediaScanner implements Module {
                                     const handleFullscreenChange = () => {
                                         const isFullscreen = document.fullscreenElement !== null
                                         if (isFullscreen) {
-                                            console.log("Fullscreen enabled")
                                             clearTimeout(slideTimer)
                                         }
                                     }

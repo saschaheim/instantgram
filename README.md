@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2024.06.04 Summer Feeling :sunglasses:
-![GitHub release](https://img.shields.io/badge/release-v2024.06.04-green)
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2024.06.06 Summer Feeling :sunglasses:
+![GitHub release](https://img.shields.io/badge/release-v2024.06.06-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
@@ -13,45 +13,99 @@
 ![gif demo](img/demo.gif)
 
 :bulb: We have completely rewritten instantgram. \
-This is a lite version which supports browsers like firefox with 65kb bookmarklet limit.
+With this version we support all modern browsers that have ECMAScript 2015 (es6) support.
 
 ## Compatibility
 
 |       Browser        |     Compatible?    |
 | -------------------- | -------------------|
 | Google Chrome        | :white_check_mark: |
-| Mozilla Firefox     | :white_check_mark: |
+| Mozilla Firefox*     | :white_check_mark: |
 | Edge on chromium >=80 | :white_check_mark: |
-| Edge Legacy*                | :warning:          |
+| Edge**                | :warning:          |
 | Internet Explorer 11 | :x: |
-*_ apparently Edge Legacy doesn't allow you to drag a button to the bookmark bar
+*_ Supported again on [instantgram] version >= 10.0.0
+**_ apparently Edge doesn't allow you to drag a button to the bookmark bar
 
 
 ## Roadmap
 
-- ?
+- ~~a way of notify updates in [instantgram]~~ :heavy_check_mark: in v2.0.0
+- ~~make a gif explaining the [instantgram]~~ :heavy_check_mark:
+- ~~video :smirk_cat:~~ :heavy_check_mark: in v2.2.0
 
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
-- v2024.06.04 - [instangram-light] Replaced the old, inefficient webpack build system with Rollup. Also, switched from the Babel minimizer to SWC. Removed the Bookmarkletify dependency and updated Metalsmith to the latest version. Completed an efficient rewrite of all modules to reduce the overall size. Redesigned the UI into tabs to clarify some settings and added some new settings.
-- v2024.04.24 - [instangram-light] Fixed, ads not recognized correctly. Shows "Did you open any Instagram post?"
-- v2024.04.09 - [instangram-light] Part 2: More fixing CSP errors and fixing wrong update url on new update dialog; Addressed various issues: first, fixed the stories feature that was not working again; second, removed CSP warnings in the developer console; third, ensured proper cleanup after using instantgram.
-- v2024.04.08 - [instangram-light] Addressed various issues: first, fixed the stories feature that was not working again; second, removed CSP warnings in the developer console; third, ensured proper cleanup after using instantgram.
-- v2024.03.28 - [instangram-light] Fixed issue #10 [Stories no longer working], fixes the error that the text of the modalbox is sometimes white instead of black.
-- v2023.10.28 - [instangram-light] Large parts were rewritten. Added profile page avatar download, open any profile url and execute instantgram. FIXED Carousels not working.
-- v2023.10.27 - [instangram-light] Large parts were rewritten. Added profile page avatar download, open any profile url and execute instantgram.
-- v2023.07.12 - [instangram-light] Fixed storys if [instantgram] was triggered the currently displayed story stopps playback and continues after the modal was closed.
-- v2023.07.07 - [instangram-light] Fixed instantgram doesnt do anything.
-- v2023.07.06 - [instangram-light] Fixed instantgram doesnt do anything.
-- v2023.07.04 - [instangram-light] Fixes a problem where the updater had deleted all settings and therefore instantgram did not work properly. The wishes of Orudeon were implemented. Thus it is now possible to customize the file names as one would like. Last but not least, inline buttons for next image and previous image have been implemented. Small fixes.
-- v2023.06.23 - [instangram-light] Used more the styling from big brother [instantgram], fixes issue #1 "Ad images sometimes grabbed".
-- v2023.06.01 - [instangram-light] Fix the problem that videos sometimes do not load.\
-Fix single story are not covered for media downloading.\
-Add support for reels feed.
-- v2023.05.13 - [instangram-light] Light edition without modal etc. to keep the 65kb bookmarklet size limit.
+- v2024.06.06 - [instangram] Replaced the old, inefficient webpack build system with Rollup. Also, switched from the Babel minimizer to SWC. Removed the Bookmarkletify dependency and updated Metalsmith to the latest version. Completed an efficient rewrite of all modules to reduce the overall size. Redesigned the UI into tabs to clarify some settings and added some new settings. Fixed some videos are treated as images. And many more cosmetic fixes...
+- v2023.06.01 - [instangram] Complete rewrite of instantgram changed the way this software detects images/videos.\
+No more problems if Instagram changes their frontend!\
+Added for every post/story a modal to easier select the needed image/video.\
+Also it is now possible to click on download and it will starts donwloading instead of open a new tab.\
+In the future, options will be introduced with which one can make personal settings that will be taken into account at the next call.
+- v2023.04.12 - [instangram] Fixed issue #29 [Sound getting stripped from some videos]. \
+Have done some spring cleaning.
+- v2022.12.10 - [instangram] Fixed issue #27 [Stories completely nonfunctional]. \
+Fixed some other bugs.
+- v2022.10.28 - [instangram] Support for the latest backend version of instagram. \
+New versioning.
+Fixed stories video detection. #23
+Fixed wrong order capturing. #24
+- v12.1.0 - [instangram] Support for the latest backend version of instagram.
+- v12.0.0 - [instangram] Rewrite of instantgram to support last backend of insta. \
+Profile page bulk downloader dropped because insta deleted all api around them.
+Maybe there is a possibility in the future but unfortunately not now.
+- v11.1.0 - [instangram] Added default faster video detection, rewrite fallback blob video detection, fixed most bugs.
+- v11.0.0 - [instangram] Now compatible with new Instagram layout/design. \
+Bulk profile page downloader disabled because of instagram changed APIs, searching in future releases for a hot fix.
+- v10.1.3 - [instangram] Fix saving videos on some post types.
+- v10.1.2 - [instangram] Fix issue #17 can't save most types of videos anymore.
+- v10.1.1 - [instangram] Fix profile page downloading doesn't work anymore.
+- v10.1.0 - [instangram] New image detection algorithm. Image with highest percent in feed and visible in viewport will be grabed by the scanner.
+- v10.0.6 - [instangram] Fix #15 Instantgram often grabs avatars/profile pics
+- v10.0.5 - [instangram] Fix carousel not working
+- v10.0.4 - [instangram] Fix reels not working.
+- v10.0.3 - [instangram] Fix profile page downloading/compression calculation.
+- v10.0.2 - [instangram] Complete rewrite of the Project to support Firefox again. \
+By rewriting, we were also able to increase the speed noticeably. \
+Fixed bug on profile page modal showed twice.
+Fixed bug on some pages where nothing happens.
+- v10.0.1 - [instangram] Complete rewrite of the Project to support Firefox again. \
+By rewriting, we were also able to increase the speed noticeably. \
+Fixed bug on some pages where nothing happens.
+- v10.0.0 - [instangram] Complete rewrite of the Project to support Firefox again. \
+By rewriting, we were also able to increase the speed noticeably.
+- v9.0.0 - [instangram] Now you can download a whole user profile. \
+But with limits it only works in Chrome, Opera, Safari. Firefox currently are not supported.  
+- v8.1.1 - [instangram] Fix video are not downloadable in feed in due of commented out variable.
+- v8.1.0 - [instangram] Re-designed video downloader to handle encrypted videos.
+- v8.0.2 - [instangram] Fixed updater that had displayed an old version.
+- v8.0.1 - [instangram] Added spanish language.
+- v8.0.0 - [instangram] Migrate to typescript which has fixed many bugs.
+- v7.1.2 - [instangram] Fix update dialog styling.
+- v7.1.1 - [instangram] Fix video download on some situations.
+- v7.1.0 - [instangram] Re-design update dialog.
+- v7.0.1 - [instangram] Fix update handler.
+- v7.0.0 - [instangram] Fix get highest image on every post or story.
+- v6.0.0 - [instangram] Biggest Update ever! \
+Added support for blob videos, means all videos can be downloaded again. \
+Supports the new and old story layout. \
+Replaced native browser dialog with own for nicer display. \
+The removed update checker in version 4.0 is available again. \
+This version should now work properly and display all errors in the console correctly.
+- v5.2.0 - [instangram] Refactor Languages.
+- v5.1.1 - [instangram] Fix set language: undefined in dev console.
+- v5.1.0 - [instangram] Instagram changed their stories design to a new one. And this update adress this new design and make it compatible again.
+- v5.0.0 - [instangram] We have completely rewritten instantgram. \
+With this version we support all modern browsers that have ECMAScript 2015 (es6) support. 
+- v4.0.0 - [instangram] now working again with full support of all media types also recognizes canvas images.\
+Also it has now support for multiple images videos in any site feed or post with modal. 
+- v2.4.0 - [instangram] now supports Stories.
+- v2.3.0 - [instangram] now supports localization, both app and website. Initially it has en-US and pt-BR. You can help us translate [instantgram] for your language! Cool? Read [contributing](CONTRIBUTING.md) for more information.
+- v2.2.0 - [instantgram] now supports video too! :movie_camera:
+- After v2.0.0, [instantgram] has your data saved in `localStorage` and can be accessed entering `localStorage.getItem('instantgram')` in console inside instagram.com. If you can't access this item, you may be using a version before v2.0.0.
 
 
-[1]:http://thinkbig-company.github.io/instantgram/
+[1]:http://thinkbig-company.github.io/instantgram

@@ -11,7 +11,6 @@ export class ProfileScanner implements Module {
     private async handleProfilePage(program: Program): Promise<MediaScanResult | null> {
         const userName = getIGUsername(window.location.href)
         if (!userName) {
-            console.error('handleProfilePage() Error: Invalid username extracted from URL')
             return { found: false, errorMessage: 'Invalid username extracted from URL' }
         }
 
@@ -29,14 +28,11 @@ export class ProfileScanner implements Module {
                 return { found: false, errorMessage: 'Incomplete userDetails received' }
             }
         } catch (e) {
-            console.error('Error fetching user details:', e)
             return { found: false, userName, errorMessage: e.message, error: e }
         }
     }
 
     public async execute(program: Program): Promise<MediaScanResult | null> {
-        console.log('Executing ProfileScanner')
-
         if (!program.regexProfilePath.test(window.location.pathname)) {
             return { found: false, errorMessage: 'Path does not match profile path regex, exiting.' }
         }
