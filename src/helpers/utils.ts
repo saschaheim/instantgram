@@ -333,11 +333,12 @@ export function resolveCurrentSliderIndex(el: HTMLElement): number {
     }
     // Define an array of possible selectors for the slides root
     const selectors = [
-        ".x1ned7t2.x78zum5",
-        "section header div",
-        "section > div header > div",
-        "section > div > div > div > div > div > div > div > div",
-        "div > div > div > div > div > div > div > div"
+        "._aamj._acvz._acnc._acng", // this is for feed posts
+        ".x1ned7t2.x78zum5", // this is for stories/highlights in profile
+        "section header div", // this is for stories in feed
+        "section > div header > div", // forgotten, dont know
+        "section > div > div > div > div > div > div > div > div", // forgotten, dont know
+        "div > div > div > div > div > div > div > div" // this is for the following: feed posts, profile modal and direct posts, 
     ]
 
     // Attempt to find the root element using each selector
@@ -349,6 +350,10 @@ export function resolveCurrentSliderIndex(el: HTMLElement): number {
         }
     }
 
+    if (!slidesRoot) {
+        return 0 // Return 0 if no root element is found
+    }
+
     // Collect all child elements of the root, if any
     const slidesChildren: HTMLElement[] = slidesRoot ? Array.from(slidesRoot.children) as HTMLElement[] : []
 
@@ -356,14 +361,23 @@ export function resolveCurrentSliderIndex(el: HTMLElement): number {
     for (let i = 0; i < slidesChildren.length; i++) {
         // Get all div elements inside each child
         const allDivs = slidesChildren[i].querySelectorAll("div")
-        for (const div of Array.from(allDivs)) {
-            const widthStyle = div.style.width
-            const transformStyle = div.style.transform
-            // Check for width not 100% or any transform property present
-            if ((widthStyle && widthStyle !== "100%") || (transformStyle && transformStyle.trim() !== "")) {
-                // Check if stories are older than 24 hours and decrement from the index
 
-                return i //- resolveExpiredStories(slidesRoot)  // Return the index of the selected slider
+        // Check if allDivs is empty
+        if (allDivs.length === 0) {
+            // Count classes directly on slidesChildren[i]
+            const classListLength = slidesChildren[i].classList.length // if length is greater than 1 it should have an active state
+            if (classListLength > 1) {
+                return i // Return the index of the child
+            }
+        } else {
+            for (const div of Array.from(allDivs)) {
+                const widthStyle = div.style.width
+                const transformStyle = div.style.transform
+
+                // Check for width not 100% or any transform property present
+                if ((widthStyle && widthStyle !== "100%") || (transformStyle && transformStyle.trim() !== "")) {
+                    return i // Return the index of the selected slider
+                }
             }
         }
     }
