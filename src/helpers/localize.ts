@@ -43,6 +43,6 @@ function localize(str: string, lang: string = LANG_DEFAULT): string {
     }
 }
 
-console.info(localize("helpers.localize_defaultlang").replace("${LANG_DEFAULT}", LANG_DEFAULT))
+console.info(localize("helpers.localizeDefaultLang").replace("${LANG_DEFAULT}", LANG_DEFAULT))
 
 export default localize

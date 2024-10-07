@@ -5,36 +5,34 @@ const postcss = require('rollup-plugin-postcss');
 const cssnano = require('cssnano');
 const { swc } = require('rollup-plugin-swc3');
 
-// Import the package.json file
-const pkg = require('./package.json');
-
-const development = process.env.ROLLUP_WATCH
+const development = process.env.ROLLUP_WATCH === 'true';
 
 module.exports = {
-    input: 'src/index.ts',  // Dein Eingabe-TypeScript-Datei
+    input: 'src/index.ts',
     output: {
-        file: 'dist/main.js',  // Ausgabe-Datei
-        format: 'iife', // or 'umd', 'cjs', etc.
-        name: 'Instantgram', // Provide a global variable name for the IIFE bundle
-        sourcemap: false // Enable sourcemap generation
+        file: 'dist/main.js',
+        format: 'iife',
+        name: 'Instantgram',
+        sourcemap: false,
     },
     plugins: [
         replace({
-            'process.env.DEV': development ? true : false,
-            'process.env.VERSION': JSON.stringify(pkg.version),
-            preventAssignment: true  // Important to prevent errors with newer versions of the plugin
+            'process.env.DEV': JSON.stringify(development),
+            'process.env.VERSION': JSON.stringify(require('./package.json').version),
+            preventAssignment: true,
         }),
-        // Configure the TypeScript plugin to generate sourcemaps
-        typescript({ sourceMap: false }),
-        // Configure the SWC plugin to generate sourcemaps
+        typescript({
+            tsconfig: './tsconfig.json',
+            sourceMap: false,
+        }),
         swc({
             jsc: {
                 parser: {
                     syntax: 'typescript',
-                    tsx: false
+                    tsx: false,
                 },
                 transform: {},
-                target: 'esnext'
+                target: 'esnext',
             },
             sourceMaps: false,
             minify: true
@@ -42,8 +40,8 @@ module.exports = {
         postcss({
             plugins: [
                 cssnano({
-                    preset: 'default', // Use default preset for minification
-                })
+                    preset: 'default',
+                }),
             ],
             minimize: true, // Minimize the CSS output
             inject: false, // Optional: if you want to extract the CSS to a separate file
@@ -51,13 +49,8 @@ module.exports = {
         analyze({ summaryOnly: true })
     ],
     onwarn: (warning, warn) => {
-        // Ignore circular dependency warnings
         if (warning.code === 'CIRCULAR_DEPENDENCY') return;
-
-        // Ignore specific sourcemap warning
         if (warning.code === 'PLUGIN_WARNING' && warning.plugin === 'typescript' && /sourcemap/.test(warning.message)) return;
-
-        // Use default for everything else
         warn(warning);
-    }
+    },
 };

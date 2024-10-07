@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { program } from ".."
 import { cssModal } from "./Interconnect"
 import { sleep } from "../helpers/utils"
@@ -19,7 +20,10 @@ export interface ModalOptions {
   body?: (HTMLElement | string)[]
   bodyStyle?: string
   buttonList?: ModalButton[]
-  callback?(arg0: Modal, arg1: HTMLElement): void
+  callback?(
+    arg0: Modal, 
+    arg1: HTMLElement
+  ): void
 }
 
 export class Modal {
@@ -117,7 +121,7 @@ export class Modal {
 
     this.body.forEach(content => {
       if (typeof content === "string" && !/<\/?[a-z][\s\S]*>/i.test(content)) {
-        const modalText = document.createElement("p")
+        const modalText = document.createElement("div")
         modalText.innerText = content
         modalBody.appendChild(modalText)
       } else {

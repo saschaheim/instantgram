@@ -21,8 +21,7 @@ export class ProfileScanner implements Module {
             }
             const userId = userInfo.data.user.id
             const userDetails = await fetchDataFromApi({ type: 'getUserFromInfo', userId })
-
-            if (userDetails && userDetails.user.hd_profile_pic_url_info.url) {
+            if (userDetails && userDetails.user?.hd_profile_pic_url_info?.url) {
                 return await generateModalBodyHelper(null, userDetails, userName, window.location.href, program)
             } else {
                 return { found: false, errorMessage: 'Incomplete userDetails received' }

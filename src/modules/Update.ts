@@ -1,6 +1,8 @@
 import { Program } from "../App"
 import { Modal } from "../components/Modal"
+import { logo } from "../components/Interconnect"
 import localize from "../helpers/localize"
+import { MediaScanner } from "./MediaScanner"
 
 type Changelog = {
     date: string  // Represents the date of the changelog or version release
@@ -10,17 +12,23 @@ type Changelog = {
 export class VersionUpdater {
     program: Program
     storageKey: string
-    constructor(program) {
+    constructor(program: Program) {
         this.program = program
         this.storageKey = `${program.STORAGE_NAME}`
     }
 
-    public async update(localVersion: string): Promise<void> {
-        if (this.isUpdateNecessary(localVersion)) {
-            const changelog = await this.fetchChangelog()
+    public async check(localVersion: string): Promise<void> {
+        const changelog = await this.fetchChangelog()
+        const onlineVersion = changelog?.date || localVersion
+
+        this.storeVersionInfo(localVersion, onlineVersion)
+
+        if (this.isUpdateNecessary(localVersion, onlineVersion)) {
             if (changelog) {
                 this.processChangelog(localVersion, changelog)
             }
+        } else {
+            console.info(`[${this.program.NAME}] No update required`)
         }
     }
 
@@ -43,7 +51,6 @@ export class VersionUpdater {
         const ulHtml = this.generateHtmlListFromText(textBody)
         const onlineVersion = date
 
-        this.storeVersionInfo(localVersion, onlineVersion)
         console.info(localize("modules.update@update_successful"))
 
         if (new Date(onlineVersion) > new Date(localVersion)) {
@@ -72,29 +79,36 @@ export class VersionUpdater {
         window.localStorage.setItem(this.storageKey, JSON.stringify(versionInfo))
     }
 
-    private isUpdateNecessary(localVersion: string): boolean {
+    private isUpdateNecessary(localVersion: string, onlineVersion: string): boolean {
         const data = JSON.parse(window.localStorage.getItem(this.storageKey) || "{}")
         const installedVersion = new Date(localVersion)
-        const onlineVersion = new Date(data.onlineVersion)
-        const isVersionOutdated = onlineVersion > installedVersion
+        const latestOnlineVersion = new Date(onlineVersion)
+        const isVersionOutdated = latestOnlineVersion > installedVersion
         const isDataExpired = Date.now() > data.dateExpiration
 
         return isVersionOutdated || isDataExpired || !data
     }
 
     private showUpdateModal(localVersion: string, onlineVersion: string, changelogHtml: string): void {
+        const mS = new MediaScanner()
+
         new Modal({
-            heading: [`<h5><span class="header-text-left">[${this.program.NAME}]</span><span class="header-text-right" style="margin-right: 0">v${localVersion}</span></h5>`],
+            heading: [`<h5><span class="header-text-left">${logo}</span><span class="header-text-right">v${localVersion}</span></h5>`],
             body: [`<div>Update available v${onlineVersion}</div><div>${changelogHtml}</div>`],
-            buttonList: [{ active: true, text: "Ok" }]
+            buttonList: [{ active: true, text: "Ok" }],
+            callback: (_modal, el) => {
+                el.querySelector(`.${this.program.NAME}-settings`).addEventListener("click", () => {
+                    mS.handleSettingsButtonClick(this.program)
+                })
+            }
         }).open()
     }
 
     private informOutdatedVersionInDevConsole(): void {
         const data = JSON.parse(window.localStorage.getItem(this.storageKey) || "{}")
-        console.warn(localize("modules.update@consoleWarnOutdatedInfo"))
+        console.warn(localize("consoleWarnOutdatedInfo"))
         console.warn(
-            localize("modules.update@consoleWarnOutdatedInfoVersions")
+            localize("consoleWarnOutdatedVersions")
                 .replace("${data.version}", data.version)
                 .replace("${data.onlineVersion}", data.onlineVersion)
         )

@@ -1,9 +1,9 @@
 instantgram
-https://github.com/theus/instantgram
+https://github.com/ThinkBIG-Company/instantgram
 
 The MIT License (MIT)
 
-Copyright (c) 2016 Matheus Falcão
+Copyright (c) 2024 Sascha Heim
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,3 +1,4 @@
+/* eslint-disable */
 export enum MediaType {
   Ad = "AD",
   Image = "IMAGE",
