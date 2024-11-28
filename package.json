@@ -2,10 +2,10 @@
   "name": "instantgram",
   "version": "2024.10.07",
   "description": "A bookmarklet for download photos in Instagram",
-  "homepage": "https://thinkbig-company.github.io/instantgram/",
+  "homepage": "https://saschaheim.github.io/instantgram/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/thinkbig-company/instantgram"
+    "url": "https://github.com/saschaheim/instantgram"
   },
   "license": "ISC",
   "author": "Sascha Heim",

@@ -38,7 +38,7 @@ function localize(str: string, lang: string = LANG_DEFAULT): string {
         return ""
     } catch (e) {
         console.error(`[${program.NAME}]LOC error:`, e)
-        return `ops, an error ocurred in localization system. Enter in https://github.com/ThinkBIG-Company/${program.NAME}/issues/new and open an issue with this code: "LOC_dont_found_str_neither_default:[${lang}->${str}]"
+        return `ops, an error ocurred in localization system. Enter in https://github.com/saschaheim/${program.NAME}/issues/new and open an issue with this code: "LOC_dont_found_str_neither_default:[${lang}->${str}]"
     for more information open the console`
     }
 }
