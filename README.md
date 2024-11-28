@@ -54,4 +54,4 @@ Fixed stories video detection. #23
 Fixed wrong order capturing. #24
 
 
-[1]:http://thinkbig-company.github.io/instantgram
+[1]:http://saschaheim.github.io/instantgram
