@@ -1,34 +1,64 @@
 export default {
+    // Object holding different languages for localization
     "langs": {
+        // English localization
         "en-US": {
+            // Default language setting message. This is shown when the default language is set
             "helpers.localizeDefaultLang": "[instantgram] set language: ${LANG_DEFAULT} \n For more information about available languages please check http://saschaheim.github.io/instantgram",
+            
+            // Alert message displayed when the app works only on Instagram
             "alertWorksOnlyOn": "Works only on instagram.com",
+
+            // Alert message when no Instagram post is found, with a sample link
             "alertNotFound": "Did you open any Instagram post? Like for example<br/><div style='text-align:center'><a style='color:black' href='https://www.instagram.com/p/CIGrv1VMBkS/' target='_blank'>https://www.instagram.com/p/CIGrv1VMBkS/</a></div>",
+
+            // Title for the settings modal
             "modalSettingsTitle": "Settings",
+
+            // Attention message in settings modal, explaining the need to restart the app for changes to take effect
             "modalSettingsAttention": "Attention: You must open this app again for your changes to be applied!",
+
+            // Title for the 'General' settings section
             "modalSettingsGeneral": "General",
+
+            // Setting options in the general section
             "modalSettingsGenTitle1": "Enable monetized posts",
             "modalSettingsGenDesc1": "Ad blockers must be deactivated",
+
             "modalSettingsGenTitle2": "Open download in new tab",
             "modalSettingsGenDesc2": "The download will be opened in a new tab",
+
             "modalSettingsGenTitle3": "Slideshow on/off",
             "modalSettingsGenDesc3": "Enable or disable the automatic slideshow",
+
             "modalSettingsGenTitle4": "Change file name format for downloads",
             "modalSettingsGenDesc4": "Change the file name format for the downloads here<br/>The default format is<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+
+            // Settings related to stories
             "modalSettingsStoriesTitle1": "Mute stories",
             "modalSettingsStoriesDesc1": "Stories are muted when opened",
+
             "modalSettingsStoriesTitle2": "Pause stories when opening",
             "modalSettingsStoriesDesc2": "Stories are paused when opened",
+
             "modalSettingsStoriesTitle3": "Display stories individually",
             "modalSettingsStoriesDesc3": "Stories are displayed individually when opened",
+
+            // Button texts
             "download": "Download",
             "save": "Save",
             "saved": "Saved",
             "close": "Close",
+
+            // Warning message for outdated version
             "consoleWarnOutdatedInfo": "[instantgram] is outdated. Please check http://saschaheim.github.io/instantgram for available updates.",
             "consoleWarnOutdatedVersions": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
+
+            // Text for advertisements
             "ad": "Sponsored"
         },
+
+        // German localization
         "de-DE": {
             "helpers.localizeDefaultLang": "Ausgewählte Sprache: ${LANG_DEFAULT} \n Weitere Informationen zu den unterstützten Sprachen findest du auf http://saschaheim.github.io/instantgram",
             "alertWorksOnlyOn": "Funktioniert nur auf instagram.com",
@@ -58,6 +88,8 @@ export default {
             "consoleWarnOutdatedVersions": "[instantgram] Installierte Version: ${data.version} | Neue Version: ${data.onlineVersion}",
             "ad": "Anzeige"
         },
+
+        // Spanish localization
         "es-AR": {
             "helpers.localizeDefaultLang": "[instantgram] establecer idioma: ${LANG_DEFAULT} \n Para más información sobre los idiomas disponibles, consulte http://saschaheim.github.io/instantgram",
             "alertWorksOnlyOn": "Sólo funciona en instagram.com",
@@ -87,6 +119,8 @@ export default {
             "consoleWarnOutdatedVersions": "[instantgram] Versión instalada: ${data.version} | Nueva actualización: ${data.onlineVersion}",
             "ad": "Publicidad"
         },
+
+        // Brazilian Portuguese localization
         "pt-BR": {
             "helpers.localizeDefaultLang": "[instantgram] idioma configurado: ${LANG_DEFAULT} \npara mais informações sobre os idiomas suportados, acesse http://saschaheim.github.io/instantgram",
             "alertWorksOnlyOn": "[instantgram] somente funciona no instagram.com",
@@ -117,4 +151,4 @@ export default {
             "ad": "Patrocinado"
         }
     }
-}
+};
