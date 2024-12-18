@@ -1,4 +1,4 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2024.12.18 Beginning of Fall 🍂
+# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2024.12.18 Merry Christmas! 🎄🎉
 ![GitHub release](https://img.shields.io/badge/release-v2024.12.18-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
@@ -36,7 +36,7 @@ With this version we support all modern browsers that have ECMAScript 2015 (es6)
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
-- v2024.12.18 - [instangram] merged with [instantgram-light] due to the new build system, as we are now under the 65KB limit.
+- v2024.12.18 - Inserted comments across the entire code to clarify the logic, steps, and reasoning behind key parts of the implementation. Focused on areas that were previously unclear or complex to ensure the code is easier to follow for future developers.
 - v2024.10.07 - [instangram] merged with [instantgram-light] due to the new build system, as we are now under the 65KB limit.
 - v2024.06.11 - [instangram] Fixed github pages bug, fixed current slider number often not correct detected...
 - v2024.06.06 - [instangram] Replaced the old, inefficient webpack build system with Rollup. Also, switched from the Babel minimizer to SWC. Removed the Bookmarkletify dependency and updated Metalsmith to the latest version. Completed an efficient rewrite of all modules to reduce the overall size. Redesigned the UI into tabs to clarify some settings and added some new settings. Fixed some videos are treated as images. And many more cosmetic fixes...
