@@ -18,7 +18,7 @@ export interface MediaScanResult {
      * This helps identify which part of the application was responsible for finding the media.
      * @example "FeedScanner"
      */
-    foundByModule?: string;
+    foundByModule?: string | null;
 
     /**
      * The type of media found (e.g., photo, video, reel, story).

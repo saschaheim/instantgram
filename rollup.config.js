@@ -6,10 +6,12 @@ const cssnano = require('cssnano'); // Import the CSSNano plugin for minifying C
 const { swc } = require('rollup-plugin-swc3'); // Import SWC (Speedy Web Compiler) for JavaScript/TypeScript transpiling
 
 const development = process.env.ROLLUP_WATCH === 'true'; // Determine if the environment is in development mode (based on ROLLUP_WATCH)
+const buildLocale = process.env.BUILD_LOCALE || 'en-US';
+const outputFile = process.env.BUILD_OUT_FILE || 'dist/main.js';
 module.exports = {
     input: 'src/index.ts', // Entry file for the Rollup build (TypeScript file)
     output: {
-        file: 'dist/main.js', // Output file path
+        file: outputFile, // Output file path
         format: 'iife', // Output format (IIFE - Immediately Invoked Function Expression)
         name: 'Instantgram', // Global variable name for the bundle
         sourcemap: false, // Keep output stable; SWC currently errors on TypeScript sourcemap chaining in watch mode
@@ -18,6 +20,7 @@ module.exports = {
         replace({
             'process.env.DEV': JSON.stringify(development), // Replace 'process.env.DEV' with the value of the development variable
             'process.env.VERSION': JSON.stringify(require('./package.json').version), // Replace 'process.env.VERSION' with the project version from package.json
+            'process.env.LOCALE': JSON.stringify(buildLocale),
             preventAssignment: true, // Prevent variable assignment warnings
         }),
         typescript({

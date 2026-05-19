@@ -1,5 +1,3 @@
-const DEV = Boolean(process.env.DEV as unknown as boolean ?? false);
-
 type UIClasses = {
   btn: string;
   btnPrimary: string;
@@ -28,27 +26,7 @@ type UIAnimations = {
   loadingSpin: string;
 };
 
-const readableClasses: UIClasses = {
-  btn: "instg-btn",
-  btnPrimary: "instg-btn-primary",
-  btnSuccess: "instg-btn-success",
-  modalOverlay: "instg-modal-overlay",
-  modal: "instg-modal",
-  modalContent: "instg-modal-content",
-  modalHeader: "instg-modal-header",
-  modalBody: "instg-modal-body",
-  modalFooter: "instg-modal-footer",
-  modalButton: "instg-modal-button",
-  modalShow: "instg-modal-show",
-  modalVisible: "instg-modal-visible",
-  modalDb: "instg-modal-db",
-  settings: "instg-settings",
-  loading: "instg-loading",
-  loadingSpinner: "instg-loading-spinner",
-  loadingText: "instg-loading-text",
-};
-
-const compactClasses: UIClasses = {
+export const uiClasses: UIClasses = {
   btn: "a",
   btnPrimary: "b",
   btnSuccess: "c",
@@ -68,22 +46,10 @@ const compactClasses: UIClasses = {
   loadingText: "q",
 };
 
-const readableIds: UIIds = {
-  bulkDownloadIndicator: "instg-bulk-download-indicator",
-};
-
-const compactIds: UIIds = {
+export const uiIds: UIIds = {
   bulkDownloadIndicator: "r",
 };
 
-const readableAnimations: UIAnimations = {
-  loadingSpin: "instg-spin",
-};
-
-const compactAnimations: UIAnimations = {
+export const uiAnimations: UIAnimations = {
   loadingSpin: "s",
 };
-
-export const uiClasses = DEV ? readableClasses : compactClasses;
-export const uiIds = DEV ? readableIds : compactIds;
-export const uiAnimations = DEV ? readableAnimations : compactAnimations;

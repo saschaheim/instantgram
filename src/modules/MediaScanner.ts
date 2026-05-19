@@ -41,6 +41,9 @@ export class MediaScanner implements Module {
             case "settings_general_4":
                 program.settings.formattedFilenameInput = String(value);
                 break;
+            case "settings_general_5":
+                program.settings.videosMuted = Boolean(value);
+                break;
             case "settings_stories_1":
                 program.settings.storiesMuted = Boolean(value);
                 break;
@@ -93,10 +96,13 @@ export class MediaScanner implements Module {
         });
     }
 
-    private applyLiveStorySettings(modalElement: HTMLElement, program: Program): void {
+    private applyLiveVideoSettings(modalElement: HTMLElement, program: Program): void {
+        const shouldMute = window.location.pathname.startsWith("/stories/")
+            ? program.settings.storiesMuted
+            : program.settings.videosMuted;
         modalElement.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
-            video.muted = program.settings.storiesMuted;
-            if (program.settings.storiesMuted) {
+            video.muted = shouldMute;
+            if (shouldMute) {
                 video.setAttribute("muted", "");
             } else {
                 video.removeAttribute("muted");
@@ -321,21 +327,25 @@ export class MediaScanner implements Module {
         return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="noopener noreferrer">${this.postExampleUrl}</a></div>`;
     }
 
-    private debugStoryLog(program: Program, step: string): void {
-        if (window.location.pathname.startsWith("/stories/")) {
-            console.info(`[${program.NAME}] story debug: ${step}`);
-        }
+    private buildUtilityHeading(program: Program): string {
+        return `<h5>
+                    <span class="header-text-left">${logo}</span>
+                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
+                </h5>`;
     }
 
-    private buildDebugBody(result?: MediaScanResult | null): string {
-        const debugTrail = Array.isArray((result?.error as { debugTrail?: unknown })?.debugTrail)
-            ? ((result?.error as { debugTrail?: string[] }).debugTrail || [])
-            : [];
-        const lines = [
-            result?.errorMessage ? `errorMessage: ${result.errorMessage}` : "errorMessage: <empty>",
-            ...debugTrail
-        ];
-        return `<div style="text-align:left;padding:16px 20px;font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-word;">${lines.join("\n")}</div>`;
+    private openUtilityModal(program: Program, body: string): void {
+        new Modal({
+            heading: [this.buildUtilityHeading(program)],
+            body: [body],
+            bodyStyle: "text-align:center;padding:20px",
+            buttonList: [{ active: true, text: "Ok" }],
+            callback: (_modal, el) => {
+                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
+                    this.handleSettingsButtonClick(program);
+                });
+            }
+        }).open();
     }
 
     private initMediaModalActions(modalElement: HTMLElement, program: Program): void {
@@ -421,7 +431,7 @@ export class MediaScanner implements Module {
 
         const container = createElement('div', 'container');
         const row = createElement('div', 'row justify-content-center');
-        const col = createElement('div', 'col-12 col-lg-10 col-xl-8 mx-auto');
+        const col = createElement('div', 'col-12 mx-auto');
         const my4 = createElement('div', 'my-4');
         const nav = createElement('nav');
         const navTabs = createElement('div', 'nav nav-tabs', { id: 'nav-tab', role: 'tablist' });
@@ -445,6 +455,7 @@ export class MediaScanner implements Module {
             { title: 'msg.t1', description: 'msg.d1', settingsName: 'general-1' },
             { title: 'msg.t2', description: 'msg.d2', settingsName: 'general-2' },
             { title: 'msg.t3', description: 'msg.d3', settingsName: 'general-3' },
+            { title: 'msg.t5', description: 'msg.d5', settingsName: 'general-5' },
             { title: 'msg.t4', description: 'msg.d4', settingsName: 'general-4', isLargeInput: true },
             { title: 'mss.t1', description: 'mss.d1', settingsName: 'stories-1' },
             { title: 'mss.t2', description: 'mss.d2', settingsName: 'stories-2' },
@@ -495,22 +506,7 @@ export class MediaScanner implements Module {
     private async handleURLPatterns(program: Program): Promise<void> {
         // If the URL is not from Instagram, show a warning modal
         if (!program.hostname.includes("instagram.com")) {
-            new Modal({
-                heading: [
-                    `<h5>
-                        <span class="header-text-left">${logo}</span>
-                        <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
-                    </h5>`
-                ],
-                body: [localize("a.wo")],
-                bodyStyle: "text-align:center;padding:20px",
-                buttonList: [{ active: true, text: "Ok" }],
-                callback: (_modal, el) => {
-                    el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
-                        this.handleSettingsButtonClick(program);
-                    });
-                }
-            }).open();
+            this.openUtilityModal(program, localize("a.wo"));
             return;
         }
 
@@ -527,41 +523,19 @@ export class MediaScanner implements Module {
         // Loop through each test and execute the corresponding scanner based on the URL match
         for (const test of tests) {
             if (test.regex.test(window.location.pathname)) {
-                this.debugStoryLog(program, `matched ${test.scanner.name}`);
                 const loadingModal = this.createLoadingModal(program);
                 await loadingModal.open();
-                this.debugStoryLog(program, "loading modal opened");
 
                 try {
                     const scanner = new test.scanner();
                     if (program.DEVELOPMENT) {
                         console.log(`${this.getName()}()`, `Execute module ${scanner.getName()}`);
                     }
-                    this.debugStoryLog(program, `scanner execute start ${scanner.getName()}`);
                     const scannerResult = await scanner.execute(program);
-                    this.debugStoryLog(program, `scanner execute end ${scanner.getName()} found=${scannerResult?.found ?? "null"}`);
                     await loadingModal.close();
-                    this.debugStoryLog(program, "loading modal closed");
                     if (!scannerResult) {
-                        this.debugStoryLog(program, "scannerResult null");
-                        new Modal({
-                            heading: [
-                                `<h5>
-                                    <span class="header-text-left">${logo}</span>
-                                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
-                                </h5>`
-                            ],
-                            body: [this.buildNotFoundBody()],
-                            bodyStyle: "text-align:center;padding:20px",
-                            buttonList: [{ active: true, text: "Ok" }],
-                            callback: (_modal, el) => {
-                                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
-                                    this.handleSettingsButtonClick(program);
-                                });
-                            }
-                        }).open();
+                        this.openUtilityModal(program, this.buildNotFoundBody());
                     } else if (scannerResult.found) {
-                        this.debugStoryLog(program, "opening result modal");
                         scannerResult.foundByModule = scanner.getName();
                         this.displayModal(scannerResult,
                             `<h5>
@@ -575,7 +549,7 @@ export class MediaScanner implements Module {
                                 const modalElement = el as HTMLElement;
                                 this.initMediaModalActions(modalElement, program);
                                 this.refreshLiveDownloadLinks(modalElement, program);
-                                this.applyLiveStorySettings(modalElement, program);
+                                this.applyLiveVideoSettings(modalElement, program);
 
                                 if (modalElement.querySelector(".slider")) {
                                     const slider = modalElement.querySelector(".slider") as HTMLElement | null;
@@ -806,7 +780,7 @@ export class MediaScanner implements Module {
                                         }
 
                                         this.refreshLiveDownloadLinks(modalElement, program);
-                                        this.applyLiveStorySettings(modalElement, program);
+                                        this.applyLiveVideoSettings(modalElement, program);
 
                                         if (settingKey === "settings_general_3") {
                                             if (program.settings.autoSlideshow) {
@@ -852,32 +826,11 @@ export class MediaScanner implements Module {
                             }
                         );
                     } else {
-                        this.debugStoryLog(program, `opening not-found modal: ${scannerResult.errorMessage || "<no message>"}`);
-                        const body = window.location.pathname.startsWith("/stories/")
-                            ? this.buildDebugBody(scannerResult)
-                            : this.buildNotFoundBody();
-                        new Modal({
-                            heading: [
-                                `<h5>
-                                    <span class="header-text-left">${logo}</span>
-                                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
-                                </h5>`
-                            ],
-                            body: [body],
-                            bodyStyle: "text-align:center;padding:20px",
-                            buttonList: [{ active: true, text: "Ok" }],
-                            callback: (_modal, el) => {
-                                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
-                                    this.handleSettingsButtonClick(program);
-                                });
-                            }
-                        }).open();
+                        this.openUtilityModal(program, this.buildNotFoundBody());
                     }
                 } catch (error) {
                     await loadingModal.close();
-                    const scanner = new test.scanner();
-                    this.debugStoryLog(program, `scanner threw ${scanner.getName()}`);
-                    console.error(`Error executing scanner ${scanner.getName()}:`, error);
+                    console.error(`Error executing scanner ${test.scanner.name}:`, error);
                 }
 
                 return;
@@ -953,31 +906,23 @@ export class MediaScanner implements Module {
      * @param program The program object containing the configuration and context.
      */
     public async execute(program: Program): Promise<void> {
-        this.debugStoryLog(program, "execute entered");
         if (program.DEVELOPMENT) {
             console.log(`${this.getName()}()`, "Starts");
         }
         try {
             // Check if the modal is already open to prevent multiple modals from being triggered
-            this.debugStoryLog(program, "before isModalOpen");
             if (this.isModalOpen()) {
-                this.debugStoryLog(program, "isModalOpen=true");
                 this.shakeModal(uiClasses.modal); // If modal is open, shake it to get attention
                 return;
             }
 
             // Initialize necessary styles for the page
-            this.debugStoryLog(program, "before initializeStyles");
             this.initializeStyles(program);
-            this.debugStoryLog(program, "after initializeStyles");
 
             // Handle different URL patterns and trigger the appropriate scanner
-            this.debugStoryLog(program, "before handleURLPatterns");
             await this.handleURLPatterns(program);
-            this.debugStoryLog(program, "after handleURLPatterns");
         } catch (e) {
             // Log any errors that occur during execution
-            this.debugStoryLog(program, `execute catch: ${e instanceof Error ? e.message : String(e)}`);
             console.error(`${this.getName()}()`, `[${program.NAME}] ${program.VERSION}`, e);
         }
     }

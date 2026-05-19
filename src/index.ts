@@ -1,6 +1,7 @@
 import { Program } from "./App";
-import { MediaScanner } from "./modules/MediaScanner";
 import { getBrowserInfo } from "./helpers/common";
+import localize from "./helpers/localize";
+import { MediaScanner } from "./modules/MediaScanner";
 //import VersionUpdater from "./modules/Update";
 
 // Define constants for the application
@@ -17,45 +18,38 @@ export const program: Program = {
     STORAGE_NAME: STORAGE_NAME, // Set the storage name used for localStorage keys
     DEVELOPMENT: DEVELOPMENT, // Set the development flag to enable developer mode features
     VERSION: VERSION, // Set the application version
-    browser: getBrowserInfo(), // Retrieve the browser information (name, version)
+    browser: getBrowserInfo(),
     hostname: window.location.hostname, // Get the current hostname (e.g., "instagram.com")
-    path: window.location.pathname, // Get the current path (e.g., "/stories/highlights/123")
+    path: window.location.pathname,
 
     // Regular expressions used for matching specific URL paths
-    regexHostname: /^(?:www\.)?instagram\.com$/i, // Regex to match supported Instagram hostnames
+    regexHostname: /^instagram\.com$/,
     regexRootPath: /^\/+$/, // Regex to match the root path (e.g., "/")
     regexProfilePath: /^\/(\w[-\w.]+)\/?$/, // Regex to match Instagram profile paths (e.g., "/username/")
     regexPostPath: /^\/p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/")
     regexReelURI: /^\/reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
     regexReelsURI: /^\/reels\/[^/]+\/?$/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
     regexStoriesURI: /^(?:\/stories\/[\w.]+(?:\/\d+)?\/?|\/stories\/highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
+    foundByModule: null,
 
-    foundByModule: null, // Initially set to null, stores the module that found the current media
 
     // User settings, fetched from localStorage to persist across sessions
     settings: {
         showAds: localStorage.getItem(`${STORAGE_NAME}_settings_general_1`) === "true", // User preference for showing ads
         openInNewTab: localStorage.getItem(`${STORAGE_NAME}_settings_general_2`) === "true", // Open links in new tab setting
         autoSlideshow: localStorage.getItem(`${STORAGE_NAME}_settings_general_3`) === "true", // Auto slideshow setting
+        videosMuted: localStorage.getItem(`${STORAGE_NAME}_settings_general_5`) === "true", // Mute regular videos by default
         formattedFilenameInput: localStorage.getItem(`${STORAGE_NAME}_settings_general_4`) || "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}", // Filename format for downloaded files
         storiesMuted: localStorage.getItem(`${STORAGE_NAME}_settings_stories_1`) === "true", // Mute stories by default setting
         noMultiStories: localStorage.getItem(`${STORAGE_NAME}_settings_stories_3`) === "true" // Prevent multiple stories from being shown at once
     }
 };
 
-// If the app is running in development mode, log relevant information for debugging
-if (DEVELOPMENT) {
-    console.info(["Developer Mode Caution!", program]); // Log the program object for debugging
-    if (program.browser) {
-        console.info(["Browser Name", program.browser.name]); // Log the browser name
-        console.info(["Browser Version", program.browser.version]); // Log the browser version
-        console.info(["Browser OS", navigator.platform]); // Log the operating system of the browser
-    }
-}
-
-if (window.location.pathname.startsWith("/stories/")) {
-    console.info(`[${APP_NAME}] debug build loaded ${VERSION}`);
-}
+console.info(localize("h.ld"));
+console.info(["Developer Mode Caution!", program]);
+console.info(["Browser Name", program.browser.name]);
+console.info(["Browser Version", program.browser.version]);
+console.info(["Browser OS", navigator.platform]);
 
 /**
  * The main function to run the application.

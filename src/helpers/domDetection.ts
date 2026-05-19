@@ -97,7 +97,7 @@ export const findAD = (el: HTMLElement, isStory?: boolean): boolean => {
     if (isStory) {
         const adText = getAdText();
         if (adText) {
-            return Object.values(localization.langs).some(locale => locale.ad === adText);
+            return localization.ad === adText;
         }
         return false;
     }
