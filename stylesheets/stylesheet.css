@@ -17,21 +17,28 @@ a {
 
 .btn {
   display: inline-block;
-  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.96);
   background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.38);
   border-style: solid;
   border-width: 1px;
   border-radius: 0.3rem;
-  transition: color 0.2s, background-color 0.2s, border-color 0.2s; }
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
   .btn + .btn {
     margin-left: 1rem; }
 
 .btn:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: #fff;
   text-decoration: none;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3); }
+  background-color: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.52);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+  transform: translateY(-1px); }
 
 @media screen and (min-width: 64em) {
   .btn {
@@ -89,8 +96,28 @@ a {
 
 .project-tagline {
   margin-bottom: 2rem;
-  font-weight: normal;
-  opacity: 0.7; }
+  font-weight: 600;
+  opacity: 0.92;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.16); }
+
+.project-name {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+
+.page-header small {
+  display: inline-block;
+  margin-top: 0.2rem;
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.14); }
+
+.language-bar a {
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.14); }
+
+.language-bar a:hover {
+  color: #fff;
+  text-decoration: none; }
 
 @media screen and (min-width: 64em) {
   .project-tagline {
