@@ -78,13 +78,7 @@ export function findMediaInSpecificElementAndChildren(el: HTMLElement) {
         if (!obj || typeof obj !== 'object') return;
 
         for (const key in obj) {
-            if (typeof obj[key] === 'string') {
-                if (obj[key].startsWith('http') && obj[key].includes('mp4')) {
-                    console.log('MP4 URL found:', obj[key]);
-                } else if (obj[key].startsWith('http') && obj[key].includes('jpg')) {
-                    console.log('JPG URL found:', obj[key]);
-                }
-            } else if (typeof obj[key] === 'object') {
+            if (typeof obj[key] === 'object') {
                 searchForMedia(obj[key]);
             }
         }
@@ -190,9 +184,7 @@ export function findMediaUrl(el: HTMLElement, propName?: string) {
 
 export const processMediaUrls = (mediaUrlElements: Array<{ url: string }>) => {
     return mediaUrlElements.map(mediaElement => {
-        const videoUrl = getOriginalVideo(null, mediaElement.url);
-        console.log(videoUrl);
-        return videoUrl;
+        return getOriginalVideo(null, mediaElement.url);
     })
         .filter(url => url !== null);
 };

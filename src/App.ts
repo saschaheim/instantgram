@@ -1,6 +1,6 @@
 /**
  * Program represents the configuration and state information for the application.
- * This type includes details such as the app's version, browser info, regex patterns,
+ * This type includes details such as the app's version, regex patterns,
  * and user-specific settings for controlling the application's behavior.
  */
 export type Program = {
@@ -33,30 +33,25 @@ export type Program = {
    * Example: '1.0.0'
    */
   VERSION: string;
-
-  /**
-   * The browser's name and version being used to run the application.
-   * Example: { name: 'Chrome', version: '91.0.4472.124' }
-   */
-  browser: { name: string, version: string };
+  browser: { name: string; version: string };
 
   /**
    * The hostname of the current webpage or application.
    * Example: 'www.instagram.com'
    */
   hostname: string;
+  path: string;
+  regexHostname: RegExp;
 
   /**
    * The path of the current URL.
    * Example: '/stories/highlights/12345/'
    */
-  path: string;
 
   /**
    * A regular expression pattern to match the hostname (e.g., to verify if it’s Instagram).
    * Example: /^www\.instagram\.com$/
    */
-  regexHostname: RegExp;
 
   /**
    * A regular expression pattern to match the root path of the website.
@@ -93,12 +88,12 @@ export type Program = {
    * Example: /^\/stories\/[a-zA-Z0-9_-]+$/
    */
   regexStoriesURI: RegExp;
+  foundByModule: string | null | undefined;
 
   /**
    * The module that found the current media (e.g., 'FeedScanner', 'ReelsScanner').
    * This is useful for identifying which module was responsible for identifying a piece of media.
    */
-  foundByModule: string | null | undefined;
 
   /**
    * Settings related to the user's preferences for the application.
@@ -121,6 +116,7 @@ export type Program = {
      * When set to `true`, the slideshow will automatically advance.
      */
     autoSlideshow: boolean;
+    videosMuted: boolean;
 
     /**
      * The format used for generating filenames. The placeholders in this string are replaced with actual data.

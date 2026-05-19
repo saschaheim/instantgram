@@ -1,6 +1,7 @@
 ---
 layout: layout.hbs
 lang: en-US
+show_all_buttons: true
 
 project_lead: ☁️ A bookmarklet for downloading images from Instagram.
 project_button_helper: drag this button to the bookmark bar of your browser.

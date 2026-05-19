@@ -1,58 +1,50 @@
-# <img style="float: left; vertical-align: bottom; " width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2024.12.18 Merry Christmas! 🎄🎉
-![GitHub release](https://img.shields.io/badge/release-v2024.12.18-green)
+# <img style="float: left; vertical-align: bottom;" width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2026.05.20
+![GitHub release](https://img.shields.io/badge/release-v2026.05.20-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](http://standardjs.com/)
 
-[Versão em Português =)](http://saschaheim.github.io/instantgram/lang/pt-br)
+[Portuguese version](http://saschaheim.github.io/instantgram/lang/pt-br)
 
-[instantgram] is a bookmarklet with the purpose of downloading Instagram images. It is tiny, simple, and doesn't require extensions or downloads. Just access [this link][1] and drag the [instantgram] button to the bookmark bar of your browser, navigate to instagram.com (web), open an Instagram post (photo) and click on the bookmarklet. That's all it takes!
+[instantgram] is a bookmarklet for downloading Instagram media. It is tiny, simple, and does not require extensions or extra downloads. Open [this link][1], drag the [instantgram] button to your browser's bookmarks bar, navigate to instagram.com, open an Instagram post, and click the bookmarklet. That's it.
 
 ### [:arrow_right: Bookmarklet][1]
 
 ![gif demo](img/demo.gif)
 
-:bulb: We have completely rewritten instantgram. \
-With this version we support all modern browsers that have ECMAScript 2015 (es6) support.
+:bulb: instantgram has been completely rewritten. \
+This version supports all modern browsers with ECMAScript 2015 (ES6) support.
 
 ## Compatibility
 
-|       Browser        |     Compatible?    |
-| -------------------- | -------------------|
-| Google Chrome        | :white_check_mark: |
-| Mozilla Firefox     | :white_check_mark: |
-| Edge on chromium >=80 | :white_check_mark: |
-| Edge Legacy*                | :warning:          |
+| Browser | Compatible? |
+| ------- | ----------- |
+| Google Chrome | :white_check_mark: |
+| Mozilla Firefox | :white_check_mark: |
+| Edge on Chromium >= 80 | :white_check_mark: |
+| Edge Legacy* | :warning: |
 | Internet Explorer 11 | :x: |
-*_ apparently Edge Legacy doesn't allow you to drag a button to the bookmark bar
 
+*_ Apparently Edge Legacy does not allow dragging a button to the bookmarks bar.
 
 ## Roadmap
 
-- ?
+- Ongoing maintenance, bug fixes, and Instagram compatibility updates.
 
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
+
+- v2026.05.20 - [instantgram] Large refactor and feature update release. Split oversized helper/style modules into focused files, improved modal handling and race-condition safety, added loader feedback, added expand mode for media, improved slider progress/playback behavior, added live settings updates for the open modal, added a separate mute setting for regular videos, improved profile/story/post detection and URL handling, restored browser/debug logging, switched to language-specific bookmarklet builds with multiple drag buttons on the overview page, and cleaned up the build pipeline so each locale now ships its own dedicated bundle.
 - v2024.12.18 - Inserted comments across the entire code to clarify the logic, steps, and reasoning behind key parts of the implementation. Focused on areas that were previously unclear or complex to ensure the code is easier to follow for future developers.
-- v2024.10.07 - [instangram] merged with [instantgram-light] due to the new build system, as we are now under the 65KB limit.
-- v2024.06.11 - [instangram] Fixed github pages bug, fixed current slider number often not correct detected...
-- v2024.06.06 - [instangram] Replaced the old, inefficient webpack build system with Rollup. Also, switched from the Babel minimizer to SWC. Removed the Bookmarkletify dependency and updated Metalsmith to the latest version. Completed an efficient rewrite of all modules to reduce the overall size. Redesigned the UI into tabs to clarify some settings and added some new settings. Fixed some videos are treated as images. And many more cosmetic fixes...
-- v2023.06.01 - [instangram] Complete rewrite of instantgram changed the way this software detects images/videos.\
-No more problems if Instagram changes their frontend!\
-Added for every post/story a modal to easier select the needed image/video.\
-Also it is now possible to click on download and it will starts donwloading instead of open a new tab.\
-In the future, options will be introduced with which one can make personal settings that will be taken into account at the next call.
-- v2023.04.12 - [instangram] Fixed issue #29 [Sound getting stripped from some videos]. \
-Have done some spring cleaning.
-- v2022.12.10 - [instangram] Fixed issue #27 [Stories completely nonfunctional]. \
-Fixed some other bugs.
-- v2022.10.28 - [instangram] Support for the latest backend version of instagram. \
-New versioning.
-Fixed stories video detection. #23
-Fixed wrong order capturing. #24
+- v2024.10.07 - [instantgram] Merged with [instantgram-light] due to the new build system, keeping the bookmarklet under the 65 KB limit.
+- v2024.06.11 - [instantgram] Fixed a GitHub Pages bug and improved slider index detection.
+- v2024.06.06 - [instantgram] Replaced the old webpack build with Rollup, switched minification from Babel to SWC, removed the Bookmarkletify dependency, updated Metalsmith, reduced overall bundle size, redesigned the UI into tabs, added new settings, fixed videos being treated as images, and shipped multiple cosmetic fixes.
+- v2023.06.01 - [instantgram] Complete rewrite of the media detection system. This made post/story selection more robust against Instagram frontend changes, added a media picker modal for posts and stories, and allowed direct downloads instead of always opening a new tab.
+- v2023.04.12 - [instantgram] Fixed issue #29 [Sound getting stripped from some videos] and did some general cleanup.
+- v2022.12.10 - [instantgram] Fixed issue #27 [Stories completely nonfunctional] and several related bugs.
+- v2022.10.28 - [instantgram] Added support for the latest Instagram backend version, introduced new versioning, fixed stories video detection (#23), and fixed incorrect order capturing (#24).
 
-
-[1]:http://saschaheim.github.io/instantgram
+[1]: http://saschaheim.github.io/instantgram

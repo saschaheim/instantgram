@@ -12,7 +12,8 @@
   "type": "commonjs",
   "main": "src/index.js",
   "scripts": {
-    "build": "npm run build:clean && npm run build:rollup && npm run build:release",
+    "build": "npm run build:clean && npm run build:bundles && npm run build:release",
+    "build:bundles": "node scripts/build-localized-bundles.js",
     "build:clean": "powershell -Command \"if (Test-Path dist) { Get-ChildItem -Path dist -Filter *.map -File -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue }\"",
     "build:bookmarklet": "node scripts/bookmarkletify.js",
     "build:bookmarklet:dev": "node scripts/bookmarkletify.js --dev",
@@ -22,7 +23,7 @@
     "build:rollup": "rollup -c",
     "dev": "concurrently \"npm run dev:rollup\" \"npm run dev:watch\"",
     "dev:rollup": "rollup -c -w",
-    "dev:watch": "nodemon --watch dist/main.js --exec \"npm run build:release:dev\"",
+    "dev:watch": "nodemon --watch dist --ext js --exec \"npm run build:release:dev\"",
     "lint": "eslint **/*.ts",
     "start": "npm run dev"
   },

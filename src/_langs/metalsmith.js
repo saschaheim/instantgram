@@ -15,6 +15,7 @@ const permalinks = require('@metalsmith/permalinks');  // Plugin for creating UR
 
 // Data files for localization and versioning
 const langs = require('./langs.json');  // Localization data (typically JSON for supported languages)
+const bookmarklets = require('./bookmarklets.js');
 const jsonpkg = require('../../package.json');  // Project metadata, including version info from package.json
 
 // Register custom Handlebars helper for lowercase conversion
@@ -30,6 +31,7 @@ Metalsmith(__dirname)  // Initialize Metalsmith with the current directory
   .destination('../../lang')  // Set the destination directory where the built files will be saved
   .use(define({
     'langs': langs,  // Inject the languages data into the build process
+    'bookmarklets': bookmarklets,
     'version': jsonpkg.version  // Inject the current version of the project into the build process
   }))
   .use(markdown())  // Convert Markdown files to HTML

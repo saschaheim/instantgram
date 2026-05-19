@@ -23,6 +23,9 @@ import {
 } from "./mediaFormatting";
 import { isDownloadableImageLike } from "./instagramTypes";
 
+const isStoriesPage = () => window.location.pathname.startsWith("/stories/");
+const resolveVideoMuted = (program: Program) => isStoriesPage() ? program.settings.storiesMuted : program.settings.videosMuted;
+
 const buildDownloadDataAttributes = (attributes: Record<string, string | number | undefined>) =>
     Object.entries(attributes)
         .filter(([, value]) => value !== undefined)
@@ -110,7 +113,7 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
                 return { found: false, errorMessage: "No ad media URL found." };
             }
             const { formattedFilename, url } = getFormattedFilenameAndUrl(resolvedAdUrl, userName, program.settings.formattedFilenameInput, 0);
-            const mediaElement = getMediaElement(mediaType, url, program.settings.storiesMuted);
+            const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
             const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(formattedFilename)}`;
             const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
             const downloadDataAttributes = buildDownloadDataAttributes({
@@ -190,7 +193,7 @@ export async function generateModalBodyHelper(
 export const addMediaToBody = (modalBody: string, media: DownloadableMedia, index: number, userName: string, program: Program): string => {
     const { formattedFilename, url } = getFormattedFilenameAndUrl(media, userName, program.settings.formattedFilenameInput, index);
     const mediaType = isInstagramMediaItem(media) ? resolveElementMediaType(media) : MediaType.Image;
-    const mediaElement = getMediaElement(mediaType, url, program.settings.storiesMuted);
+    const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
     const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(formattedFilename)}`;
     const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
     const downloadDataAttributes = buildDownloadMetadataAttributes(media, userName, index);

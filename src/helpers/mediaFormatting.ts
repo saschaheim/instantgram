@@ -58,9 +58,9 @@ export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: "mp4" |
     }
 };
 
-export const getMediaElement = (mediaType: MediaType, url: string, storiesMuted: boolean): string => {
+export const getMediaElement = (mediaType: MediaType, url: string, muted: boolean): string => {
     return mediaType === MediaType.Video
-        ? `<video style="background:black;" height="450" src="${url}" controls preload="metadata"${storiesMuted ? " muted" : ""}></video>`
+        ? `<video style="background:black;" height="450" src="${url}" controls preload="metadata"${muted ? " muted" : ""}></video>`
         : `<img src="${url}" />`;
 };
 
