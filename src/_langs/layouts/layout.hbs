@@ -22,7 +22,7 @@
     <div class="language-bar">
       <p>
         {{#each langs}}
-        <a data-lang="{{ lang }}" href="{{ link }}?force=true"><span>{{ name }}</span></a> |
+        <a data-lang="{{ lang }}" href="{{ link }}?force=true"><span>{{ name }}</span></a>{{#unless @last}} |{{/unless}}
         {{/each}}
       </p>
     </div>
