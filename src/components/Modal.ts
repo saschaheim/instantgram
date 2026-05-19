@@ -1,7 +1,8 @@
 /* eslint-disable */
 import { program } from "..";
 import { cssModal } from "./Interconnect";
-import { sleep } from "../helpers/utils";
+import { uiClasses } from "./uiTokens";
+import { sleep } from "../helpers/common";
 
 /**
  * ModalButton interface defines the structure for the buttons in the modal.
@@ -24,6 +25,7 @@ export interface ModalOptions {
   body?: (HTMLElement | string)[]; // Body content, which can be strings or HTML element(s)
   bodyStyle?: string; // Optional custom CSS for the modal body
   buttonList?: ModalButton[]; // Array of buttons to display in the modal
+  closeOnOverlayClick?: boolean; // Whether clicking the overlay should close the modal
   callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback to execute after opening the modal
 }
 
@@ -37,9 +39,38 @@ export class Modal {
   public body?: (HTMLElement | string)[]; // Modal body content (string or HTML element(s))
   public bodyStyle?: string; // Custom styles for the modal body
   public buttonList?: ModalButton[]; // List of buttons to display in the modal
+  public closeOnOverlayClick: boolean; // Whether overlay click closes the modal
   public callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback function for modal actions
 
   private modal: HTMLDivElement | null = null; // Stores the modal element
+  private closePromise: Promise<void> | null = null;
+  private openTimerId: number | null = null;
+
+  private get domPrefix(): string {
+    return program.DOM_PREFIX;
+  }
+
+  private containsHtml(value: string): boolean {
+    return /<\/?[a-z][\s\S]*>/i.test(value);
+  }
+
+  private appendContent(container: HTMLElement, content: HTMLElement | string, plainTextTag = "div"): void {
+    if (typeof content !== "string") {
+      container.appendChild(content);
+      return;
+    }
+
+    if (!this.containsHtml(content)) {
+      const textNode = document.createElement(plainTextTag);
+      textNode.textContent = content;
+      container.appendChild(textNode);
+      return;
+    }
+
+    const template = document.createElement("template");
+    template.innerHTML = content;
+    container.appendChild(template.content.cloneNode(true));
+  }
 
   /**
    * The constructor initializes the modal with the provided options.
@@ -51,13 +82,14 @@ export class Modal {
     this.body = modalOptions.body || [""];
     this.bodyStyle = modalOptions.bodyStyle || "";
     this.buttonList = modalOptions.buttonList || [];
+    this.closeOnOverlayClick = modalOptions.closeOnOverlayClick ?? true;
     this.callback = modalOptions.callback || null;
 
-    const element = document.getElementById(program.NAME + "-modal");
+    const element = document.getElementById(this.domPrefix + "-modal");
     if (element == null) {
       const style = document.createElement("style");
-      style.id = program.NAME + "-modal";
-      style.innerHTML = cssModal; // Add modal CSS styles dynamically if they don't exist
+      style.id = this.domPrefix + "-modal";
+      style.textContent = cssModal; // Add modal CSS styles dynamically if they don't exist
       document.head.appendChild(style);
     }
   }
@@ -74,19 +106,24 @@ export class Modal {
    */
   private createModal(): HTMLDivElement {
     const modalElement = document.createElement("div");
-    modalElement.classList.add(program.NAME + "-modal-overlay"); // Add overlay for the modal background
+    modalElement.classList.add(uiClasses.modalOverlay); // Add overlay for the modal background
+    modalElement.addEventListener("click", (event: MouseEvent) => {
+      if (this.closeOnOverlayClick && event.target === modalElement) {
+        void this.close();
+      }
+    });
 
     const modal = document.createElement("div");
-    modal.classList.add(program.NAME + "-modal"); // Main modal container
+    modal.classList.add(uiClasses.modal); // Main modal container
     modalElement.appendChild(modal);
 
     const modalContent = document.createElement("div");
-    modalContent.classList.add(program.NAME + "-modal-content"); // Modal content container
+    modalContent.classList.add(uiClasses.modalContent); // Modal content container
     modal.appendChild(modalContent);
 
     // Header section for the modal
     const modalHeader = document.createElement("div");
-    modalHeader.classList.add(program.NAME + "-modal-header");
+    modalHeader.classList.add(uiClasses.modalHeader);
     if (this.headingStyle.length > 0) {
       modalHeader.setAttribute("style", this.headingStyle); // Apply custom heading styles
     }
@@ -94,29 +131,12 @@ export class Modal {
 
     // Add heading content
     this.heading.forEach(heading => {
-      if (typeof heading === "string" && !/<\/?[a-z][\s\S]*>/i.test(heading)) {
-        const modalTitle = document.createElement("h5");
-        modalTitle.innerHTML = heading; // If heading is a string, add as text
-        modalHeader.appendChild(modalTitle);
-      } else {
-        if (/<\/?[a-z][\s\S]*>/i.test(heading as string)) {
-          const a = document.createElement("div");
-          const b = document.createDocumentFragment();
-          a.innerHTML = heading as string; // Handle HTML content in the heading
-          let i;
-          while ((i = a.firstChild) !== null) {
-            b.appendChild(i);
-          }
-          modalHeader.appendChild(b);
-        } else {
-          modalHeader.appendChild(heading as HTMLElement);
-        }
-      }
+      this.appendContent(modalHeader, heading, "h5");
     });
 
     // Body section for the modal
     const modalBody = document.createElement("div");
-    modalBody.classList.add(program.NAME + "-modal-body");
+    modalBody.classList.add(uiClasses.modalBody);
     if (this.bodyStyle.length > 0) {
       modalBody.setAttribute("style", this.bodyStyle); // Apply custom body styles
     }
@@ -138,37 +158,20 @@ export class Modal {
 
     // Add body content
     this.body.forEach(content => {
-      if (typeof content === "string" && !/<\/?[a-z][\s\S]*>/i.test(content)) {
-        const modalText = document.createElement("div");
-        modalText.innerText = content; // If content is a string, add as text
-        modalBody.appendChild(modalText);
-      } else {
-        if (/<\/?[a-z][\s\S]*>/i.test(content as string)) {
-          const a = document.createElement("div");
-          const b = document.createDocumentFragment();
-          a.innerHTML = content as string; // Handle HTML content in the body
-          let i;
-          while ((i = a.firstChild) !== null) {
-            b.appendChild(i);
-          }
-          modalBody.appendChild(b);
-        } else {
-          modalBody.appendChild(content as HTMLElement);
-        }
-      }
+      this.appendContent(modalBody, content);
     });
 
     // Button section for the modal
     if (this.buttonList.length > 0) {
       const modalFooter = document.createElement("div");
-      modalFooter.classList.add(program.NAME + "-modal-footer");
+      modalFooter.classList.add(uiClasses.modalFooter);
       modalContent.appendChild(modalFooter);
 
       // Add buttons to the footer
       this.buttonList.forEach((button: ModalButton) => {
         const modalButton = document.createElement("button");
-        modalButton.classList.add(program.NAME + "-modal-button");
-        modalButton.innerText = button.text;
+        modalButton.classList.add(uiClasses.modalButton);
+        modalButton.textContent = button.text;
 
         if (button.active) {
           modalButton.classList.add("active");
@@ -184,7 +187,7 @@ export class Modal {
         modalFooter.appendChild(modalButton);
       });
     } else {
-      modalContent.style.paddingBottom = "4px;"; // Adjust padding if no buttons
+      modalContent.style.paddingBottom = "4px"; // Adjust padding if no buttons
     }
 
     return modalElement;
@@ -194,20 +197,28 @@ export class Modal {
    * Opens the modal by creating the modal HTML and appending it to the body.
    */
   public async open(): Promise<void> {
+    if (this.closePromise) {
+      await this.closePromise;
+    }
+
     if (this.modal) {
       await this.close(); // Ensure any open modal is closed before opening a new one
     }
 
-    this.modal = this.createModal(); // Create the modal HTML
-    document.body.appendChild(this.modal); // Append modal to body
-    this.modal.classList.add(program.NAME + "-modal-visible");
-    setTimeout(() => {
-      this.modal.classList.add(program.NAME + "-modal-show");
+    const modal = this.createModal();
+    this.modal = modal; // Create the modal HTML
+    document.body.appendChild(modal); // Append modal to body
+    modal.classList.add(uiClasses.modalVisible);
+    this.openTimerId = window.setTimeout(() => {
+      if (this.modal === modal) {
+        modal.classList.add(uiClasses.modalShow);
+      }
+      this.openTimerId = null;
     });
 
     // Re-trigger the callback function if it exists
     if (this.callback) {
-      this.callback(this, this.modal);
+      this.callback(this, modal);
     }
   }
 
@@ -215,30 +226,59 @@ export class Modal {
    * Closes the modal and removes it from the DOM.
    */
   public async close(): Promise<void> {
+    if (this.closePromise) {
+      return this.closePromise;
+    }
+
     if (!this.modal) {
       return;
     }
 
-    this.modal.classList.remove(program.NAME + "-modal-show");
-    await sleep(100); // Add a small delay for the closing animation
-    this.modal.classList.remove(program.NAME + "-modal-visible");
-    this.modal.parentNode.removeChild(this.modal); // Remove modal from the DOM
-    this.modal = null;
+    const modal = this.modal;
+    if (this.openTimerId !== null) {
+      clearTimeout(this.openTimerId);
+      this.openTimerId = null;
+    }
+
+    this.closePromise = (async () => {
+      modal.classList.remove(uiClasses.modalShow);
+      await sleep(100); // Add a small delay for the closing animation
+      modal.classList.remove(uiClasses.modalVisible);
+      if (modal.parentNode) {
+        modal.parentNode.removeChild(modal); // Remove modal from the DOM
+      }
+      if (this.modal === modal) {
+        this.modal = null;
+      }
+      this.closePromise = null;
+    })();
+
+    return this.closePromise;
   }
 
   /**
    * Refreshes the modal by closing and reopening it.
    */
   public async refresh(): Promise<void> {
+    if (this.closePromise) {
+      await this.closePromise;
+    }
     if (this.modal) {
-      this.modal.parentNode.removeChild(this.modal);
-      this.modal = null;
+      const modal = this.modal;
+      if (this.openTimerId !== null) {
+        clearTimeout(this.openTimerId);
+        this.openTimerId = null;
+      }
+      if (modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+      }
+      if (this.modal === modal) {
+        this.modal = null;
+      }
     }
     await this.open(); // Reopen the modal
 
     // Re-trigger the callback function if it exists
-    if (this.callback) {
-      this.callback(this, this.modal.querySelector("." + program.NAME + "-modal-body")!);
-    }
+    // open() already runs callback
   }
 }

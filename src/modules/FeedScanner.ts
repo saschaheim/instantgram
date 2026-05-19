@@ -1,7 +1,8 @@
 import { Program } from "../App";
 import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { getElementInViewPercentage, generateModalBody } from "../helpers/utils";
+import { getElementInViewPercentage } from "../helpers/domDetection";
+import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * FeedScanner is a module responsible for scanning the feed and collecting media-related information from the articles.
@@ -69,7 +70,8 @@ export class FeedScanner implements Module {
         } catch (e) {
             // Log any errors to the console with program details
             console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            return { found: false, errorMessage: e.message, error: e }; // Return error information
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            return { found: false, errorMessage, error: e }; // Return error information
         }
     }
 }

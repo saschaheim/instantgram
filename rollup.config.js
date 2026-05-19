@@ -6,14 +6,13 @@ const cssnano = require('cssnano'); // Import the CSSNano plugin for minifying C
 const { swc } = require('rollup-plugin-swc3'); // Import SWC (Speedy Web Compiler) for JavaScript/TypeScript transpiling
 
 const development = process.env.ROLLUP_WATCH === 'true'; // Determine if the environment is in development mode (based on ROLLUP_WATCH)
-
 module.exports = {
     input: 'src/index.ts', // Entry file for the Rollup build (TypeScript file)
     output: {
         file: 'dist/main.js', // Output file path
         format: 'iife', // Output format (IIFE - Immediately Invoked Function Expression)
         name: 'Instantgram', // Global variable name for the bundle
-        sourcemap: false, // Disable sourcemaps in the output
+        sourcemap: false, // Keep output stable; SWC currently errors on TypeScript sourcemap chaining in watch mode
     },
     plugins: [
         replace({
@@ -23,7 +22,7 @@ module.exports = {
         }),
         typescript({
             tsconfig: './tsconfig.json', // Use the TypeScript configuration from tsconfig.json
-            sourceMap: false, // Disable source maps for TypeScript
+            sourceMap: false, // Avoid generating intermediary TS source map hints that SWC tries to resolve
         }),
         swc({
             jsc: {
@@ -34,16 +33,16 @@ module.exports = {
                 transform: {},
                 target: 'esnext', // Target modern JavaScript (ESNext)
             },
-            sourceMaps: false, // Disable source maps in the SWC plugin
-            minify: true, // Minify the JavaScript output
+            sourceMaps: false, // Avoid SWC source map resolution errors in watch mode
+            minify: !development, // Skip JS minification in watch mode
         }),
         postcss({
-            plugins: [
+            plugins: development ? [] : [
                 cssnano({
                     preset: 'default', // Use the default CSSNano preset for minification
                 }),
             ],
-            minimize: true, // Minimize the CSS output
+            minimize: !development, // Skip CSS minification in watch mode
             inject: false, // Optional: if you want to extract the CSS to a separate file
         }),
         analyze({ summaryOnly: true }) // Analyze the build and show only the summary of the bundle

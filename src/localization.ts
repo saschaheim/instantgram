@@ -1,154 +1,134 @@
-export default {
-    // Object holding different languages for localization
-    "langs": {
-        // English localization
-        "en-US": {
-            // Default language setting message. This is shown when the default language is set
-            "helpers.localizeDefaultLang": "[instantgram] set language: ${LANG_DEFAULT} \n For more information about available languages please check http://saschaheim.github.io/instantgram",
-            
-            // Alert message displayed when the app works only on Instagram
-            "alertWorksOnlyOn": "Works only on instagram.com",
+const baseLang = {
+    "h.ld": "[instantgram] set language: ${LANG_DEFAULT}\nFor more information about available languages please check http://saschaheim.github.io/instantgram",
+    "a.wo": "Works only on instagram.com",
+    "a.nf": "Did you open any Instagram post? Like for example",
+    "ms.t": "Settings",
+    "ms.a": "New: Some changes apply immediately. Others require reopening the bookmarklet.",
+    "ms.g": "General",
+    "msg.t1": "Enable monetized posts",
+    "msg.d1": "Ad blockers must be deactivated",
+    "msg.t2": "Open download in new tab",
+    "msg.d2": "The download will be opened in a new tab",
+    "msg.t3": "Slideshow on/off",
+    "msg.d3": "Enable or disable the automatic slideshow",
+    "msg.t4": "Change file name format for downloads",
+    "msg.d4": "Change the file name format for the downloads here<br/>The default format is<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+    "mss.t1": "Mute stories",
+    "mss.d1": "Stories are muted when opened",
+    "mss.t2": "Pause stories when opening",
+    "mss.d2": "Stories are paused when opened",
+    "mss.t3": "Display stories individually",
+    "mss.d3": "Stories are displayed individually when opened",
+    "d": "Download",
+    "l": "The current page is being scanned for media.",
+    "s": "Save",
+    "sd": "Saved",
+    "c": "Close",
+    "u.i": "[instantgram] is outdated. Please check http://saschaheim.github.io/instantgram for available updates.",
+    "u.v": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
+    "ad": "Sponsored"
+} as const;
 
-            // Alert message when no Instagram post is found, with a sample link
-            "alertNotFound": "Did you open any Instagram post? Like for example<br/><div style='text-align:center'><a style='color:black' href='https://www.instagram.com/p/CIGrv1VMBkS/' target='_blank'>https://www.instagram.com/p/CIGrv1VMBkS/</a></div>",
+type LocalizationKey = keyof typeof baseLang;
+type LocalizationMap = Record<LocalizationKey, string>;
+type PartialLocalizationMap = Partial<LocalizationMap>;
 
-            // Title for the settings modal
-            "modalSettingsTitle": "Settings",
+const mergeLang = (overrides: PartialLocalizationMap = {}): LocalizationMap => ({
+    ...baseLang,
+    ...overrides,
+});
 
-            // Attention message in settings modal, explaining the need to restart the app for changes to take effect
-            "modalSettingsAttention": "Attention: You must open this app again for your changes to be applied!",
+const langs = {
+    "en-US": mergeLang(),
+    "de-DE": mergeLang({
+        "h.ld": "Ausgewahlte Sprache: ${LANG_DEFAULT}\nWeitere Informationen zu den unterstutzten Sprachen findest du auf http://saschaheim.github.io/instantgram",
+        "a.wo": "Funktioniert nur auf instagram.com",
+        "a.nf": "Hast du einen Instagram Post geoffnet? Zum Beispiel",
+        "ms.t": "Einstellungen",
+        "ms.a": "Neu: Einige Anderungen gelten sofort. Andere werden erst beim erneuten Offnen des Bookmarklets ubernommen.",
+        "ms.g": "Allgemein",
+        "msg.t1": "Monetarisierte Beitrage aktivieren",
+        "msg.d1": "Werbeblocker mussen deaktiviert sein",
+        "msg.t2": "Download in neuem Tab offnen",
+        "msg.d2": "Der Download wird in einem neuen Tab geoffnet",
+        "msg.t3": "Slideshow ein/ausschalten",
+        "msg.d3": "Aktiviere oder deaktiviere die automatische Slideshow",
+        "msg.t4": "Dateinamenformat fur Downloads andern",
+        "msg.d4": "Andere hier das Dateinamenformat fur die Downloads<br/>Das Standardformat ist<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+        "mss.t1": "Stories stummschalten",
+        "mss.d1": "Beim Offnen werden Stories stummgeschaltet",
+        "mss.t2": "Stories beim Offnen pausieren",
+        "mss.d2": "Beim Offnen werden Stories pausiert",
+        "mss.t3": "Stories einzeln anzeigen",
+        "mss.d3": "Beim Offnen werden Stories einzeln angezeigt",
+        "l": "Die aktuelle Seite wird nach Medien durchsucht.",
+        "s": "Speichern",
+        "sd": "Gespeichert",
+        "c": "Schliessen",
+        "u.i": "[instantgram] ist veraltet. Bitte besuche die Seite http://saschaheim.github.io/instantgram fur ein Update.",
+        "u.v": "[instantgram] Installierte Version: ${data.version} | Neue Version: ${data.onlineVersion}",
+        "ad": "Anzeige",
+    }),
+    "es-AR": mergeLang({
+        "h.ld": "[instantgram] establecer idioma: ${LANG_DEFAULT}\nPara mas informacion sobre los idiomas disponibles, consulta http://saschaheim.github.io/instantgram",
+        "a.wo": "Solo funciona en instagram.com",
+        "a.nf": "Has abierto algun post de Instagram? Como por ejemplo",
+        "ms.t": "Ajustes",
+        "ms.a": "Nuevo: Algunos cambios se aplican de inmediato. Otros requieren volver a abrir el bookmarklet.",
+        "msg.t1": "Habilitar publicaciones monetizadas",
+        "msg.d1": "Los bloqueadores de publicidad deben estar desactivados",
+        "msg.t2": "Abrir descarga en una nueva pestana",
+        "msg.d2": "La descarga se abrira en una nueva pestana",
+        "msg.d3": "Activar/desactivar presentacion de diapositivas",
+        "msg.t4": "Cambiar el formato del nombre del archivo para descargas",
+        "msg.d4": "Cambia aqui el formato del nombre de archivo para las descargas<br/>El formato predeterminado es<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+        "mss.t1": "Historias mudas",
+        "mss.d1": "Las historias se silencian cuando se abren",
+        "mss.t2": "Pausar historias al abrir",
+        "mss.d2": "Las historias se pausan cuando se abren",
+        "mss.t3": "Mostrar historias individualmente",
+        "mss.d3": "Las historias se muestran individualmente cuando se abren",
+        "d": "Descargar",
+        "l": "La pagina actual se esta analizando en busca de contenido multimedia.",
+        "s": "Guardar",
+        "sd": "Guardado",
+        "c": "Cerrar",
+        "u.i": "[instantgram] esta obsoleto. Consulta http://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
+        "u.v": "[instantgram] Version instalada: ${data.version} | Nueva actualizacion: ${data.onlineVersion}",
+        "ad": "Publicidad",
+    }),
+    "pt-BR": mergeLang({
+        "h.ld": "[instantgram] idioma configurado: ${LANG_DEFAULT}\npara mais informacoes sobre os idiomas suportados, acesse http://saschaheim.github.io/instantgram",
+        "a.wo": "[instantgram] somente funciona no instagram.com",
+        "a.nf": "Ops, voce esta em algum post do instagram? Ex:",
+        "ms.t": "Configuracoes",
+        "ms.a": "Novo: Algumas alteracoes sao aplicadas imediatamente. Outras exigem reabrir o bookmarklet.",
+        "ms.g": "Geral",
+        "msg.t1": "Habilitar postagens monetizadas",
+        "msg.d1": "Os bloqueadores de anuncios devem ser desativados",
+        "msg.t2": "Abrir o download em uma nova guia",
+        "msg.d2": "O download sera aberto em uma nova guia",
+        "msg.t3": "Ativacao/desativacao da apresentacao de slides",
+        "msg.d3": "Ativar ou desativar a apresentacao automatica de slides",
+        "msg.t4": "Alterar o formato do nome do arquivo para downloads",
+        "msg.d4": "Altere aqui o formato do nome do arquivo para os downloads<br/>O formato padrao e<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+        "mss.t1": "Historias mudas",
+        "mss.d1": "As historias sao silenciadas quando abertas",
+        "mss.t2": "Pausar historias ao abrir",
+        "mss.d2": "As historias sao pausadas quando abertas",
+        "mss.t3": "Exibir historias individualmente",
+        "mss.d3": "As historias sao exibidas individualmente quando abertas",
+        "l": "A pagina atual esta sendo analisada em busca de midia.",
+        "s": "Salvar",
+        "sd": "Salvo",
+        "c": "Fechar",
+        "u.i": "[instantgram] esta desatualizado. Acesse http://saschaheim.github.io/instantgram para atualizar",
+        "u.v": "[instantgram] versao local: ${data.version} | nova versao: ${data.onlineVersion}",
+        "ad": "Patrocinado",
+    }),
+} as const;
 
-            // Title for the 'General' settings section
-            "modalSettingsGeneral": "General",
+export type SupportedLanguage = keyof typeof langs;
+export type LocalizationShape = typeof langs;
 
-            // Setting options in the general section
-            "modalSettingsGenTitle1": "Enable monetized posts",
-            "modalSettingsGenDesc1": "Ad blockers must be deactivated",
-
-            "modalSettingsGenTitle2": "Open download in new tab",
-            "modalSettingsGenDesc2": "The download will be opened in a new tab",
-
-            "modalSettingsGenTitle3": "Slideshow on/off",
-            "modalSettingsGenDesc3": "Enable or disable the automatic slideshow",
-
-            "modalSettingsGenTitle4": "Change file name format for downloads",
-            "modalSettingsGenDesc4": "Change the file name format for the downloads here<br/>The default format is<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
-
-            // Settings related to stories
-            "modalSettingsStoriesTitle1": "Mute stories",
-            "modalSettingsStoriesDesc1": "Stories are muted when opened",
-
-            "modalSettingsStoriesTitle2": "Pause stories when opening",
-            "modalSettingsStoriesDesc2": "Stories are paused when opened",
-
-            "modalSettingsStoriesTitle3": "Display stories individually",
-            "modalSettingsStoriesDesc3": "Stories are displayed individually when opened",
-
-            // Button texts
-            "download": "Download",
-            "save": "Save",
-            "saved": "Saved",
-            "close": "Close",
-
-            // Warning message for outdated version
-            "consoleWarnOutdatedInfo": "[instantgram] is outdated. Please check http://saschaheim.github.io/instantgram for available updates.",
-            "consoleWarnOutdatedVersions": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
-
-            // Text for advertisements
-            "ad": "Sponsored"
-        },
-
-        // German localization
-        "de-DE": {
-            "helpers.localizeDefaultLang": "Ausgewählte Sprache: ${LANG_DEFAULT} \n Weitere Informationen zu den unterstützten Sprachen findest du auf http://saschaheim.github.io/instantgram",
-            "alertWorksOnlyOn": "Funktioniert nur auf instagram.com",
-            "alertNotFound": "Hast du einen Instagram Post geöffnet? Zum Beispiel<br/><div style='text-align:center'><a style='color:black' href='https://www.instagram.com/p/CIGrv1VMBkS/' target='_blank'>https://www.instagram.com/p/CIGrv1VMBkS/</a></div>",
-            "modalSettingsTitle": "Einstellungen",
-            "modalSettingsAttention": "Achtung: Sie müssen diese App erneut öffnen, damit ihre Änderungen übernommen werden!",
-            "modalSettingsGeneral": "Allgemein",
-            "modalSettingsGenTitle1": "Monetarisierte Beiträge aktivieren",
-            "modalSettingsGenDesc1": "Werbeblocker müssen deaktiviert sein",
-            "modalSettingsGenTitle2": "Download in neuem Tab öffnen",
-            "modalSettingsGenDesc2": "Der Download wird in einem neuen Tab geöffnet",
-            "modalSettingsGenTitle3": "Slideshow ein/ausschalten",
-            "modalSettingsGenDesc3": "Aktivieren oder deaktivieren Sie die automatische Slideshow",
-            "modalSettingsGenTitle4": "Dateinamenformat für Downloads ändern",
-            "modalSettingsGenDesc4": "Ändere hier das Dateinamenformat für die Downloads<br/>Das Standardformat ist<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
-            "modalSettingsStoriesTitle1": "Stories stummschalten",
-            "modalSettingsStoriesDesc1": "Beim öffnen werden Stories stummgeschaltet",
-            "modalSettingsStoriesTitle2": "Stories beim öffnen pausieren",
-            "modalSettingsStoriesDesc2": "Beim öffnen werden Stories pausiert",
-            "modalSettingsStoriesTitle3": "Stories einzeln anzeigen",
-            "modalSettingsStoriesDesc3": "Beim öffnen werden Stories einzeln angezeigt",
-            "download": "Download",
-            "save": "Speichern",
-            "saved": "Gespeichert",
-            "close": "Schließen",
-            "consoleWarnOutdatedInfo": "[instantgram] ist veraltet. Bitte besuche die Seite http://saschaheim.github.io/instantgram für ein Update.",
-            "consoleWarnOutdatedVersions": "[instantgram] Installierte Version: ${data.version} | Neue Version: ${data.onlineVersion}",
-            "ad": "Anzeige"
-        },
-
-        // Spanish localization
-        "es-AR": {
-            "helpers.localizeDefaultLang": "[instantgram] establecer idioma: ${LANG_DEFAULT} \n Para más información sobre los idiomas disponibles, consulte http://saschaheim.github.io/instantgram",
-            "alertWorksOnlyOn": "Sólo funciona en instagram.com",
-            "alertNotFound": "¿Has abierto algún post de Instagram? Como por ejemplo<br/><div style='text-align:center'><a style='color:black' href='https://www.instagram.com/p/CIGrv1VMBkS/' target='_blank'>https://www.instagram.com/p/CIGrv1VMBkS/</a></div>",
-            "modalSettingsTitle": "Ajustes",
-            "modalSettingsAttention": "Atención: ¡Debes abrir esta aplicación nuevamente para que se apliquen los cambios!",
-            "modalSettingsGeneral": "General",
-            "modalSettingsGenTitle1": "Habilitar publicaciones monetizadas",
-            "modalSettingsGenDesc1": "Los bloqueadores de publicidad deben estar desactivados",
-            "modalSettingsGenTitle2": "Abrir descarga en una nueva pestaña",
-            "modalSettingsGenDesc2": "La descarga se abrirá en una nueva pestaña",
-            "modalSettingsGenTitle3": "Slideshow on/off",
-            "modalSettingsGenDesc3": "Activar/desactivar presentación de diapositivas",
-            "modalSettingsGenTitle4": "Cambiar el formato del nombre del archivo para descargas",
-            "modalSettingsGenDesc4": "Cambie el formato del nombre de archivo para las descargas aquí<br/>El formato predeterminado es<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
-            "modalSettingsStoriesTitle1": "Historias mudas",
-            "modalSettingsStoriesDesc1": "Las historias se silencian cuando se abren",
-            "modalSettingsStoriesTitle2": "Pausar historias al abrir",
-            "modalSettingsStoriesDesc2": "Las historias se pausan cuando se abren.",
-            "modalSettingsStoriesTitle3": "Mostrar historias individualmente",
-            "modalSettingsStoriesDesc3": "Las historias se muestran individualmente cuando se abren",
-            "download": "Descargar",
-            "save": "Ahorrar",
-            "saved": "Salvado",
-            "close": "Cerca",
-            "consoleWarnOutdatedInfo": "[instantgram] es obsoleto. Consulte en http://saschaheim.github.io/instantgram las actualizaciones disponibles.",
-            "consoleWarnOutdatedVersions": "[instantgram] Versión instalada: ${data.version} | Nueva actualización: ${data.onlineVersion}",
-            "ad": "Publicidad"
-        },
-
-        // Brazilian Portuguese localization
-        "pt-BR": {
-            "helpers.localizeDefaultLang": "[instantgram] idioma configurado: ${LANG_DEFAULT} \npara mais informações sobre os idiomas suportados, acesse http://saschaheim.github.io/instantgram",
-            "alertWorksOnlyOn": "[instantgram] somente funciona no instagram.com",
-            "alertNotFound": "ops, você está em algum post do instagram? ex:<br/><div style='text-align:center'><a style='color:black' href='https://www.instagram.com/p/CIGrv1VMBkS/' target='_blank'>https://www.instagram.com/p/CIGrv1VMBkS/</a></div>",
-            "modalSettingsTitle": "Configurações",
-            "modalSettingsAttention": "Atenção: Você deve abrir este aplicativo novamente para que suas alterações sejam aplicadas!",
-            "modalSettingsGeneral": "Geral",
-            "modalSettingsGenTitle1": "Habilitar postagens monetizadas",
-            "modalSettingsGenDesc1": "Os bloqueadores de anúncios devem ser desativados",
-            "modalSettingsGenTitle2": "Abrir o download em uma nova guia",
-            "modalSettingsGenDesc2": "O download será aberto em uma nova guia",
-            "modalSettingsGenTitle3": "Ativação/desativação da apresentação de slides",
-            "modalSettingsGenDesc3": "Ativar ou desativar a apresentação automática de slides",
-            "modalSettingsGenTitle4": "Alterar o formato do nome do arquivo para downloads",
-            "modalSettingsGenDesc4": "Altere o formato do nome do arquivo para os downloads aqui<br/>O formato padrão é<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
-            "modalSettingsStoriesTitle1": "Histórias mudas",
-            "modalSettingsStoriesDesc1": "As histórias são silenciadas quando abertas",
-            "modalSettingsStoriesTitle2": "Pausar histórias ao abrir",
-            "modalSettingsStoriesDesc2": "As histórias são pausadas quando abertas",
-            "modalSettingsStoriesTitle3": "Exibir histórias individualmente",
-            "modalSettingsStoriesDesc3": "As histórias são exibidas individualmente quando abertas",
-            "download": "Download",
-            "save": "Salvar",
-            "saved": "Salvo em",
-            "close": "Fechar",
-            "consoleWarnOutdatedInfo": "[instantgram] está desatualizado. Acesse http://saschaheim.github.io/instantgram para atualizar",
-            "consoleWarnOutdatedVersions": "[instantgram] versão local: ${data.version} | nova versão: ${data.onlineVersion}",
-            "ad": "Patrocinado"
-        }
-    }
-};
+export default { langs };

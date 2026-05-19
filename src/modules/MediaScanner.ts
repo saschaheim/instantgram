@@ -3,12 +3,14 @@ import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { Modal, ModalButton } from "../components/Modal";
 import { cssCarouselSlider, cssGeneral, cssSlideOn, logo } from "../components/Interconnect";
+import { uiClasses } from "../components/uiTokens";
 import { FeedScanner } from "./FeedScanner";
 import { PostAndReelScanner } from "./PostAndReelScanner";
 import { ProfileScanner } from "./ProfileScanner";
 import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
 import localize from "../helpers/localize";
+import { userFilenameFormatter } from "../helpers/mediaFormatting";
 
 /**
  * MediaScanner is a module responsible for handling various media scanning tasks,
@@ -16,6 +18,91 @@ import localize from "../helpers/localize";
  */
 export class MediaScanner implements Module {
     svgSettings: any = null;
+    svgExpand: any = null;
+    private readonly postExampleUrl = "https://www.instagram.com/p/CIGrv1VMBkS/";
+    private readonly expandButtonClass = "instg-modal-action";
+    private readonly settingsChangedEvent = "instg:settings-change";
+
+    private getStyleId(program: Program, suffix: string): string {
+        return `${program.DOM_PREFIX}-${suffix}`;
+    }
+
+    private syncProgramSetting(program: Program, settingKey: string, value: string | boolean): void {
+        switch (settingKey) {
+            case "settings_general_1":
+                program.settings.showAds = Boolean(value);
+                break;
+            case "settings_general_2":
+                program.settings.openInNewTab = Boolean(value);
+                break;
+            case "settings_general_3":
+                program.settings.autoSlideshow = Boolean(value);
+                break;
+            case "settings_general_4":
+                program.settings.formattedFilenameInput = String(value);
+                break;
+            case "settings_stories_1":
+                program.settings.storiesMuted = Boolean(value);
+                break;
+            case "settings_stories_3":
+                program.settings.noMultiStories = Boolean(value);
+                break;
+        }
+    }
+
+    private emitSettingsChanged(settingKey: string, value: string | boolean): void {
+        document.dispatchEvent(new CustomEvent(this.settingsChangedEvent, {
+            detail: { settingKey, value }
+        }));
+    }
+
+    private refreshLiveDownloadLinks(modalElement: HTMLElement, program: Program): void {
+        modalElement.querySelectorAll<HTMLAnchorElement>(`a.${uiClasses.modalDb}`).forEach((anchor) => {
+            const directUrl = anchor.dataset.directUrl;
+            if (!directUrl) {
+                return;
+            }
+
+            const staticFilename = anchor.dataset.staticFilename;
+            let filename = staticFilename;
+
+            if (!filename) {
+                const placeholders = {
+                    Username: anchor.dataset.username || "",
+                    Year: anchor.dataset.year || "",
+                    Month: anchor.dataset.month || "",
+                    Day: anchor.dataset.day || "",
+                    Hour: anchor.dataset.hour || "",
+                    Minute: anchor.dataset.minute || "",
+                };
+                const extension = anchor.dataset.extension || "jpg";
+                const index = Number(anchor.dataset.index || "0");
+                const formattedBase = userFilenameFormatter(program.settings.formattedFilenameInput, placeholders);
+                filename = `${formattedBase}_${index + 1}.${extension}`;
+            }
+
+            const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(directUrl)}:${btoa(filename)}`;
+            anchor.href = program.settings.openInNewTab ? directUrl : encodedUrl;
+            if (program.settings.openInNewTab) {
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+            } else {
+                anchor.removeAttribute("target");
+                anchor.removeAttribute("rel");
+            }
+        });
+    }
+
+    private applyLiveStorySettings(modalElement: HTMLElement, program: Program): void {
+        modalElement.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
+            video.muted = program.settings.storiesMuted;
+            if (program.settings.storiesMuted) {
+                video.setAttribute("muted", "");
+            } else {
+                video.removeAttribute("muted");
+            }
+        });
+    }
 
     /**
      * Returns the name of the module.
@@ -70,6 +157,29 @@ export class MediaScanner implements Module {
         path.setAttribute("stroke-linejoin", "round"); // Round stroke joins
         path.setAttribute("stroke-width", "2"); // Stroke width
         this.svgSettings.appendChild(path);
+
+        this.svgExpand = document.createElementNS(svgNS, "svg");
+        this.svgExpand.setAttribute("style", "margin-left: auto; margin-right:auto; display:block;");
+        this.svgExpand.setAttribute("aria-label", "Groser anzeigen");
+        this.svgExpand.setAttribute("class", "x1lliihq x1n2onr6");
+        this.svgExpand.setAttribute("color", "rgb(255, 255, 255)");
+        this.svgExpand.setAttribute("fill", "none");
+        this.svgExpand.setAttribute("height", "24");
+        this.svgExpand.setAttribute("role", "img");
+        this.svgExpand.setAttribute("viewBox", "0 0 24 24");
+        this.svgExpand.setAttribute("width", "24");
+
+        const expandTitle = document.createElementNS(svgNS, "title");
+        expandTitle.textContent = "Groser anzeigen";
+        this.svgExpand.appendChild(expandTitle);
+
+        const expandPath = document.createElementNS(svgNS, "path");
+        expandPath.setAttribute("d", "M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5M9 3 3 9M15 3l6 6M21 15l-6 6M3 15l6 6");
+        expandPath.setAttribute("stroke", "currentColor");
+        expandPath.setAttribute("stroke-linecap", "round");
+        expandPath.setAttribute("stroke-linejoin", "round");
+        expandPath.setAttribute("stroke-width", "2");
+        this.svgExpand.appendChild(expandPath);
     }
 
     /**
@@ -113,6 +223,9 @@ export class MediaScanner implements Module {
             checkbox.checked = localStorage.getItem(checkboxKey) === "true";
             checkbox.addEventListener("change", () => {
                 localStorage.setItem(checkboxKey, String(checkbox.checked)); // Save state to localStorage
+                const settingKey = checkbox.id.replace(/-/g, "_");
+                this.syncProgramSetting(program, settingKey, checkbox.checked);
+                this.emitSettingsChanged(settingKey, checkbox.checked);
             });
         });
 
@@ -126,9 +239,11 @@ export class MediaScanner implements Module {
             saveFilenameFormatBtn.addEventListener("click", (event: Event) => {
                 event.preventDefault();
                 localStorage.setItem(inputKey, inputFileFormat.value); // Save input value to localStorage
-                this.updateInputButtonStyle(saveFilenameFormatBtn, "saved", `${program.NAME}-primary`, `${program.NAME}-success`);
+                this.syncProgramSetting(program, "settings_general_4", inputFileFormat.value);
+                this.emitSettingsChanged("settings_general_4", inputFileFormat.value);
+                this.updateInputButtonStyle(saveFilenameFormatBtn, "sd", uiClasses.btnPrimary, uiClasses.btnSuccess);
                 setTimeout(() => {
-                    this.updateInputButtonStyle(saveFilenameFormatBtn, "save", `${program.NAME}-success`, `${program.NAME}-primary`);
+                    this.updateInputButtonStyle(saveFilenameFormatBtn, "s", uiClasses.btnSuccess, uiClasses.btnPrimary);
                 }, 1000);
             });
         }
@@ -141,15 +256,15 @@ export class MediaScanner implements Module {
      */
     private initializeStyles(program: Program): void {
         this.removeStyleTagsWithIDs([
-            program.NAME + "-cssGeneral",
-            program.NAME + "-cssSlideOn",
-            program.NAME + "-cssCarouselSlider"
+            this.getStyleId(program, "cssGeneral"),
+            this.getStyleId(program, "cssSlideOn"),
+            this.getStyleId(program, "cssCarouselSlider")
         ]);
 
         // Add the required styles to the DOM
-        this.appendStyles(program.NAME + "-cssGeneral", cssGeneral);
-        this.appendStyles(program.NAME + "-cssSlideOn", cssSlideOn);
-        this.appendStyles(program.NAME + "-cssCarouselSlider", cssCarouselSlider);
+        this.appendStyles(this.getStyleId(program, "cssGeneral"), cssGeneral);
+        this.appendStyles(this.getStyleId(program, "cssSlideOn"), cssSlideOn);
+        this.appendStyles(this.getStyleId(program, "cssCarouselSlider"), cssCarouselSlider);
     }
 
     /**
@@ -180,6 +295,75 @@ export class MediaScanner implements Module {
             buttonList: buttonList,
             callback: callback,
         }).open();
+    }
+
+    private createLoadingModal(program: Program): Modal {
+        return new Modal({
+            heading: [
+                `<h5>
+                    <span class="header-text-left">${logo}</span>
+                    <span class="header-text-right">v${program.VERSION}</span>
+                </h5>`
+            ],
+            body: [
+                `<div class="${uiClasses.loading}">
+                    <div class="${uiClasses.loadingSpinner}" aria-hidden="true"></div>
+                    <div class="${uiClasses.loadingText}">${localize("l")}</div>
+                </div>`
+            ],
+            bodyStyle: "padding:0!important",
+            buttonList: [],
+            closeOnOverlayClick: false,
+        });
+    }
+
+    private buildNotFoundBody(): string {
+        return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="noopener noreferrer">${this.postExampleUrl}</a></div>`;
+    }
+
+    private debugStoryLog(program: Program, step: string): void {
+        if (window.location.pathname.startsWith("/stories/")) {
+            console.info(`[${program.NAME}] story debug: ${step}`);
+        }
+    }
+
+    private buildDebugBody(result?: MediaScanResult | null): string {
+        const debugTrail = Array.isArray((result?.error as { debugTrail?: unknown })?.debugTrail)
+            ? ((result?.error as { debugTrail?: string[] }).debugTrail || [])
+            : [];
+        const lines = [
+            result?.errorMessage ? `errorMessage: ${result.errorMessage}` : "errorMessage: <empty>",
+            ...debugTrail
+        ];
+        return `<div style="text-align:left;padding:16px 20px;font-family:monospace;font-size:12px;white-space:pre-wrap;word-break:break-word;">${lines.join("\n")}</div>`;
+    }
+
+    private initMediaModalActions(modalElement: HTMLElement, program: Program): void {
+        const settingsButton = modalElement.querySelector(`.${uiClasses.settings}`) as HTMLElement | null;
+        settingsButton?.addEventListener("click", () => {
+            this.handleSettingsButtonClick(program);
+        });
+
+        const expandButton = modalElement.querySelector(`.${this.expandButtonClass}`) as HTMLButtonElement | null;
+        const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
+        if (!expandButton || !modalWindow) {
+            return;
+        }
+
+        const updateExpandState = (expanded: boolean) => {
+            modalWindow.classList.toggle("instg-media-expanded", expanded);
+            expandButton.classList.toggle("active", expanded);
+            expandButton.setAttribute("aria-pressed", String(expanded));
+            expandButton.setAttribute("title", expanded ? "Kleiner anzeigen" : "Grosser anzeigen");
+            modalElement.dispatchEvent(new CustomEvent("instg:media-expand-toggle", {
+                detail: { expanded }
+            }));
+        };
+
+        updateExpandState(false);
+        expandButton.addEventListener("click", () => {
+            updateExpandState(!modalWindow.classList.contains("instg-media-expanded"));
+        });
     }
 
     /**
@@ -222,7 +406,7 @@ export class MediaScanner implements Module {
                     `<strong class="col pr-0">${title}</strong>
                      <p class="text-muted ml-15 mb-0">${description}</p>
                      <input type="text" class="form-control ml-15 mt-1 w94" id="settings-${settingsName}" placeholder="${title}">
-                     <button type="submit" class="${program.NAME}-btn ${program.NAME}-btn-primary mb-2 mt-2" id="settings-general-btn-4" style="align-self: flex-end; margin-right: 12px;">${localize("save")}</button>`
+                     <button type="submit" class="${uiClasses.btn} ${uiClasses.btnPrimary} mb-2 mt-2" id="settings-general-btn-4" style="align-self: flex-end; margin-right: 12px;">${localize("s")}</button>`
                 );
 
                 row.appendChild(div);
@@ -246,7 +430,7 @@ export class MediaScanner implements Module {
         navTabs.appendChild(createElement('button', 'nav-link active', {
             id: 'nav-general-tab', 'data-toggle': 'tab', 'data-target': '#nav-general', type: 'button', role: 'tab',
             'aria-controls': 'nav-general', 'aria-selected': 'true'
-        }, `${localize("modalSettingsGeneral")}`));
+        }, `${localize("ms.g")}`));
         navTabs.appendChild(createElement('button', 'nav-link', {
             id: 'nav-stories-tab', 'data-toggle': 'tab', 'data-target': '#nav-stories', type: 'button', role: 'tab',
             'aria-controls': 'nav-stories', 'aria-selected': 'false'
@@ -258,18 +442,18 @@ export class MediaScanner implements Module {
 
         // Adding settings items to both general and stories panes
         const items = [
-            { title: 'modalSettingsGenTitle1', description: 'modalSettingsGenDesc1', settingsName: 'general-1' },
-            { title: 'modalSettingsGenTitle2', description: 'modalSettingsGenDesc2', settingsName: 'general-2' },
-            { title: 'modalSettingsGenTitle3', description: 'modalSettingsGenDesc3', settingsName: 'general-3' },
-            { title: 'modalSettingsGenTitle4', description: 'modalSettingsGenDesc4', settingsName: 'general-4', isLargeInput: true },
-            { title: 'modalSettingsStoriesTitle1', description: 'modalSettingsStoriesDesc1', settingsName: 'stories-1' },
-            { title: 'modalSettingsStoriesTitle2', description: 'modalSettingsStoriesDesc2', settingsName: 'stories-2' },
-            { title: 'modalSettingsStoriesTitle3', description: 'modalSettingsStoriesDesc3', settingsName: 'stories-3' },
+            { title: 'msg.t1', description: 'msg.d1', settingsName: 'general-1' },
+            { title: 'msg.t2', description: 'msg.d2', settingsName: 'general-2' },
+            { title: 'msg.t3', description: 'msg.d3', settingsName: 'general-3' },
+            { title: 'msg.t4', description: 'msg.d4', settingsName: 'general-4', isLargeInput: true },
+            { title: 'mss.t1', description: 'mss.d1', settingsName: 'stories-1' },
+            { title: 'mss.t2', description: 'mss.d2', settingsName: 'stories-2' },
+            { title: 'mss.t3', description: 'mss.d3', settingsName: 'stories-3' },
         ];
 
         // Loop through each item and add to the appropriate pane
         items.forEach((item) => {
-            const pane = item.title.includes('Gen') ? generalPane : storiesPane;
+            const pane = item.settingsName.startsWith("general") ? generalPane : storiesPane;
             pane.appendChild(createListGroupItem(localize(item.title), localize(item.description), item.settingsName, item.isLargeInput));
         });
 
@@ -279,7 +463,7 @@ export class MediaScanner implements Module {
         nav.appendChild(navTabs);
         my4.appendChild(nav);
         my4.appendChild(tabContent);
-        my4.appendChild(createElement('div', 'alert alert-warning mt-3', {}, localize("modalSettingsAttention")));
+        my4.appendChild(createElement('div', 'alert alert-warning mt-3', {}, localize("ms.a")));
         col.appendChild(my4);
         row.appendChild(col);
         container.appendChild(row);
@@ -289,13 +473,13 @@ export class MediaScanner implements Module {
             heading: [
                 `<h5>
                     <span class="header-text-left">${logo}</span>
-                    <span class="header-text-middle">${localize("modalSettingsTitle")}</span>
+                    <span class="header-text-middle">${localize("ms.t")}</span>
                     <span class="header-text-right" style="margin-right: 0">v${program.VERSION}</span>
                 </h5>`
             ],
             body: [container],
             bodyStyle: null,
-            buttonList: [{ active: true, text: localize("close") }],
+            buttonList: [{ active: true, text: localize("c") }],
             callback: (_modal, el) => {
                 // Initialize listeners once the modal is open
                 this.initModalSettingsListeners(el as HTMLElement, program);
@@ -315,14 +499,14 @@ export class MediaScanner implements Module {
                 heading: [
                     `<h5>
                         <span class="header-text-left">${logo}</span>
-                        <span class="header-text-right">v${program.VERSION}<button class="${program.NAME}-settings" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
+                        <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
                     </h5>`
                 ],
-                body: [localize("alertWorksOnlyOn")],
+                body: [localize("a.wo")],
                 bodyStyle: "text-align:center;padding:20px",
                 buttonList: [{ active: true, text: "Ok" }],
                 callback: (_modal, el) => {
-                    el.querySelector(`.${program.NAME}-settings`).addEventListener("click", () => {
+                    el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
                         this.handleSettingsButtonClick(program);
                     });
                 }
@@ -343,31 +527,78 @@ export class MediaScanner implements Module {
         // Loop through each test and execute the corresponding scanner based on the URL match
         for (const test of tests) {
             if (test.regex.test(window.location.pathname)) {
+                this.debugStoryLog(program, `matched ${test.scanner.name}`);
+                const loadingModal = this.createLoadingModal(program);
+                await loadingModal.open();
+                this.debugStoryLog(program, "loading modal opened");
+
                 try {
                     const scanner = new test.scanner();
-                    console.log(`${this.getName()}()`, `Execute module ` + scanner.getName() + ``);
+                    if (program.DEVELOPMENT) {
+                        console.log(`${this.getName()}()`, `Execute module ${scanner.getName()}`);
+                    }
+                    this.debugStoryLog(program, `scanner execute start ${scanner.getName()}`);
                     const scannerResult = await scanner.execute(program);
-                    if (scannerResult.found) {
+                    this.debugStoryLog(program, `scanner execute end ${scanner.getName()} found=${scannerResult?.found ?? "null"}`);
+                    await loadingModal.close();
+                    this.debugStoryLog(program, "loading modal closed");
+                    if (!scannerResult) {
+                        this.debugStoryLog(program, "scannerResult null");
+                        new Modal({
+                            heading: [
+                                `<h5>
+                                    <span class="header-text-left">${logo}</span>
+                                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
+                                </h5>`
+                            ],
+                            body: [this.buildNotFoundBody()],
+                            bodyStyle: "text-align:center;padding:20px",
+                            buttonList: [{ active: true, text: "Ok" }],
+                            callback: (_modal, el) => {
+                                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
+                                    this.handleSettingsButtonClick(program);
+                                });
+                            }
+                        }).open();
+                    } else if (scannerResult.found) {
+                        this.debugStoryLog(program, "opening result modal");
                         scannerResult.foundByModule = scanner.getName();
                         this.displayModal(scannerResult,
                             `<h5>
                                 <span class="header-text-left">${logo}</span>
                                 <span class="header-text-middle"><a href="${scannerResult.userLink}">@${scannerResult.userName}</a></span>
-                                <span class="header-text-right"><button class="${program.NAME}-settings">${this.svgSettings.outerHTML}</button></span>
+                                <span class="header-text-right"><button class="${this.expandButtonClass}" type="button" aria-pressed="false" title="Grosser anzeigen">${this.svgExpand.outerHTML}</button><button class="${uiClasses.settings}" type="button">${this.svgSettings.outerHTML}</button></span>
                             </h5>`,
                             "padding:0!important;text-align:center",
-                            [{ active: true, text: localize("close") }],
+                            [{ active: true, text: localize("c") }],
                             (_modal, el) => {
-                                if (el.querySelector(".slider")) {
-                                    const slider = el.querySelector(".slider");
-                                    const slides = el.querySelectorAll(".slide");
-                                    const sliderControls = el.querySelector(".slider-controls");
+                                const modalElement = el as HTMLElement;
+                                this.initMediaModalActions(modalElement, program);
+                                this.refreshLiveDownloadLinks(modalElement, program);
+                                this.applyLiveStorySettings(modalElement, program);
+
+                                if (modalElement.querySelector(".slider")) {
+                                    const slider = modalElement.querySelector(".slider") as HTMLElement | null;
+                                    const sliderContainer = modalElement.querySelector(".slider-container") as HTMLElement | null;
+                                    const slides = Array.from(modalElement.querySelectorAll(".slide")) as HTMLElement[];
+                                    const sliderControls = modalElement.querySelector(".slider-controls") as HTMLElement | null;
+                                    const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
                                     let sliderIndex = scannerResult.selectedSliderIndex;
+                                    let slideTimer: ReturnType<typeof setTimeout> | undefined;
+                                    let progressAnimationFrame: number | undefined;
+                                    let isAdvancing = false;
+                                    let realignTimeout: ReturnType<typeof setTimeout> | undefined;
+                                    let playbackSession = 0;
+                                    let isExpandTransitioning = false;
+
+                                    if (!slider || !sliderContainer || !sliderControls || !modalWindow || slides.length === 0) {
+                                        return;
+                                    }
 
                                     // Attach event listeners to the slides
                                     slides.forEach((_slide, i) => {
                                         const button = document.createElement("button");
-                                        button.innerHTML = String(i + 1);
+                                        button.textContent = String(i + 1);
                                         button.dataset.index = String(i);
                                         button.classList.toggle("active", slides.length === 1);
                                         if (slides.length > 1) {
@@ -380,41 +611,161 @@ export class MediaScanner implements Module {
                                     });
 
                                     // Update the position of the slider
-                                    let slideTimer;
-                                    const updateSliderPosition = (resetTimer) => {
+                                    const updateSliderPosition = (resetTimer, immediate = false) => {
                                         const isFullscreen = document.fullscreenElement !== null;
                                         if (isFullscreen) return;
-                                        pauseResetAllVideos(false);
-                                        slider.style.transform = `translateX(${-slides[0].clientWidth * sliderIndex}px)`;
-                                        [...sliderControls.children].forEach((button, index) => {
+                                        stopActivePlayback(false);
+                                        const slideWidth = sliderContainer.clientWidth || slides[0].clientWidth;
+                                        const previousTransition = slider.style.transition;
+                                        if (immediate) {
+                                            slider.style.transition = "none";
+                                        }
+                                        slider.style.transform = `translateX(${-slideWidth * sliderIndex}px)`;
+                                        if (immediate) {
+                                            requestAnimationFrame(() => {
+                                                slider.style.transition = previousTransition;
+                                            });
+                                        }
+                                        Array.from(sliderControls.children).forEach((button, index) => {
                                             button.classList.toggle("active", index === sliderIndex);
+                                            (button as HTMLElement).style.setProperty("--progress", index === sliderIndex ? "0" : "0");
                                         });
 
-                                        if (resetTimer) clearTimeout(slideTimer);
-                                        if (localStorage.getItem(`${program.STORAGE_NAME}_settings_general_3`) === "true")
+                                        if (resetTimer) {
+                                            clearTimeout(slideTimer);
+                                            slideTimer = undefined;
+                                        }
+                                        const currentSlideHasVideo = Boolean(slides[sliderIndex]?.querySelector("video"));
+                                        const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_settings_general_3`) === "true"
+                                            || currentSlideHasVideo;
+                                        if (shouldRunProgress)
                                             checkAndPlayVideoOrStartTimer();
+                                    };
+
+                                    const queueSliderRealign = () => {
+                                        if (isExpandTransitioning) {
+                                            return;
+                                        }
+                                        if (realignTimeout) {
+                                            clearTimeout(realignTimeout);
+                                        }
+                                        requestAnimationFrame(() => {
+                                            requestAnimationFrame(() => {
+                                                updateSliderPosition(false, true);
+                                            });
+                                        });
+                                        realignTimeout = setTimeout(() => {
+                                            updateSliderPosition(false, true);
+                                        }, 320);
                                     };
 
                                     // Play video or restart timer
                                     const checkAndPlayVideoOrStartTimer = () => {
+                                        playbackSession += 1;
+                                        const currentSession = playbackSession;
                                         const currentSlide = slides[sliderIndex];
-                                        const video = currentSlide.querySelector("video");
-                                        video ? video.play() && (video.onended = advanceSlide) : restartSlideTimer();
+                                        const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
+                                        const video = currentSlide.querySelector("video") as HTMLVideoElement | null;
+                                        if (slides.length <= 1) {
+                                            currentButton?.style.setProperty("--progress", "0");
+                                            if (video) {
+                                                video.onended = null;
+                                                video.ontimeupdate = null;
+                                                video.onseeking = null;
+                                                video.onseeked = null;
+                                                void video.play().catch(() => undefined);
+                                            }
+                                            return;
+                                        }
+                                        if (video) {
+                                            const syncVideoProgress = () => {
+                                                if (currentSession !== playbackSession || sliderIndex >= slides.length || slides[sliderIndex] !== currentSlide) {
+                                                    return;
+                                                }
+                                                const duration = video.duration;
+                                                const progress = duration && Number.isFinite(duration)
+                                                    ? Math.max(0, Math.min(100, (video.currentTime / duration) * 100))
+                                                    : 0;
+                                                currentButton?.style.setProperty("--progress", progress.toFixed(2));
+                                            };
+                                            const updateVideoProgress = () => {
+                                                if (currentSession !== playbackSession || sliderIndex >= slides.length || slides[sliderIndex] !== currentSlide) {
+                                                    return;
+                                                }
+                                                syncVideoProgress();
+                                                if (!video.paused && !video.ended) {
+                                                    progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
+                                                }
+                                            };
+                                            video.onended = () => {
+                                                if (currentSession === playbackSession) {
+                                                    advanceSlide();
+                                                }
+                                            };
+                                            video.ontimeupdate = syncVideoProgress;
+                                            video.onseeking = syncVideoProgress;
+                                            video.onseeked = syncVideoProgress;
+                                            currentButton?.style.setProperty("--progress", "0");
+                                            void video.play().catch(() => restartSlideTimer());
+                                            progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
+                                        } else {
+                                            restartSlideTimer(currentSession);
+                                        }
                                     };
 
                                     const advanceSlide = () => {
+                                        if (isAdvancing) {
+                                            return;
+                                        }
+                                        isAdvancing = true;
                                         sliderIndex = (sliderIndex + 1) % slides.length;
                                         updateSliderPosition(false);
+                                        isAdvancing = false;
                                     };
 
-                                    const restartSlideTimer = () => {
-                                        slideTimer = setTimeout(advanceSlide, 5000);
+                                    const restartSlideTimer = (currentSession = playbackSession) => {
+                                        const durationMs = 5000;
+                                        const startedAt = performance.now();
+                                        const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
+                                        currentButton?.style.setProperty("--progress", "0");
+
+                                        const updateTimerProgress = (timestamp: number) => {
+                                            if (currentSession !== playbackSession) {
+                                                return;
+                                            }
+                                            const progress = Math.max(0, Math.min(100, ((timestamp - startedAt) / durationMs) * 100));
+                                            currentButton?.style.setProperty("--progress", progress.toFixed(2));
+                                            if (progress < 100) {
+                                                progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
+                                            }
+                                        };
+
+                                        if (progressAnimationFrame) {
+                                            cancelAnimationFrame(progressAnimationFrame);
+                                        }
+                                        progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
+                                        slideTimer = setTimeout(() => {
+                                            if (currentSession === playbackSession) {
+                                                advanceSlide();
+                                            }
+                                        }, durationMs);
                                     };
 
-                                    const pauseResetAllVideos = (reset) => {
+                                    const stopActivePlayback = (reset) => {
+                                        playbackSession += 1;
+                                        clearTimeout(slideTimer);
+                                        slideTimer = undefined;
+                                        if (progressAnimationFrame) {
+                                            cancelAnimationFrame(progressAnimationFrame);
+                                            progressAnimationFrame = undefined;
+                                        }
                                         slides.forEach(slide => {
-                                            const video = slide.querySelector("video");
+                                            const video = slide.querySelector("video") as HTMLVideoElement | null;
                                             if (video) {
+                                                video.onended = null;
+                                                video.ontimeupdate = null;
+                                                video.onseeking = null;
+                                                video.onseeked = null;
                                                 video.pause();
                                                 if (reset)
                                                     video.currentTime = 0;
@@ -422,7 +773,7 @@ export class MediaScanner implements Module {
                                         });
                                     };
 
-                                    if (slides.length > 1) updateSliderPosition(false);
+                                    updateSliderPosition(false);
 
                                     // Function to handle fullscreen change
                                     const handleFullscreenChange = () => {
@@ -432,37 +783,104 @@ export class MediaScanner implements Module {
                                         }
                                     };
 
+                                    const handleExpandToggle = () => {
+                                        isExpandTransitioning = true;
+                                    };
+
+                                    const handleModalTransitionEnd = (event: TransitionEvent) => {
+                                        if (event.target === modalWindow && event.propertyName === "width") {
+                                            isExpandTransitioning = false;
+                                            queueSliderRealign();
+                                        }
+                                    };
+
+                                    const resizeObserver = new ResizeObserver(() => {
+                                        queueSliderRealign();
+                                    });
+
+                                    const handleSettingsChanged = (event: Event) => {
+                                        const customEvent = event as CustomEvent<{ settingKey: string; value: string | boolean; }>;
+                                        const settingKey = customEvent.detail?.settingKey;
+                                        if (!settingKey) {
+                                            return;
+                                        }
+
+                                        this.refreshLiveDownloadLinks(modalElement, program);
+                                        this.applyLiveStorySettings(modalElement, program);
+
+                                        if (settingKey === "settings_general_3") {
+                                            if (program.settings.autoSlideshow) {
+                                                checkAndPlayVideoOrStartTimer();
+                                            } else {
+                                                stopActivePlayback(false);
+                                                Array.from(sliderControls.children).forEach((button) => {
+                                                    (button as HTMLElement).style.setProperty("--progress", "0");
+                                                });
+                                            }
+                                        }
+                                    };
+
                                     // Add fullscreen change event listener
                                     document.addEventListener('fullscreenchange', handleFullscreenChange);
+                                    document.addEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
+                                    modalElement.addEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
+                                    modalWindow.addEventListener("transitionend", handleModalTransitionEnd);
+                                    resizeObserver.observe(sliderContainer);
+
+                                    // Remove listeners and timers once the modal disappears.
+                                    const cleanup = () => {
+                                        clearTimeout(slideTimer);
+                                        clearTimeout(realignTimeout);
+                                        stopActivePlayback(true);
+                                        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+                                        document.removeEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
+                                        modalElement.removeEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
+                                        modalWindow.removeEventListener("transitionend", handleModalTransitionEnd);
+                                        resizeObserver.disconnect();
+                                        observer.disconnect();
+                                    };
+
+                                    const observer = new MutationObserver(() => {
+                                        if (!document.body.contains(el)) {
+                                            cleanup();
+                                        }
+                                    });
+
+                                    observer.observe(document.body, { childList: true, subtree: true });
                                 }
 
-                                el.querySelector(`.${program.NAME}-settings`).addEventListener("click", () => {
-                                    this.handleSettingsButtonClick(program);
-                                });
                             }
                         );
                     } else {
+                        this.debugStoryLog(program, `opening not-found modal: ${scannerResult.errorMessage || "<no message>"}`);
+                        const body = window.location.pathname.startsWith("/stories/")
+                            ? this.buildDebugBody(scannerResult)
+                            : this.buildNotFoundBody();
                         new Modal({
                             heading: [
                                 `<h5>
                                     <span class="header-text-left">${logo}</span>
-                                    <span class="header-text-right">v${program.VERSION}<button class="${program.NAME}-settings" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
+                                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
                                 </h5>`
                             ],
-                            body: [localize("alertNotFound")],
+                            body: [body],
                             bodyStyle: "text-align:center;padding:20px",
                             buttonList: [{ active: true, text: "Ok" }],
                             callback: (_modal, el) => {
-                                el.querySelector(`.${program.NAME}-settings`).addEventListener("click", () => {
+                                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
                                     this.handleSettingsButtonClick(program);
                                 });
                             }
                         }).open();
                     }
                 } catch (error) {
+                    await loadingModal.close();
                     const scanner = new test.scanner();
+                    this.debugStoryLog(program, `scanner threw ${scanner.getName()}`);
                     console.error(`Error executing scanner ${scanner.getName()}:`, error);
                 }
+
+                return;
             }
         }
     }
@@ -473,8 +891,8 @@ export class MediaScanner implements Module {
      * @param program The program object containing context and configuration settings.
      * @returns {boolean} True if the modal is open, otherwise false.
      */
-    private isModalOpen(program: Program): boolean {
-        return !!document.querySelector("div." + program.NAME + "-modal-overlay." + program.NAME + "-modal-visible." + program.NAME + "-modal-show");
+    private isModalOpen(): boolean {
+        return !!document.querySelector(`div.${uiClasses.modalOverlay}.${uiClasses.modalVisible}.${uiClasses.modalShow}`);
     }
 
     /** 
@@ -535,21 +953,31 @@ export class MediaScanner implements Module {
      * @param program The program object containing the configuration and context.
      */
     public async execute(program: Program): Promise<void> {
-        console.log(`${this.getName()}()`, 'Starts');
+        this.debugStoryLog(program, "execute entered");
+        if (program.DEVELOPMENT) {
+            console.log(`${this.getName()}()`, "Starts");
+        }
         try {
             // Check if the modal is already open to prevent multiple modals from being triggered
-            if (this.isModalOpen(program)) {
-                this.shakeModal(`${program.NAME}-modal`); // If modal is open, shake it to get attention
+            this.debugStoryLog(program, "before isModalOpen");
+            if (this.isModalOpen()) {
+                this.debugStoryLog(program, "isModalOpen=true");
+                this.shakeModal(uiClasses.modal); // If modal is open, shake it to get attention
                 return;
             }
 
             // Initialize necessary styles for the page
+            this.debugStoryLog(program, "before initializeStyles");
             this.initializeStyles(program);
+            this.debugStoryLog(program, "after initializeStyles");
 
             // Handle different URL patterns and trigger the appropriate scanner
+            this.debugStoryLog(program, "before handleURLPatterns");
             await this.handleURLPatterns(program);
+            this.debugStoryLog(program, "after handleURLPatterns");
         } catch (e) {
             // Log any errors that occur during execution
+            this.debugStoryLog(program, `execute catch: ${e instanceof Error ? e.message : String(e)}`);
             console.error(`${this.getName()}()`, `[${program.NAME}] ${program.VERSION}`, e);
         }
     }

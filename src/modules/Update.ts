@@ -1,6 +1,7 @@
 import { Program } from "../App";
 import { Modal } from "../components/Modal";
 import { logo } from "../components/Interconnect";
+import { uiClasses } from "../components/uiTokens";
 import localize from "../helpers/localize";
 import { MediaScanner } from "./MediaScanner";
 
@@ -17,6 +18,7 @@ type Changelog = {
 export class VersionUpdater {
     program: Program; // The program object containing configuration and context
     storageKey: string; // The key to store version info in localStorage
+    private checkPromise: Promise<void> | null = null;
 
     /**
      * Constructor initializes the VersionUpdater with the given program configuration.
@@ -34,23 +36,35 @@ export class VersionUpdater {
      * @returns {Promise<void>} A promise indicating the completion of the check process.
      */
     public async check(localVersion: string): Promise<void> {
-        // Fetch the changelog from an external source
-        const changelog = await this.fetchChangelog();
+        if (this.checkPromise) {
+            return this.checkPromise;
+        }
 
-        // If no changelog is found, default to the local version as the online version
-        const onlineVersion = changelog?.date || localVersion;
+        this.checkPromise = (async () => {
+            // Fetch the changelog from an external source
+            const changelog = await this.fetchChangelog();
 
-        // Store the version information in localStorage
-        this.storeVersionInfo(localVersion, onlineVersion);
+            // If no changelog is found, default to the local version as the online version
+            const onlineVersion = changelog?.date || localVersion;
 
-        // Check if the update is necessary and process the changelog if required
-        if (this.isUpdateNecessary(localVersion, onlineVersion)) {
-            if (changelog) {
-                this.processChangelog(localVersion, changelog);
+            // Store the version information in localStorage
+            this.storeVersionInfo(localVersion, onlineVersion);
+
+            // Check if the update is necessary and process the changelog if required
+            if (this.isUpdateNecessary(localVersion, onlineVersion)) {
+                if (changelog) {
+                    this.processChangelog(localVersion, changelog);
+                }
+            } else {
+                // Log to the console if no update is required
+                console.info(`[${this.program.NAME}] No update required`);
             }
-        } else {
-            // Log to the console if no update is required
-            console.info(`[${this.program.NAME}] No update required`);
+        })();
+
+        try {
+            await this.checkPromise;
+        } finally {
+            this.checkPromise = null;
         }
     }
 
@@ -169,7 +183,7 @@ export class VersionUpdater {
             buttonList: [{ active: true, text: "Ok" }],
             callback: (_modal, el) => {
                 // Set up a click listener on the settings button to open the settings menu
-                el.querySelector(`.${this.program.NAME}-settings`).addEventListener("click", () => {
+                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
                     mS.handleSettingsButtonClick(this.program);
                 });
             },
@@ -183,9 +197,9 @@ export class VersionUpdater {
         const data = JSON.parse(window.localStorage.getItem(this.storageKey) || "{}");
 
         // Log a warning about the outdated version
-        console.warn(localize("consoleWarnOutdatedInfo"));
+        console.warn(localize("u.i"));
         console.warn(
-            localize("consoleWarnOutdatedVersions")
+            localize("u.v")
                 .replace("${data.version}", data.version)
                 .replace("${data.onlineVersion}", data.onlineVersion)
         );

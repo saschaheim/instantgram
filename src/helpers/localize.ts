@@ -27,7 +27,7 @@ const LANG_DEFAULT = LANGS_NORMALIZE[shortLang];
  * The `localize` function retrieves a localized string based on the key provided.
  * It returns the string in the appropriate language, falling back to the default language if the translation is not found.
  * 
- * @param str {string} [required] The key for the localized string (e.g., "modalSettingsTitle").
+ * @param str {string} [required] The key for the localized string (e.g., "ms.t").
  * @param lang {string} [optional] The language to use for translation. Defaults to the browser language or a normalized default.
  * @returns {string} The localized string in the selected language.
  */
@@ -54,7 +54,7 @@ function localize(str: string, lang: string = LANG_DEFAULT): string {
 }
 
 // Log the default language setting to the console for debugging purposes
-console.info(localize("helpers.localizeDefaultLang").replace("${LANG_DEFAULT}", LANG_DEFAULT));
+console.info(localize("h.ld").replace("${LANG_DEFAULT}", LANG_DEFAULT));
 
 // Export the localize function for use in other parts of the application
 export default localize;
