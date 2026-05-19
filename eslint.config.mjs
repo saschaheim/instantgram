@@ -19,6 +19,7 @@ export default [
       "@typescript-eslint": tsPlugin,  // Use the TypeScript ESLint plugin
     },
     rules: {
+      "no-unused-vars": "off",  // Let the TypeScript-aware rule set handle unused values
       "no-useless-escape": "off",  // Disable the 'no-useless-escape' rule which can cause incorrect warnings
       "@typescript-eslint/no-explicit-any": "off",  // Disable the rule that disallows the use of 'any' type
     },

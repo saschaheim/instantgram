@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { generateModalBody } from "../helpers/utils";
+import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * PostAndReelScanner is a module responsible for scanning posts and reels on the page.
@@ -48,7 +48,8 @@ export class PostAndReelScanner implements Module {
         } catch (e) {
             // Log any errors that occur during execution
             console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            return { found: false, errorMessage: e.message, error: e }; // Return error information
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            return { found: false, errorMessage, error: e }; // Return error information
         }
     }
 }

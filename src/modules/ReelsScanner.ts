@@ -1,7 +1,8 @@
 import { Program } from "../App";
 import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { getElementInViewPercentage, generateModalBody } from "../helpers/utils";
+import { getElementInViewPercentage } from "../helpers/domDetection";
+import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * ReelsScanner is a module responsible for scanning and processing reels (media content) on the page.
@@ -77,7 +78,8 @@ export class ReelsScanner implements Module {
         } catch (e) {
             // Log any errors during execution
             console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            return { found: false, errorMessage: e.message, error: e }; // Return error information
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            return { found: false, errorMessage, error: e }; // Return error information
         }
     }
 }

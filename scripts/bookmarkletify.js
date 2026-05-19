@@ -10,6 +10,7 @@ const pkg = require('../package.json'); // Access the package.json for project v
 // Promisify readFile and writeFile to use async/await syntax
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
+const isDevBookmarklet = process.argv.includes('--dev');
 
 // Log a message indicating the bookmarklet generation process has started
 signale.pending('Bookmarklet generating...');
@@ -20,6 +21,10 @@ signale.pending('Bookmarklet generating...');
  * @returns {string} - The minified JavaScript code.
  */
 const minify = (code) => {
+  if (isDevBookmarklet) {
+    return code;
+  }
+
   // Use UglifyJS to minify the code with various compression options
   const result = UglifyJS.minify(code, {
     compress: {
@@ -71,7 +76,7 @@ const bookmarkletify = (code) => {
  */
 const hash = () => {
   // If the 'dev' flag is passed, generate a random hash, else use the version from package.json
-  return (process.argv.includes('--dev')) 
+  return isDevBookmarklet 
     ? ` ${Math.random().toString(36).substring(5, 15)}`  // Random hash for dev mode
     : ` ${pkg.version}`;  // Use version from package.json
 };

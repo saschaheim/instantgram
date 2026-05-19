@@ -1,12 +1,11 @@
 import { Program } from "./App";
 import { MediaScanner } from "./modules/MediaScanner";
-import { getBrowserInfo } from "./helpers/utils";
+import { getBrowserInfo } from "./helpers/common";
 //import VersionUpdater from "./modules/Update";
-
-console.clear(); // Clear the console to ensure a clean output when the app starts
 
 // Define constants for the application
 const APP_NAME = "instantgram"; // Application name
+const DOM_PREFIX = "instg"; // Prefix for generated DOM IDs and CSS classes
 const DEVELOPMENT = process.env.DEV as unknown as boolean ?? false; // Boolean flag indicating if the app is running in development mode
 const VERSION = process.env.VERSION as string; // Get the version from environment variables
 const STORAGE_NAME = APP_NAME.toLowerCase().replace(/-/g, "_"); // Storage key used in localStorage (converted to lowercase)
@@ -14,6 +13,7 @@ const STORAGE_NAME = APP_NAME.toLowerCase().replace(/-/g, "_"); // Storage key u
 // Define the program object that holds all the app's configuration and state
 export const program: Program = {
     NAME: APP_NAME, // Set the application name
+    DOM_PREFIX: DOM_PREFIX, // Set the DOM/CSS prefix used for generated markup
     STORAGE_NAME: STORAGE_NAME, // Set the storage name used for localStorage keys
     DEVELOPMENT: DEVELOPMENT, // Set the development flag to enable developer mode features
     VERSION: VERSION, // Set the application version
@@ -22,13 +22,13 @@ export const program: Program = {
     path: window.location.pathname, // Get the current path (e.g., "/stories/highlights/123")
 
     // Regular expressions used for matching specific URL paths
-    regexHostname: /^instagram\.com$/, // Regex to match the Instagram hostname
+    regexHostname: /^(?:www\.)?instagram\.com$/i, // Regex to match supported Instagram hostnames
     regexRootPath: /^\/+$/, // Regex to match the root path (e.g., "/")
     regexProfilePath: /^\/(\w[-\w.]+)\/?$/, // Regex to match Instagram profile paths (e.g., "/username/")
-    regexPostPath: /^\/p\//, // Regex to match Instagram post paths (e.g., "/p/post_id/")
-    regexReelURI: /reel\/(.*)+/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
-    regexReelsURI: /reels\/(.*)+/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
-    regexStoriesURI: /\/stories\/(\w+)|\/highlights\/(\d+)\//, // Regex to match Instagram stories and highlights URLs
+    regexPostPath: /^\/p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/")
+    regexReelURI: /^\/reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
+    regexReelsURI: /^\/reels\/[^/]+\/?$/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
+    regexStoriesURI: /^(?:\/stories\/[\w.]+(?:\/\d+)?\/?|\/stories\/highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
 
     foundByModule: null, // Initially set to null, stores the module that found the current media
 
@@ -53,13 +53,17 @@ if (DEVELOPMENT) {
     }
 }
 
+if (window.location.pathname.startsWith("/stories/")) {
+    console.info(`[${APP_NAME}] debug build loaded ${VERSION}`);
+}
+
 /**
  * The main function to run the application.
  * It initializes the MediaScanner and performs media scanning.
  */
 const runApp = async () => {
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner
-    scanner.execute(program); // Execute the MediaScanner with the program configuration
+    await scanner.execute(program); // Execute the MediaScanner with the program configuration
 
     // Uncomment the following code to check for updates if not in development mode
     // if (!DEVELOPMENT) {

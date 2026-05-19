@@ -33,7 +33,7 @@ export interface MediaScanResult {
      * This can be an object or null if there is no additional information.
      * @example { duration: "30s", dimensions: { width: 1920, height: 1080 } }
      */
-    mediaInfo?: object | null | undefined;
+    mediaInfo?: unknown;
 
     /**
      * The body content for the modal that is displayed to the user.
@@ -75,5 +75,5 @@ export interface MediaScanResult {
      * This can be used for debugging purposes and is usually logged to the console.
      * @example { message: "Media not found", code: 404 }
      */
-    error?: object;
+    error?: unknown;
 }
