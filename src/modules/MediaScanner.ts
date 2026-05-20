@@ -376,6 +376,72 @@ export class MediaScanner implements Module {
             sliderControls.appendChild(button);
         });
 
+        const queueMediaRetry = (element: HTMLImageElement | HTMLVideoElement) => {
+            const retries = Number(element.dataset.mediaRetries || "0");
+            if (retries >= 2) {
+                return;
+            }
+            element.dataset.mediaRetries = String(retries + 1);
+            const mediaSrc = element.dataset.mediaSrc;
+            if (!mediaSrc) {
+                return;
+            }
+            window.setTimeout(() => {
+                if (element instanceof HTMLVideoElement) {
+                    element.removeAttribute("src");
+                    element.load();
+                    element.src = mediaSrc;
+                    element.load();
+                    return;
+                }
+                element.removeAttribute("src");
+                element.src = mediaSrc;
+            }, (retries + 1) * 800);
+        };
+
+        const ensureMediaElementLoaded = (element: HTMLImageElement | HTMLVideoElement | null) => {
+            if (!element || element.dataset.mediaLoaded === "true") {
+                return;
+            }
+            const mediaSrc = element.dataset.mediaSrc;
+            if (!mediaSrc) {
+                element.dataset.mediaLoaded = "true";
+                return;
+            }
+
+            element.dataset.mediaLoaded = "true";
+            element.dataset.mediaRetries = "0";
+
+            if (element instanceof HTMLVideoElement) {
+                element.preload = "metadata";
+                element.onerror = () => queueMediaRetry(element);
+                element.src = mediaSrc;
+                element.load();
+                return;
+            }
+
+            element.onerror = () => queueMediaRetry(element);
+            element.src = mediaSrc;
+        };
+
+        const ensureSlideMediaLoaded = (index: number) => {
+            const slide = slides[index];
+            if (!slide) {
+                return;
+            }
+            const media = slide.querySelector("img,video") as HTMLImageElement | HTMLVideoElement | null;
+            ensureMediaElementLoaded(media);
+        };
+
+        const primeNearbySlides = () => {
+            ensureSlideMediaLoaded(sliderIndex);
+            if (slides.length <= 1) {
+                return;
+            }
+            ensureSlideMediaLoaded((sliderIndex + 1) % slides.length);
+            ensureSlideMediaLoaded((sliderIndex - 1 + slides.length) % slides.length);
+        };
+
         const clearVideoState = (video: HTMLVideoElement | null, reset = false) => {
             if (!video) {
                 return;
@@ -446,6 +512,7 @@ export class MediaScanner implements Module {
             playbackSession += 1;
             const currentSession = playbackSession;
             const currentSlide = slides[sliderIndex];
+            primeNearbySlides();
             const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
             const video = currentSlide.querySelector("video") as HTMLVideoElement | null;
             const isCurrentSlide = () => currentSession === playbackSession && slides[sliderIndex] === currentSlide;
@@ -500,6 +567,7 @@ export class MediaScanner implements Module {
 
         const playCurrentVideoWithoutAdvance = () => {
             const currentSlide = slides[sliderIndex];
+            primeNearbySlides();
             const video = currentSlide?.querySelector("video") as HTMLVideoElement | null;
             if (!video) {
                 return;
@@ -537,6 +605,7 @@ export class MediaScanner implements Module {
                 clearTimeout(slideTimer);
                 slideTimer = undefined;
             }
+            primeNearbySlides();
             const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_g3`) === "true";
             if (shouldRunProgress) {
                 checkAndPlayVideoOrStartTimer();
