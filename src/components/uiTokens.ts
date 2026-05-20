@@ -18,10 +18,6 @@ type UIClasses = {
   loadingText: string;
 };
 
-type UIIds = {
-  bulkDownloadIndicator: string;
-};
-
 type UIAnimations = {
   loadingSpin: string;
 };
@@ -44,10 +40,6 @@ export const uiClasses: UIClasses = {
   loading: "o",
   loadingSpinner: "p",
   loadingText: "q",
-};
-
-export const uiIds: UIIds = {
-  bulkDownloadIndicator: "r",
 };
 
 export const uiAnimations: UIAnimations = {

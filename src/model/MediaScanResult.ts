@@ -14,13 +14,6 @@ export interface MediaScanResult {
     found?: boolean;
 
     /**
-     * The module that found the media (e.g., 'FeedScanner', 'StoriesScanner').
-     * This helps identify which part of the application was responsible for finding the media.
-     * @example "FeedScanner"
-     */
-    foundByModule?: string | null;
-
-    /**
      * The type of media found (e.g., photo, video, reel, story).
      * This helps categorize the media for specific handling or presentation.
      * @see MediaType for possible values.

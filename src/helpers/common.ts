@@ -1,5 +1,21 @@
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
+export const normalizeVersionString = (version: string): string =>
+    version.replace(/^v/i, "").trim().replace(/\./g, "-");
+
+export const formatVersionLabel = (version: string): string =>
+    `v${normalizeVersionString(version).replace(/-/g, ".")}`;
+
+export const formatVersionTransition = (fromVersion: string, toVersion: string): string =>
+    `${formatVersionLabel(fromVersion)} -> ${formatVersionLabel(toVersion)}`;
+
+export const buildModalHeader = (left: string, right: string, middle = ""): string =>
+    `<h5>
+        <span class="header-text-left">${left}</span>
+        ${middle ? `<span class="header-text-middle">${middle}</span>` : ""}
+        <span class="header-text-right">${right}</span>
+    </h5>`;
+
 export const getBrowserInfo = (): { name: string; version: string } => {
     const ua = navigator.userAgent;
     const match = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
