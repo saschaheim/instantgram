@@ -2,7 +2,7 @@ import { Program } from "./App";
 import { getBrowserInfo } from "./helpers/common";
 import localize from "./helpers/localize";
 import { MediaScanner } from "./modules/MediaScanner";
-//import VersionUpdater from "./modules/Update";
+import VersionUpdater from "./modules/Update";
 
 // Define constants for the application
 const APP_NAME = "instantgram"; // Application name
@@ -59,11 +59,10 @@ const runApp = async () => {
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner
     await scanner.execute(program); // Execute the MediaScanner with the program configuration
 
-    // Uncomment the following code to check for updates if not in development mode
-    // if (!DEVELOPMENT) {
-    //     const updater = new VersionUpdater(program); // Create an instance of VersionUpdater
-    //     await updater.check(VERSION); // Check for version updates
-    // }
+    if (!DEVELOPMENT) {
+        const updater = new VersionUpdater(program); // Create an instance of VersionUpdater
+        await updater.check(VERSION); // Check for version updates
+    }
 };
 
 // Start the application

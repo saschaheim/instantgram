@@ -26,6 +26,9 @@ export interface InstagramMediaItem {
     width?: number;
     height?: number;
     url?: string;
+    caption?: {
+        text?: string;
+    };
     user?: InstagramUserSummary;
     items?: InstagramMediaItem[];
     carousel_media?: InstagramMediaItem[];

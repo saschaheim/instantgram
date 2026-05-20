@@ -1,11 +1,3 @@
-export const removeStyleTagsWithIDs = (idsToRemove: string[]) => {
-    document.querySelectorAll("style[id]").forEach(styleTag => {
-        if (idsToRemove.includes(styleTag.id)) {
-            styleTag.remove();
-        }
-    });
-};
-
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
 export const getBrowserInfo = (): { name: string; version: string } => {
