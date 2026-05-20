@@ -25,6 +25,7 @@
     "dev:rollup": "rollup -c -w",
     "dev:watch": "nodemon --watch dist --ext js --exec \"npm run build:release:dev\"",
     "lint": "eslint **/*.ts",
+    "size": "node scripts/size-bookmarklets.js",
     "start": "npm run dev"
   },
   "devDependencies": {
