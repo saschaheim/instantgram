@@ -44,7 +44,7 @@ const deDE: LocalizationDictionary = {
     "a.wo": "Funktioniert nur auf instagram.com",
     "a.nf": "Hast du einen Instagram Post geoffnet? Zum Beispiel",
     "ms.t": "Einstellungen",
-    "ms.a": "Neu: Einige Anderungen gelten sofort. Andere werden erst beim erneuten Offnen des Bookmarklets ubernommen.",
+    "ms.a": "Neu: Einige Änderungen gelten sofort. Andere werden erst beim erneuten Öffnen des Bookmarklets übernommen.",
     "ms.g": "Allgemein",
     "msg.t1": "Monetarisierte Beitrage anzeigen",
     "msg.d1": "Adblocker mussen deaktiviert sein",
