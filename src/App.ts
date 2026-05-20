@@ -114,6 +114,7 @@ export type Program = {
      */
     autoSlideshow: boolean;
     videosMuted: boolean;
+    autoExpand: boolean;
 
     /**
      * The format used for generating filenames. The placeholders in this string are replaced with actual data.

@@ -33,6 +33,7 @@ const SETTINGS_CONFIG: MediaScannerSettingConfig[] = [
     { id: "g2", pane: "general", title: "msg.t2", description: "msg.d2" },
     { id: "g3", pane: "general", title: "msg.t3", description: "msg.d3" },
     { id: "g5", pane: "general", title: "msg.t5", description: "msg.d5" },
+    { id: "g6", pane: "general", title: "msg.t6", description: "msg.d6" },
     { id: "g4", pane: "general", title: "msg.t4", description: "msg.d4", largeInput: true },
     { id: "s1", pane: "stories", title: "mss.t1", description: "mss.d1" },
     { id: "s2", pane: "stories", title: "mss.t2", description: "mss.d2" },
@@ -45,6 +46,7 @@ const SETTINGS_PROGRAM_KEYS = {
     g3: "autoSlideshow",
     g4: "formattedFilenameInput",
     g5: "videosMuted",
+    g6: "autoExpand",
     s1: "storiesMuted",
     s3: "noMultiStories",
 } as const;
@@ -674,6 +676,7 @@ export class MediaScanner implements Module {
         const expandButton = modalElement.querySelector(`.${this.expandButtonClass}`) as HTMLButtonElement | null;
         const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
         let expandAnimations: Animation[] = [];
+        let autoExpandTimeout: ReturnType<typeof setTimeout> | undefined;
         if (!expandButton || !modalWindow) {
             return;
         }
@@ -809,6 +812,22 @@ export class MediaScanner implements Module {
         expandButton.addEventListener("click", () => {
             animateExpandState(!modalWindow.classList.contains("instg-media-expanded"));
         });
+
+        if (program.settings.autoExpand) {
+            autoExpandTimeout = setTimeout(() => {
+                if (document.body.contains(modalElement) && !modalWindow.classList.contains("instg-media-expanded")) {
+                    animateExpandState(true);
+                }
+            }, 500);
+
+            const overlay = modalElement.querySelector(`.${uiClasses.modalOverlay}`) as HTMLElement | null;
+            overlay?.addEventListener("click", () => {
+                if (autoExpandTimeout) {
+                    clearTimeout(autoExpandTimeout);
+                    autoExpandTimeout = undefined;
+                }
+            }, { once: true });
+        }
     }
 
     /**

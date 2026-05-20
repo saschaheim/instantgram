@@ -26,6 +26,7 @@
     "dev:watch": "nodemon --watch dist --ext js --exec \"npm run build:release:dev\"",
     "lint": "eslint **/*.ts",
     "size": "node scripts/size-bookmarklets.js",
+    "size:build": "npm run build:bundles && npm run build:bookmarklet && npm run size",
     "start": "npm run dev"
   },
   "devDependencies": {
