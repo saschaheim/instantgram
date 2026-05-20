@@ -104,6 +104,7 @@ export class MediaScanner implements Module {
         buttonList?: ModalButton[];
         closeOnOverlayClick?: boolean;
         callback?: Modal["callback"];
+        onClose?: Modal["onClose"];
     }): Modal {
         const modal = new Modal({
             heading: [config.heading],
@@ -112,6 +113,7 @@ export class MediaScanner implements Module {
             buttonList: config.buttonList || [],
             closeOnOverlayClick: config.closeOnOverlayClick,
             callback: config.callback,
+            onClose: config.onClose,
         });
         void modal.open();
         return modal;
@@ -655,7 +657,7 @@ export class MediaScanner implements Module {
     private initMediaModalActions(modalElement: HTMLElement, program: Program): void {
         const settingsButton = modalElement.querySelector(`.${uiClasses.settings}`) as HTMLElement | null;
         settingsButton?.addEventListener("click", () => {
-            this.handleSettingsButtonClick(program);
+            this.handleSettingsButtonClick(program, modalElement);
         });
 
         const expandButton = modalElement.querySelector(`.${this.expandButtonClass}`) as HTMLButtonElement | null;
@@ -804,7 +806,7 @@ export class MediaScanner implements Module {
      * It constructs the settings modal dynamically and opens it.
      * @param program The program object that contains the configuration and context.
      */
-    public handleSettingsButtonClick(program: Program): void {
+    public handleSettingsButtonClick(program: Program, sourceModalElement?: HTMLElement): void {
         // Utility function to create elements
         const createElement = (tag, className = '', attributes = {}, str = '') => {
             const el = document.createElement(tag);
@@ -886,11 +888,26 @@ export class MediaScanner implements Module {
         content.appendChild(createElement('div', 'sw mt-3', {}, localize("ms.a")));
         container.appendChild(content);
 
+        const mediaVideos = sourceModalElement
+            ? Array.from(sourceModalElement.querySelectorAll<HTMLVideoElement>("video"))
+            : [];
+        const pausedForSettings = mediaVideos
+            .filter((video) => !video.paused && !video.ended)
+            .map((video) => {
+                video.pause();
+                return video;
+            });
+
         // Open the modal with the constructed settings content
         this.openModal({
             heading: this.buildSettingsHeading(program),
             body: container,
             buttonList: [{ active: true, text: localize("c") }],
+            onClose: () => {
+                pausedForSettings.forEach((video) => {
+                    void video.play().catch(() => undefined);
+                });
+            },
             callback: (_modal, el) => {
                 // Initialize listeners once the modal is open
                 this.initModalSettingsListeners(el as HTMLElement, program);
