@@ -20,17 +20,14 @@ export const program: Program = {
     VERSION: VERSION, // Set the application version
     browser: getBrowserInfo(),
     hostname: window.location.hostname, // Get the current hostname (e.g., "instagram.com")
-    path: window.location.pathname,
 
     // Regular expressions used for matching specific URL paths
-    regexHostname: /^instagram\.com$/,
     regexRootPath: /^\/+$/, // Regex to match the root path (e.g., "/")
     regexProfilePath: /^\/(\w[-\w.]+)\/?$/, // Regex to match Instagram profile paths (e.g., "/username/")
     regexPostPath: /^\/p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/")
     regexReelURI: /^\/reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
     regexReelsURI: /^\/reels\/[^/]+\/?$/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
     regexStoriesURI: /^(?:\/stories\/[\w.]+(?:\/\d+)?\/?|\/stories\/highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
-    foundByModule: null,
 
 
     // User settings, fetched from localStorage to persist across sessions

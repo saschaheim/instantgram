@@ -11,52 +11,108 @@ import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
 import localize from "../helpers/localize";
 import { userFilenameFormatter } from "../helpers/mediaFormatting";
+import { buildModalHeader, formatVersionLabel } from "../helpers/common";
+
+type MediaScannerSettingConfig = {
+    id: string;
+    pane: "general" | "stories";
+    title: string;
+    description: string;
+    largeInput?: boolean;
+};
+
+type ScannerClass =
+    | typeof StoriesScanner
+    | typeof ProfileScanner
+    | typeof FeedScanner
+    | typeof PostAndReelScanner
+    | typeof ReelsScanner;
+
+const SETTINGS_CONFIG: MediaScannerSettingConfig[] = [
+    { id: "settings_general_1", pane: "general", title: "msg.t1", description: "msg.d1" },
+    { id: "settings_general_2", pane: "general", title: "msg.t2", description: "msg.d2" },
+    { id: "settings_general_3", pane: "general", title: "msg.t3", description: "msg.d3" },
+    { id: "settings_general_5", pane: "general", title: "msg.t5", description: "msg.d5" },
+    { id: "settings_general_4", pane: "general", title: "msg.t4", description: "msg.d4", largeInput: true },
+    { id: "settings_stories_1", pane: "stories", title: "mss.t1", description: "mss.d1" },
+    { id: "settings_stories_2", pane: "stories", title: "mss.t2", description: "mss.d2" },
+    { id: "settings_stories_3", pane: "stories", title: "mss.t3", description: "mss.d3" },
+];
+
+const SETTINGS_PROGRAM_KEYS = {
+    settings_general_1: "showAds",
+    settings_general_2: "openInNewTab",
+    settings_general_3: "autoSlideshow",
+    settings_general_4: "formattedFilenameInput",
+    settings_general_5: "videosMuted",
+    settings_stories_1: "storiesMuted",
+    settings_stories_3: "noMultiStories",
+} as const;
+
+const SETTINGS_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="12" cy="12" r="8.635" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle><path d="M14.232 3.656a1.269 1.269 0 0 1-.796-.66L12.93 2h-1.86l-.505.996a1.269 1.269 0 0 1-.796.66m-.001 16.688a1.269 1.269 0 0 1 .796.66l.505.996h1.862l.505-.996a1.269 1.269 0 0 1 .796-.66M3.656 9.768a1.269 1.269 0 0 1-.66.796L2 11.07v1.862l.996.505a1.269 1.269 0 0 1 .66.796m16.688-.001a1.269 1.269 0 0 1 .66-.796L22 12.93v-1.86l-.996-.505a1.269 1.269 0 0 1-.66-.796M7.678 4.522a1.269 1.269 0 0 1-1.03.096l-1.06-.348L4.27 5.587l.348 1.062a1.269 1.269 0 0 1-.096 1.03m11.8 11.799a1.269 1.269 0 0 1 1.03-.096l1.06.348 1.318-1.317-.348-1.062a1.269 1.269 0 0 1 .096-1.03m-14.956.001a1.269 1.269 0 0 1 .096 1.03l-.348 1.06 1.317 1.318 1.062-.348a1.269 1.269 0 0 1 1.03.096m11.799-11.8a1.269 1.269 0 0 1-.096-1.03l.348-1.06-1.317-1.318-1.062.348a1.269 1.269 0 0 1-1.03-.096" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>`;
+const EXPAND_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5M9 3 3 9M15 3l6 6M21 15l-6 6M3 15l6 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>`;
 
 /**
  * MediaScanner is a module responsible for handling various media scanning tasks,
  * including managing settings, adding necessary styles to the page, and interacting with modals.
  */
 export class MediaScanner implements Module {
-    svgSettings: any = null;
-    svgExpand: any = null;
+    svgSettings = SETTINGS_ICON_SVG;
+    svgExpand = EXPAND_ICON_SVG;
     private readonly postExampleUrl = "https://www.instagram.com/p/CIGrv1VMBkS/";
     private readonly expandButtonClass = "instg-modal-action";
     private readonly settingsChangedEvent = "instg:settings-change";
+    private readonly modalBodyStyleReset = "padding:0!important";
+    private readonly utilityBodyStyle = "text-align:center;padding:20px";
+    private readonly externalRel = "noopener noreferrer";
+    private readonly saveFilenameButtonId = "settings-general-btn-4";
 
     private getStyleId(program: Program, suffix: string): string {
         return `${program.DOM_PREFIX}-${suffix}`;
     }
 
+    private toDomSettingId(settingId: string): string {
+        return settingId.replace(/_/g, "-");
+    }
+
     private syncProgramSetting(program: Program, settingKey: string, value: string | boolean): void {
-        switch (settingKey) {
-            case "settings_general_1":
-                program.settings.showAds = Boolean(value);
-                break;
-            case "settings_general_2":
-                program.settings.openInNewTab = Boolean(value);
-                break;
-            case "settings_general_3":
-                program.settings.autoSlideshow = Boolean(value);
-                break;
-            case "settings_general_4":
-                program.settings.formattedFilenameInput = String(value);
-                break;
-            case "settings_general_5":
-                program.settings.videosMuted = Boolean(value);
-                break;
-            case "settings_stories_1":
-                program.settings.storiesMuted = Boolean(value);
-                break;
-            case "settings_stories_3":
-                program.settings.noMultiStories = Boolean(value);
-                break;
+        const programKey = SETTINGS_PROGRAM_KEYS[settingKey as keyof typeof SETTINGS_PROGRAM_KEYS];
+        if (!programKey) {
+            return;
         }
+
+        if (programKey === "formattedFilenameInput") {
+            program.settings.formattedFilenameInput = String(value);
+            return;
+        }
+
+        program.settings[programKey] = Boolean(value);
     }
 
     private emitSettingsChanged(settingKey: string, value: string | boolean): void {
         document.dispatchEvent(new CustomEvent(this.settingsChangedEvent, {
             detail: { settingKey, value }
         }));
+    }
+
+    private openModal(config: {
+        heading: string;
+        body: string | HTMLElement;
+        bodyStyle?: string | null;
+        buttonList?: ModalButton[];
+        closeOnOverlayClick?: boolean;
+        callback?: Modal["callback"];
+    }): Modal {
+        const modal = new Modal({
+            heading: [config.heading],
+            body: [config.body],
+            bodyStyle: config.bodyStyle ?? null,
+            buttonList: config.buttonList || [],
+            closeOnOverlayClick: config.closeOnOverlayClick,
+            callback: config.callback,
+        });
+        void modal.open();
+        return modal;
     }
 
     private refreshLiveDownloadLinks(modalElement: HTMLElement, program: Program): void {
@@ -88,7 +144,7 @@ export class MediaScanner implements Module {
             anchor.href = program.settings.openInNewTab ? directUrl : encodedUrl;
             if (program.settings.openInNewTab) {
                 anchor.target = "_blank";
-                anchor.rel = "noopener noreferrer";
+                anchor.rel = this.externalRel;
             } else {
                 anchor.removeAttribute("target");
                 anchor.removeAttribute("rel");
@@ -118,75 +174,7 @@ export class MediaScanner implements Module {
         return "MediaScanner";
     }
 
-    /**
- * Constructor for initializing the settings button SVG icon.
- * This SVG represents a settings icon (gear) that will be used in the interface.
- */
-    constructor() {
-        // Define the SVG namespace
-        const svgNS = "http://www.w3.org/2000/svg";
-
-        // Create the SVG element and set its attributes
-        this.svgSettings = document.createElementNS(svgNS, "svg");
-        this.svgSettings.setAttribute("style", "margin-left: auto; margin-right:auto; display:block;");
-        this.svgSettings.setAttribute("aria-label", "Optionen"); // Label for accessibility
-        this.svgSettings.setAttribute("class", "x1lliihq x1n2onr6"); // Class for styling
-        this.svgSettings.setAttribute("color", "rgb(255, 255, 255)"); // Color for the icon
-        this.svgSettings.setAttribute("fill", "rgb(255, 255, 255)"); // Fill color
-        this.svgSettings.setAttribute("height", "24"); // Height of the icon
-        this.svgSettings.setAttribute("role", "img"); // Role of the element for accessibility
-        this.svgSettings.setAttribute("viewBox", "0 0 24 24"); // Viewbox for the SVG scaling
-        this.svgSettings.setAttribute("width", "24"); // Width of the icon
-
-        // Add a title to the SVG for accessibility
-        const title = document.createElementNS(svgNS, "title");
-        title.textContent = "Optionen";
-        this.svgSettings.appendChild(title);
-
-        // Create the circle part of the gear icon
-        const circle = document.createElementNS(svgNS, "circle");
-        circle.setAttribute("cx", "12"); // Center X
-        circle.setAttribute("cy", "12"); // Center Y
-        circle.setAttribute("fill", "none"); // No fill color for the circle
-        circle.setAttribute("r", "8.635"); // Radius of the circle
-        circle.setAttribute("stroke", "currentColor"); // Color of the stroke
-        circle.setAttribute("stroke-linecap", "round"); // Round stroke caps
-        circle.setAttribute("stroke-linejoin", "round"); // Round stroke joins
-        circle.setAttribute("stroke-width", "2"); // Stroke width
-        this.svgSettings.appendChild(circle);
-
-        // Create the path element that completes the gear icon
-        const path = document.createElementNS(svgNS, "path");
-        path.setAttribute("d", "M14.232 3.656a1.269 1.269 0 0 1-.796-.66L12.93 2h-1.86l-.505.996a1.269 1.269 0 0 1-.796.66m-.001 16.688a1.269 1.269 0 0 1 .796.66l.505.996h1.862l.505-.996a1.269 1.269 0 0 1 .796-.66M3.656 9.768a1.269 1.269 0 0 1-.66.796L2 11.07v1.862l.996.505a1.269 1.269 0 0 1 .66.796m16.688-.001a1.269 1.269 0 0 1 .66-.796L22 12.93v-1.86l-.996-.505a1.269 1.269 0 0 1-.66-.796M7.678 4.522a1.269 1.269 0 0 1-1.03.096l-1.06-.348L4.27 5.587l.348 1.062a1.269 1.269 0 0 1-.096 1.03m11.8 11.799a1.269 1.269 0 0 1 1.03-.096l1.06.348 1.318-1.317-.348-1.062a1.269 1.269 0 0 1 .096-1.03m-14.956.001a1.269 1.269 0 0 1 .096 1.03l-.348 1.06 1.317 1.318 1.062-.348a1.269 1.269 0 0 1 1.03.096m11.799-11.8a1.269 1.269 0 0 1-.096-1.03l.348-1.06-1.317-1.318-1.062.348a1.269 1.269 0 0 1-1.03-.096");
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", "currentColor"); // Stroke color
-        path.setAttribute("stroke-linejoin", "round"); // Round stroke joins
-        path.setAttribute("stroke-width", "2"); // Stroke width
-        this.svgSettings.appendChild(path);
-
-        this.svgExpand = document.createElementNS(svgNS, "svg");
-        this.svgExpand.setAttribute("style", "margin-left: auto; margin-right:auto; display:block;");
-        this.svgExpand.setAttribute("aria-label", "Groser anzeigen");
-        this.svgExpand.setAttribute("class", "x1lliihq x1n2onr6");
-        this.svgExpand.setAttribute("color", "rgb(255, 255, 255)");
-        this.svgExpand.setAttribute("fill", "none");
-        this.svgExpand.setAttribute("height", "24");
-        this.svgExpand.setAttribute("role", "img");
-        this.svgExpand.setAttribute("viewBox", "0 0 24 24");
-        this.svgExpand.setAttribute("width", "24");
-
-        const expandTitle = document.createElementNS(svgNS, "title");
-        expandTitle.textContent = "Groser anzeigen";
-        this.svgExpand.appendChild(expandTitle);
-
-        const expandPath = document.createElementNS(svgNS, "path");
-        expandPath.setAttribute("d", "M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5M9 3 3 9M15 3l6 6M21 15l-6 6M3 15l6 6");
-        expandPath.setAttribute("stroke", "currentColor");
-        expandPath.setAttribute("stroke-linecap", "round");
-        expandPath.setAttribute("stroke-linejoin", "round");
-        expandPath.setAttribute("stroke-width", "2");
-        this.svgExpand.appendChild(expandPath);
-    }
+    constructor() { }
 
     /**
      * Initializes listeners for the modal settings.
@@ -195,8 +183,8 @@ export class MediaScanner implements Module {
      * @param program The program object that contains the configuration and context.
      */
     private initModalSettingsListeners(el: HTMLElement, program: Program) {
-        const myTabs = document.querySelectorAll("div.nav-tabs > button.nav-link");
-        const panes = document.querySelectorAll(".tab-pane");
+        const myTabs = document.querySelectorAll("div.st > button.tb");
+        const panes = document.querySelectorAll(".tp");
 
         // Handle tab switching functionality
         const handleClick = (e: MouseEvent): void => {
@@ -236,17 +224,20 @@ export class MediaScanner implements Module {
         });
 
         // Handle input text and button interaction for filename format
-        const inputFileFormat = el.querySelector<HTMLInputElement>('#settings-general-4');
+        const filenameSetting = SETTINGS_CONFIG.find(setting => setting.id === "settings_general_4");
+        const inputFileFormat = filenameSetting
+            ? el.querySelector<HTMLInputElement>(`#${this.toDomSettingId(filenameSetting.id)}`)
+            : null;
         if (inputFileFormat) {
-            const inputKey = `${program.STORAGE_NAME}_settings_general_4`;
+            const inputKey = `${program.STORAGE_NAME}_${filenameSetting.id}`;
             inputFileFormat.value = localStorage.getItem(inputKey) || "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}";
 
-            const saveFilenameFormatBtn = el.querySelector<HTMLElement>(`#settings-general-btn-4`);
+            const saveFilenameFormatBtn = el.querySelector<HTMLElement>(`#${this.saveFilenameButtonId}`);
             saveFilenameFormatBtn.addEventListener("click", (event: Event) => {
                 event.preventDefault();
                 localStorage.setItem(inputKey, inputFileFormat.value); // Save input value to localStorage
-                this.syncProgramSetting(program, "settings_general_4", inputFileFormat.value);
-                this.emitSettingsChanged("settings_general_4", inputFileFormat.value);
+                this.syncProgramSetting(program, filenameSetting.id, inputFileFormat.value);
+                this.emitSettingsChanged(filenameSetting.id, inputFileFormat.value);
                 this.updateInputButtonStyle(saveFilenameFormatBtn, "sd", uiClasses.btnPrimary, uiClasses.btnSuccess);
                 setTimeout(() => {
                     this.updateInputButtonStyle(saveFilenameFormatBtn, "s", uiClasses.btnSuccess, uiClasses.btnPrimary);
@@ -294,58 +285,370 @@ export class MediaScanner implements Module {
      * @param callback The callback function to execute after the modal is opened.
      */
     private displayModal(result: MediaScanResult, heading: string, bodyStyle: string, buttonList: ModalButton[], callback) {
-        new Modal({
-            heading: [heading],
-            body: [result.modalBody],
-            bodyStyle: bodyStyle,
-            buttonList: buttonList,
-            callback: callback,
-        }).open();
+        this.openModal({
+            heading,
+            body: result.modalBody,
+            bodyStyle,
+            buttonList,
+            callback,
+        });
     }
 
     private createLoadingModal(program: Program): Modal {
         return new Modal({
-            heading: [
-                `<h5>
-                    <span class="header-text-left">${logo}</span>
-                    <span class="header-text-right">v${program.VERSION}</span>
-                </h5>`
-            ],
-            body: [
-                `<div class="${uiClasses.loading}">
-                    <div class="${uiClasses.loadingSpinner}" aria-hidden="true"></div>
-                    <div class="${uiClasses.loadingText}">${localize("l")}</div>
-                </div>`
-            ],
-            bodyStyle: "padding:0!important",
+            heading: [buildModalHeader(logo, formatVersionLabel(program.VERSION))],
+            body: [`<div class="${uiClasses.loading}">
+                <div class="${uiClasses.loadingSpinner}" aria-hidden="true"></div>
+                <div class="${uiClasses.loadingText}">${localize("l")}</div>
+            </div>`],
+            bodyStyle: this.modalBodyStyleReset,
             buttonList: [],
             closeOnOverlayClick: false,
         });
     }
 
     private buildNotFoundBody(): string {
-        return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="noopener noreferrer">${this.postExampleUrl}</a></div>`;
+        return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="${this.externalRel}">${this.postExampleUrl}</a></div>`;
+    }
+
+    private buildSettingsAction(): string {
+        return `<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings}</button>`;
     }
 
     private buildUtilityHeading(program: Program): string {
-        return `<h5>
-                    <span class="header-text-left">${logo}</span>
-                    <span class="header-text-right">v${program.VERSION}<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings.outerHTML}</button></span>
-                </h5>`;
+        return buildModalHeader(logo, `${formatVersionLabel(program.VERSION)}${this.buildSettingsAction()}`);
+    }
+
+    private buildMediaHeading(userLink: string, userName: string): string {
+        return buildModalHeader(
+            logo,
+            `<button class="${this.expandButtonClass}" type="button" aria-pressed="false" title="Grosser anzeigen">${this.svgExpand}</button>${this.buildSettingsAction()}`,
+            `<a href="${userLink}">@${userName}</a>`
+        );
+    }
+
+    private buildSettingsHeading(program: Program): string {
+        return buildModalHeader(logo, `<span style="margin-right:0">${formatVersionLabel(program.VERSION)}</span>`, localize("ms.t"));
+    }
+
+    private resolveScannerClass(program: Program): ScannerClass | null {
+        const { pathname } = window.location;
+        return program.regexStoriesURI.test(pathname) ? StoriesScanner :
+            program.regexProfilePath.test(pathname) ? ProfileScanner :
+                program.regexRootPath.test(pathname) ? FeedScanner :
+                    (program.regexPostPath.test(pathname) || program.regexReelURI.test(pathname)) ? PostAndReelScanner :
+                        program.regexReelsURI.test(pathname) ? ReelsScanner :
+                            null;
+    }
+
+    private initSlider(modalElement: HTMLElement, selectedSliderIndex: number, program: Program): void {
+        const slider = modalElement.querySelector(".slider") as HTMLElement | null;
+        const sliderContainer = modalElement.querySelector(".slider-container") as HTMLElement | null;
+        const slides = Array.from(modalElement.querySelectorAll(".slide")) as HTMLElement[];
+        const sliderControls = modalElement.querySelector(".slider-controls") as HTMLElement | null;
+        const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
+        let sliderIndex = selectedSliderIndex;
+        let slideTimer: ReturnType<typeof setTimeout> | undefined;
+        let progressAnimationFrame: number | undefined;
+        let isAdvancing = false;
+        let realignTimeout: ReturnType<typeof setTimeout> | undefined;
+        let playbackSession = 0;
+        let isExpandTransitioning = false;
+        let activeVideo: HTMLVideoElement | null = null;
+
+        if (!slider || !sliderContainer || !sliderControls || !modalWindow || slides.length === 0) {
+            return;
+        }
+
+        slides.forEach((_slide, i) => {
+            const button = document.createElement("button");
+            button.textContent = String(i + 1);
+            button.dataset.index = String(i);
+            button.classList.toggle("active", slides.length === 1);
+            if (slides.length > 1) {
+                button.addEventListener("click", () => {
+                    sliderIndex = i;
+                    updateSliderPosition(true);
+                });
+            }
+            sliderControls.appendChild(button);
+        });
+
+        const clearVideoState = (video: HTMLVideoElement | null, reset = false) => {
+            if (!video) {
+                return;
+            }
+            video.onended = null;
+            video.ontimeupdate = null;
+            video.onseeking = null;
+            video.onseeked = null;
+            video.pause();
+            if (reset) {
+                video.currentTime = 0;
+            }
+            if (activeVideo === video) {
+                activeVideo = null;
+            }
+        };
+
+        const stopActivePlayback = (reset: boolean) => {
+            playbackSession += 1;
+            clearTimeout(slideTimer);
+            slideTimer = undefined;
+            if (progressAnimationFrame) {
+                cancelAnimationFrame(progressAnimationFrame);
+                progressAnimationFrame = undefined;
+            }
+            clearVideoState(activeVideo, reset);
+        };
+
+        const advanceSlide = () => {
+            if (isAdvancing) {
+                return;
+            }
+            isAdvancing = true;
+            sliderIndex = (sliderIndex + 1) % slides.length;
+            updateSliderPosition(false);
+            isAdvancing = false;
+        };
+
+        const restartSlideTimer = (currentSession = playbackSession) => {
+            const durationMs = 5000;
+            const startedAt = performance.now();
+            const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
+            currentButton?.style.setProperty("--progress", "0");
+
+            const updateTimerProgress = (timestamp: number) => {
+                if (currentSession !== playbackSession) {
+                    return;
+                }
+                const progress = Math.max(0, Math.min(100, ((timestamp - startedAt) / durationMs) * 100));
+                currentButton?.style.setProperty("--progress", progress.toFixed(2));
+                if (progress < 100) {
+                    progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
+                }
+            };
+
+            if (progressAnimationFrame) {
+                cancelAnimationFrame(progressAnimationFrame);
+            }
+            progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
+            slideTimer = setTimeout(() => {
+                if (currentSession === playbackSession) {
+                    advanceSlide();
+                }
+            }, durationMs);
+        };
+
+        const checkAndPlayVideoOrStartTimer = () => {
+            playbackSession += 1;
+            const currentSession = playbackSession;
+            const currentSlide = slides[sliderIndex];
+            const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
+            const video = currentSlide.querySelector("video") as HTMLVideoElement | null;
+            const isCurrentSlide = () => currentSession === playbackSession && slides[sliderIndex] === currentSlide;
+            if (slides.length <= 1) {
+                currentButton?.style.setProperty("--progress", "0");
+                if (video) {
+                    activeVideo = video;
+                    video.onended = null;
+                    video.ontimeupdate = null;
+                    video.onseeking = null;
+                    video.onseeked = null;
+                    void video.play().catch(() => undefined);
+                }
+                return;
+            }
+            if (video) {
+                activeVideo = video;
+                const syncVideoProgress = () => {
+                    if (!isCurrentSlide()) {
+                        return;
+                    }
+                    const duration = video.duration;
+                    const progress = duration && Number.isFinite(duration)
+                        ? Math.max(0, Math.min(100, (video.currentTime / duration) * 100))
+                        : 0;
+                    currentButton?.style.setProperty("--progress", progress.toFixed(2));
+                };
+                const updateVideoProgress = () => {
+                    if (!isCurrentSlide()) {
+                        return;
+                    }
+                    syncVideoProgress();
+                    if (!video.paused && !video.ended) {
+                        progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
+                    }
+                };
+                video.onended = () => {
+                    if (isCurrentSlide()) {
+                        advanceSlide();
+                    }
+                };
+                video.ontimeupdate = syncVideoProgress;
+                video.onseeking = syncVideoProgress;
+                video.onseeked = syncVideoProgress;
+                currentButton?.style.setProperty("--progress", "0");
+                void video.play().catch(() => restartSlideTimer());
+                progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
+                return;
+            }
+            restartSlideTimer(currentSession);
+        };
+
+        const updateSliderPosition = (resetTimer: boolean, immediate = false) => {
+            if (document.fullscreenElement) {
+                return;
+            }
+            stopActivePlayback(false);
+            const slideWidth = sliderContainer.clientWidth || slides[0].clientWidth;
+            const previousTransition = slider.style.transition;
+            if (immediate) {
+                slider.style.transition = "none";
+            }
+            slider.style.transform = `translateX(${-slideWidth * sliderIndex}px)`;
+            if (immediate) {
+                requestAnimationFrame(() => {
+                    slider.style.transition = previousTransition;
+                });
+            }
+            Array.from(sliderControls.children).forEach((button, index) => {
+                button.classList.toggle("active", index === sliderIndex);
+                (button as HTMLElement).style.setProperty("--progress", "0");
+            });
+
+            if (resetTimer) {
+                clearTimeout(slideTimer);
+                slideTimer = undefined;
+            }
+            const currentSlideHasVideo = Boolean(slides[sliderIndex]?.querySelector("video"));
+            const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_settings_general_3`) === "true"
+                || currentSlideHasVideo;
+            if (shouldRunProgress) {
+                checkAndPlayVideoOrStartTimer();
+            }
+        };
+
+        const queueSliderRealign = () => {
+            if (isExpandTransitioning) {
+                return;
+            }
+            if (realignTimeout) {
+                clearTimeout(realignTimeout);
+            }
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    updateSliderPosition(false, true);
+                });
+            });
+            realignTimeout = setTimeout(() => {
+                updateSliderPosition(false, true);
+            }, 320);
+        };
+
+        const handleFullscreenChange = () => {
+            if (document.fullscreenElement) {
+                clearTimeout(slideTimer);
+            }
+        };
+
+        const handleExpandToggle = () => {
+            isExpandTransitioning = true;
+        };
+
+        const handleModalTransitionEnd = (event: TransitionEvent) => {
+            if (event.target === modalWindow && event.propertyName === "width") {
+                isExpandTransitioning = false;
+                queueSliderRealign();
+            }
+        };
+
+        const handleSettingsChanged = (event: Event) => {
+            const customEvent = event as CustomEvent<{ settingKey: string; value: string | boolean; }>;
+            const settingKey = customEvent.detail?.settingKey;
+            if (!settingKey) {
+                return;
+            }
+
+            this.refreshLiveDownloadLinks(modalElement, program);
+            this.applyLiveVideoSettings(modalElement, program);
+
+            if (settingKey === "settings_general_3") {
+                if (program.settings.autoSlideshow) {
+                    checkAndPlayVideoOrStartTimer();
+                } else {
+                    stopActivePlayback(false);
+                    Array.from(sliderControls.children).forEach((button) => {
+                        (button as HTMLElement).style.setProperty("--progress", "0");
+                    });
+                }
+            }
+        };
+
+        const resizeObserver = new ResizeObserver(() => {
+            queueSliderRealign();
+        });
+
+        const cleanup = () => {
+            clearTimeout(slideTimer);
+            clearTimeout(realignTimeout);
+            stopActivePlayback(true);
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+            document.removeEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
+            modalElement.removeEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
+            modalWindow.removeEventListener("transitionend", handleModalTransitionEnd);
+            resizeObserver.disconnect();
+            observer.disconnect();
+        };
+
+        const observer = new MutationObserver(() => {
+            if (!document.body.contains(modalElement)) {
+                cleanup();
+            }
+        });
+
+        updateSliderPosition(false);
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
+        modalElement.addEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
+        modalWindow.addEventListener("transitionend", handleModalTransitionEnd);
+        resizeObserver.observe(sliderContainer);
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    private initMediaModal(modalElement: HTMLElement, scannerResult: MediaScanResult, program: Program): void {
+        this.initMediaModalActions(modalElement, program);
+        this.refreshLiveDownloadLinks(modalElement, program);
+        this.applyLiveVideoSettings(modalElement, program);
+        if (modalElement.querySelector(".slider")) {
+            this.initSlider(modalElement, scannerResult.selectedSliderIndex, program);
+        }
+    }
+
+    private showScannerResult(scannerResult: MediaScanResult, program: Program): void {
+        this.displayModal(
+            scannerResult,
+            this.buildMediaHeading(scannerResult.userLink, scannerResult.userName),
+            `${this.modalBodyStyleReset};text-align:center`,
+            [{ active: true, text: localize("c") }],
+            (_modal, el) => {
+                this.initMediaModal(el as HTMLElement, scannerResult, program);
+            }
+        );
     }
 
     private openUtilityModal(program: Program, body: string): void {
-        new Modal({
-            heading: [this.buildUtilityHeading(program)],
-            body: [body],
-            bodyStyle: "text-align:center;padding:20px",
+        this.openModal({
+            heading: this.buildUtilityHeading(program),
+            body,
+            bodyStyle: this.utilityBodyStyle,
             buttonList: [{ active: true, text: "Ok" }],
             callback: (_modal, el) => {
                 el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
                     this.handleSettingsButtonClick(program);
                 });
             }
-        }).open();
+        });
     }
 
     private initMediaModalActions(modalElement: HTMLElement, program: Program): void {
@@ -392,31 +695,34 @@ export class MediaScanner implements Module {
         };
 
         // Function to create a settings list group item
-        const createListGroupItem = (title, description, settingsName, isLargeInput) => {
-            const item = createElement('div', 'list-group-item');
-            const row = createElement('div', 'row align-items-center');
-            const col = createElement('div', 'col pr-0');
-            col.appendChild(createElement('strong', 'mb-0', {}, title));
-            if (description) col.appendChild(createElement('p', 'text-muted mb-0', {}, description));
+        const createListGroupItem = ({ id, title, description, largeInput }: MediaScannerSettingConfig) => {
+            const item = createElement('div', 'si');
+            const row = createElement('div', 'sr');
+            const col = createElement('div', 'sgw');
+            const domId = this.toDomSettingId(id);
+            const localizedTitle = localize(title);
+            const localizedDescription = localize(description);
+            col.appendChild(createElement('strong', 'mb-0', {}, localizedTitle));
+            if (localizedDescription) col.appendChild(createElement('p', 'sm mb-0', {}, localizedDescription));
 
-            const colAuto = createElement('div', 'col-auto');
+            const colAuto = createElement('div', 'se');
             const label = createElement('label', 'slideon');
-            const input = createElement('input', '', { type: 'checkbox', id: `settings-${settingsName}` });
+            const input = createElement('input', '', { type: 'checkbox', id: domId });
             const span = createElement('span', 'slideon-slider');
             label.appendChild(input);
             label.appendChild(span);
             colAuto.appendChild(label);
 
-            if (isLargeInput) {
+            if (largeInput) {
                 // Create and add a paragraph to the new div
                 const div = createElement(
                     'div',
-                    'form-group',
-                    { style: 'display: flex; flex-direction: column; align-items: flex-start;' },
-                    `<strong class="col pr-0">${title}</strong>
-                     <p class="text-muted ml-15 mb-0">${description}</p>
-                     <input type="text" class="form-control ml-15 mt-1 w94" id="settings-${settingsName}" placeholder="${title}">
-                     <button type="submit" class="${uiClasses.btn} ${uiClasses.btnPrimary} mb-2 mt-2" id="settings-general-btn-4" style="align-self: flex-end; margin-right: 12px;">${localize("s")}</button>`
+                    'sf',
+                    {},
+                    `<strong>${localizedTitle}</strong>
+                     <p class="sm smi mb-0">${localizedDescription}</p>
+                     <input type="text" class="fi" id="${domId}" placeholder="${localizedTitle}">
+                     <button type="submit" class="${uiClasses.btn} ${uiClasses.btnPrimary} mt-2" id="${this.saveFilenameButtonId}">${localize("s")}</button>`
                 );
 
                 row.appendChild(div);
@@ -429,73 +735,47 @@ export class MediaScanner implements Module {
             return item;
         };
 
-        const container = createElement('div', 'container');
-        const row = createElement('div', 'row justify-content-center');
-        const col = createElement('div', 'col-12 mx-auto');
-        const my4 = createElement('div', 'my-4');
-        const nav = createElement('nav');
-        const navTabs = createElement('div', 'nav nav-tabs', { id: 'nav-tab', role: 'tablist' });
+        const container = createElement('div', 'sg');
+        const content = createElement('div', 'sy');
+        const navTabs = createElement('div', 'st', { id: 'nav-tab', role: 'tablist' });
 
         // Setting up tab buttons and panes for the modal
-        navTabs.appendChild(createElement('button', 'nav-link active', {
+        navTabs.appendChild(createElement('button', 'tb active', {
             id: 'nav-general-tab', 'data-toggle': 'tab', 'data-target': '#nav-general', type: 'button', role: 'tab',
             'aria-controls': 'nav-general', 'aria-selected': 'true'
         }, `${localize("ms.g")}`));
-        navTabs.appendChild(createElement('button', 'nav-link', {
+        navTabs.appendChild(createElement('button', 'tb', {
             id: 'nav-stories-tab', 'data-toggle': 'tab', 'data-target': '#nav-stories', type: 'button', role: 'tab',
             'aria-controls': 'nav-stories', 'aria-selected': 'false'
         }, 'Stories'));
 
-        const tabContent = createElement('div', 'tab-content', { id: 'nav-tabContent' });
-        const generalPane = createElement('div', 'tab-pane fade active show', { id: 'nav-general', role: 'tabpanel', 'aria-labelledby': 'nav-general-tab' });
-        const storiesPane = createElement('div', 'tab-pane fade', { id: 'nav-stories', role: 'tabpanel', 'aria-labelledby': 'nav-stories-tab' });
+        const tabContent = createElement('div', 'tc', { id: 'nav-tabContent' });
+        const generalPane = createElement('div', 'tp fade active show', { id: 'nav-general', role: 'tabpanel', 'aria-labelledby': 'nav-general-tab' });
+        const storiesPane = createElement('div', 'tp fade', { id: 'nav-stories', role: 'tabpanel', 'aria-labelledby': 'nav-stories-tab' });
 
-        // Adding settings items to both general and stories panes
-        const items = [
-            { title: 'msg.t1', description: 'msg.d1', settingsName: 'general-1' },
-            { title: 'msg.t2', description: 'msg.d2', settingsName: 'general-2' },
-            { title: 'msg.t3', description: 'msg.d3', settingsName: 'general-3' },
-            { title: 'msg.t5', description: 'msg.d5', settingsName: 'general-5' },
-            { title: 'msg.t4', description: 'msg.d4', settingsName: 'general-4', isLargeInput: true },
-            { title: 'mss.t1', description: 'mss.d1', settingsName: 'stories-1' },
-            { title: 'mss.t2', description: 'mss.d2', settingsName: 'stories-2' },
-            { title: 'mss.t3', description: 'mss.d3', settingsName: 'stories-3' },
-        ];
-
-        // Loop through each item and add to the appropriate pane
-        items.forEach((item) => {
-            const pane = item.settingsName.startsWith("general") ? generalPane : storiesPane;
-            pane.appendChild(createListGroupItem(localize(item.title), localize(item.description), item.settingsName, item.isLargeInput));
+        SETTINGS_CONFIG.forEach((setting) => {
+            const pane = setting.pane === "general" ? generalPane : storiesPane;
+            pane.appendChild(createListGroupItem(setting));
         });
 
         // Append all the elements to form the modal content
         tabContent.appendChild(generalPane);
         tabContent.appendChild(storiesPane);
-        nav.appendChild(navTabs);
-        my4.appendChild(nav);
-        my4.appendChild(tabContent);
-        my4.appendChild(createElement('div', 'alert alert-warning mt-3', {}, localize("ms.a")));
-        col.appendChild(my4);
-        row.appendChild(col);
-        container.appendChild(row);
+        content.appendChild(navTabs);
+        content.appendChild(tabContent);
+        content.appendChild(createElement('div', 'sw mt-3', {}, localize("ms.a")));
+        container.appendChild(content);
 
         // Open the modal with the constructed settings content
-        new Modal({
-            heading: [
-                `<h5>
-                    <span class="header-text-left">${logo}</span>
-                    <span class="header-text-middle">${localize("ms.t")}</span>
-                    <span class="header-text-right" style="margin-right: 0">v${program.VERSION}</span>
-                </h5>`
-            ],
-            body: [container],
-            bodyStyle: null,
+        this.openModal({
+            heading: this.buildSettingsHeading(program),
+            body: container,
             buttonList: [{ active: true, text: localize("c") }],
             callback: (_modal, el) => {
                 // Initialize listeners once the modal is open
                 this.initModalSettingsListeners(el as HTMLElement, program);
             }
-        }).open();
+        });
     }
 
     /**
@@ -504,337 +784,35 @@ export class MediaScanner implements Module {
      * @param program The program object that contains the configuration and context.
      */
     private async handleURLPatterns(program: Program): Promise<void> {
-        // If the URL is not from Instagram, show a warning modal
         if (!program.hostname.includes("instagram.com")) {
             this.openUtilityModal(program, localize("a.wo"));
             return;
         }
 
-        // Define tests for different URL patterns and corresponding scanners
-        const tests = [
-            { regex: program.regexStoriesURI, scanner: StoriesScanner },
-            { regex: program.regexProfilePath, scanner: ProfileScanner },
-            { regex: program.regexRootPath, scanner: FeedScanner },
-            { regex: program.regexPostPath, scanner: PostAndReelScanner },
-            { regex: program.regexReelURI, scanner: PostAndReelScanner },
-            { regex: program.regexReelsURI, scanner: ReelsScanner },
-        ];
+        const scannerClass = this.resolveScannerClass(program);
+        if (!scannerClass) {
+            return;
+        }
 
-        // Loop through each test and execute the corresponding scanner based on the URL match
-        for (const test of tests) {
-            if (test.regex.test(window.location.pathname)) {
-                const loadingModal = this.createLoadingModal(program);
-                await loadingModal.open();
+        const loadingModal = this.createLoadingModal(program);
+        await loadingModal.open();
 
-                try {
-                    const scanner = new test.scanner();
-                    if (program.DEVELOPMENT) {
-                        console.log(`${this.getName()}()`, `Execute module ${scanner.getName()}`);
-                    }
-                    const scannerResult = await scanner.execute(program);
-                    await loadingModal.close();
-                    if (!scannerResult) {
-                        this.openUtilityModal(program, this.buildNotFoundBody());
-                    } else if (scannerResult.found) {
-                        scannerResult.foundByModule = scanner.getName();
-                        this.displayModal(scannerResult,
-                            `<h5>
-                                <span class="header-text-left">${logo}</span>
-                                <span class="header-text-middle"><a href="${scannerResult.userLink}">@${scannerResult.userName}</a></span>
-                                <span class="header-text-right"><button class="${this.expandButtonClass}" type="button" aria-pressed="false" title="Grosser anzeigen">${this.svgExpand.outerHTML}</button><button class="${uiClasses.settings}" type="button">${this.svgSettings.outerHTML}</button></span>
-                            </h5>`,
-                            "padding:0!important;text-align:center",
-                            [{ active: true, text: localize("c") }],
-                            (_modal, el) => {
-                                const modalElement = el as HTMLElement;
-                                this.initMediaModalActions(modalElement, program);
-                                this.refreshLiveDownloadLinks(modalElement, program);
-                                this.applyLiveVideoSettings(modalElement, program);
-
-                                if (modalElement.querySelector(".slider")) {
-                                    const slider = modalElement.querySelector(".slider") as HTMLElement | null;
-                                    const sliderContainer = modalElement.querySelector(".slider-container") as HTMLElement | null;
-                                    const slides = Array.from(modalElement.querySelectorAll(".slide")) as HTMLElement[];
-                                    const sliderControls = modalElement.querySelector(".slider-controls") as HTMLElement | null;
-                                    const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
-                                    let sliderIndex = scannerResult.selectedSliderIndex;
-                                    let slideTimer: ReturnType<typeof setTimeout> | undefined;
-                                    let progressAnimationFrame: number | undefined;
-                                    let isAdvancing = false;
-                                    let realignTimeout: ReturnType<typeof setTimeout> | undefined;
-                                    let playbackSession = 0;
-                                    let isExpandTransitioning = false;
-
-                                    if (!slider || !sliderContainer || !sliderControls || !modalWindow || slides.length === 0) {
-                                        return;
-                                    }
-
-                                    // Attach event listeners to the slides
-                                    slides.forEach((_slide, i) => {
-                                        const button = document.createElement("button");
-                                        button.textContent = String(i + 1);
-                                        button.dataset.index = String(i);
-                                        button.classList.toggle("active", slides.length === 1);
-                                        if (slides.length > 1) {
-                                            button.addEventListener("click", () => {
-                                                sliderIndex = i;
-                                                updateSliderPosition(true);
-                                            });
-                                        }
-                                        sliderControls.appendChild(button);
-                                    });
-
-                                    // Update the position of the slider
-                                    const updateSliderPosition = (resetTimer, immediate = false) => {
-                                        const isFullscreen = document.fullscreenElement !== null;
-                                        if (isFullscreen) return;
-                                        stopActivePlayback(false);
-                                        const slideWidth = sliderContainer.clientWidth || slides[0].clientWidth;
-                                        const previousTransition = slider.style.transition;
-                                        if (immediate) {
-                                            slider.style.transition = "none";
-                                        }
-                                        slider.style.transform = `translateX(${-slideWidth * sliderIndex}px)`;
-                                        if (immediate) {
-                                            requestAnimationFrame(() => {
-                                                slider.style.transition = previousTransition;
-                                            });
-                                        }
-                                        Array.from(sliderControls.children).forEach((button, index) => {
-                                            button.classList.toggle("active", index === sliderIndex);
-                                            (button as HTMLElement).style.setProperty("--progress", index === sliderIndex ? "0" : "0");
-                                        });
-
-                                        if (resetTimer) {
-                                            clearTimeout(slideTimer);
-                                            slideTimer = undefined;
-                                        }
-                                        const currentSlideHasVideo = Boolean(slides[sliderIndex]?.querySelector("video"));
-                                        const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_settings_general_3`) === "true"
-                                            || currentSlideHasVideo;
-                                        if (shouldRunProgress)
-                                            checkAndPlayVideoOrStartTimer();
-                                    };
-
-                                    const queueSliderRealign = () => {
-                                        if (isExpandTransitioning) {
-                                            return;
-                                        }
-                                        if (realignTimeout) {
-                                            clearTimeout(realignTimeout);
-                                        }
-                                        requestAnimationFrame(() => {
-                                            requestAnimationFrame(() => {
-                                                updateSliderPosition(false, true);
-                                            });
-                                        });
-                                        realignTimeout = setTimeout(() => {
-                                            updateSliderPosition(false, true);
-                                        }, 320);
-                                    };
-
-                                    // Play video or restart timer
-                                    const checkAndPlayVideoOrStartTimer = () => {
-                                        playbackSession += 1;
-                                        const currentSession = playbackSession;
-                                        const currentSlide = slides[sliderIndex];
-                                        const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
-                                        const video = currentSlide.querySelector("video") as HTMLVideoElement | null;
-                                        if (slides.length <= 1) {
-                                            currentButton?.style.setProperty("--progress", "0");
-                                            if (video) {
-                                                video.onended = null;
-                                                video.ontimeupdate = null;
-                                                video.onseeking = null;
-                                                video.onseeked = null;
-                                                void video.play().catch(() => undefined);
-                                            }
-                                            return;
-                                        }
-                                        if (video) {
-                                            const syncVideoProgress = () => {
-                                                if (currentSession !== playbackSession || sliderIndex >= slides.length || slides[sliderIndex] !== currentSlide) {
-                                                    return;
-                                                }
-                                                const duration = video.duration;
-                                                const progress = duration && Number.isFinite(duration)
-                                                    ? Math.max(0, Math.min(100, (video.currentTime / duration) * 100))
-                                                    : 0;
-                                                currentButton?.style.setProperty("--progress", progress.toFixed(2));
-                                            };
-                                            const updateVideoProgress = () => {
-                                                if (currentSession !== playbackSession || sliderIndex >= slides.length || slides[sliderIndex] !== currentSlide) {
-                                                    return;
-                                                }
-                                                syncVideoProgress();
-                                                if (!video.paused && !video.ended) {
-                                                    progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
-                                                }
-                                            };
-                                            video.onended = () => {
-                                                if (currentSession === playbackSession) {
-                                                    advanceSlide();
-                                                }
-                                            };
-                                            video.ontimeupdate = syncVideoProgress;
-                                            video.onseeking = syncVideoProgress;
-                                            video.onseeked = syncVideoProgress;
-                                            currentButton?.style.setProperty("--progress", "0");
-                                            void video.play().catch(() => restartSlideTimer());
-                                            progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
-                                        } else {
-                                            restartSlideTimer(currentSession);
-                                        }
-                                    };
-
-                                    const advanceSlide = () => {
-                                        if (isAdvancing) {
-                                            return;
-                                        }
-                                        isAdvancing = true;
-                                        sliderIndex = (sliderIndex + 1) % slides.length;
-                                        updateSliderPosition(false);
-                                        isAdvancing = false;
-                                    };
-
-                                    const restartSlideTimer = (currentSession = playbackSession) => {
-                                        const durationMs = 5000;
-                                        const startedAt = performance.now();
-                                        const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
-                                        currentButton?.style.setProperty("--progress", "0");
-
-                                        const updateTimerProgress = (timestamp: number) => {
-                                            if (currentSession !== playbackSession) {
-                                                return;
-                                            }
-                                            const progress = Math.max(0, Math.min(100, ((timestamp - startedAt) / durationMs) * 100));
-                                            currentButton?.style.setProperty("--progress", progress.toFixed(2));
-                                            if (progress < 100) {
-                                                progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
-                                            }
-                                        };
-
-                                        if (progressAnimationFrame) {
-                                            cancelAnimationFrame(progressAnimationFrame);
-                                        }
-                                        progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
-                                        slideTimer = setTimeout(() => {
-                                            if (currentSession === playbackSession) {
-                                                advanceSlide();
-                                            }
-                                        }, durationMs);
-                                    };
-
-                                    const stopActivePlayback = (reset) => {
-                                        playbackSession += 1;
-                                        clearTimeout(slideTimer);
-                                        slideTimer = undefined;
-                                        if (progressAnimationFrame) {
-                                            cancelAnimationFrame(progressAnimationFrame);
-                                            progressAnimationFrame = undefined;
-                                        }
-                                        slides.forEach(slide => {
-                                            const video = slide.querySelector("video") as HTMLVideoElement | null;
-                                            if (video) {
-                                                video.onended = null;
-                                                video.ontimeupdate = null;
-                                                video.onseeking = null;
-                                                video.onseeked = null;
-                                                video.pause();
-                                                if (reset)
-                                                    video.currentTime = 0;
-                                            }
-                                        });
-                                    };
-
-                                    updateSliderPosition(false);
-
-                                    // Function to handle fullscreen change
-                                    const handleFullscreenChange = () => {
-                                        const isFullscreen = document.fullscreenElement !== null;
-                                        if (isFullscreen) {
-                                            clearTimeout(slideTimer);
-                                        }
-                                    };
-
-                                    const handleExpandToggle = () => {
-                                        isExpandTransitioning = true;
-                                    };
-
-                                    const handleModalTransitionEnd = (event: TransitionEvent) => {
-                                        if (event.target === modalWindow && event.propertyName === "width") {
-                                            isExpandTransitioning = false;
-                                            queueSliderRealign();
-                                        }
-                                    };
-
-                                    const resizeObserver = new ResizeObserver(() => {
-                                        queueSliderRealign();
-                                    });
-
-                                    const handleSettingsChanged = (event: Event) => {
-                                        const customEvent = event as CustomEvent<{ settingKey: string; value: string | boolean; }>;
-                                        const settingKey = customEvent.detail?.settingKey;
-                                        if (!settingKey) {
-                                            return;
-                                        }
-
-                                        this.refreshLiveDownloadLinks(modalElement, program);
-                                        this.applyLiveVideoSettings(modalElement, program);
-
-                                        if (settingKey === "settings_general_3") {
-                                            if (program.settings.autoSlideshow) {
-                                                checkAndPlayVideoOrStartTimer();
-                                            } else {
-                                                stopActivePlayback(false);
-                                                Array.from(sliderControls.children).forEach((button) => {
-                                                    (button as HTMLElement).style.setProperty("--progress", "0");
-                                                });
-                                            }
-                                        }
-                                    };
-
-                                    // Add fullscreen change event listener
-                                    document.addEventListener('fullscreenchange', handleFullscreenChange);
-                                    document.addEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-                                    modalElement.addEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
-                                    modalWindow.addEventListener("transitionend", handleModalTransitionEnd);
-                                    resizeObserver.observe(sliderContainer);
-
-                                    // Remove listeners and timers once the modal disappears.
-                                    const cleanup = () => {
-                                        clearTimeout(slideTimer);
-                                        clearTimeout(realignTimeout);
-                                        stopActivePlayback(true);
-                                        document.removeEventListener('fullscreenchange', handleFullscreenChange);
-                                        document.removeEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-                                        modalElement.removeEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
-                                        modalWindow.removeEventListener("transitionend", handleModalTransitionEnd);
-                                        resizeObserver.disconnect();
-                                        observer.disconnect();
-                                    };
-
-                                    const observer = new MutationObserver(() => {
-                                        if (!document.body.contains(el)) {
-                                            cleanup();
-                                        }
-                                    });
-
-                                    observer.observe(document.body, { childList: true, subtree: true });
-                                }
-
-                            }
-                        );
-                    } else {
-                        this.openUtilityModal(program, this.buildNotFoundBody());
-                    }
-                } catch (error) {
-                    await loadingModal.close();
-                    console.error(`Error executing scanner ${test.scanner.name}:`, error);
-                }
-
-                return;
+        try {
+            const scanner = new scannerClass();
+            if (program.DEVELOPMENT) {
+                console.log(`${this.getName()}()`, `Execute module ${scanner.getName()}`);
             }
+            const scannerResult = await scanner.execute(program);
+            await loadingModal.close();
+
+            if (scannerResult?.found) {
+                this.showScannerResult(scannerResult, program);
+            } else {
+                this.openUtilityModal(program, this.buildNotFoundBody());
+            }
+        } catch (error) {
+            await loadingModal.close();
+            console.error(`Error executing scanner ${scannerClass.name}:`, error);
         }
     }
 

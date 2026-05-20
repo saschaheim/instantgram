@@ -3,6 +3,7 @@ import { Modal } from "../components/Modal";
 import { logo } from "../components/Interconnect";
 import { findAppId, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";
+import { buildModalHeader, formatVersionTransition, normalizeVersionString } from "../helpers/common";
 
 type Changelog = {
     date: string; // Represents the date of the changelog or version release
@@ -19,10 +20,6 @@ export class VersionUpdater {
     storageKey: string; // The key to store version info in localStorage
     private checkPromise: Promise<void> | null = null;
     private readonly changelogPostShortcode = "DYigGqejL3X";
-
-    private normalizeVersionString(version: string): string {
-        return version.replace(/^v/i, "").trim().replace(/\./g, "-");
-    }
 
     /**
      * Constructor initializes the VersionUpdater with the given program configuration.
@@ -118,8 +115,8 @@ export class VersionUpdater {
         const changelogHtml = this.generateChangelogHtml(textBody);
 
         // Check if the online version is greater than the local version
-        const onlineVersion = this.normalizeVersionString(date);
-        const normalizedLocalVersion = this.normalizeVersionString(localVersion);
+        const onlineVersion = normalizeVersionString(date);
+        const normalizedLocalVersion = normalizeVersionString(localVersion);
 
         // Log a success message
         console.info(localize("modules.update@update_successful"));
@@ -132,132 +129,49 @@ export class VersionUpdater {
         }
     }
 
-    /**
-     * Escapes user-controlled text before inserting it into modal HTML.
-     * @param text The changelog text to convert into an HTML list.
-     * @returns {string} The escaped text.
-     */
     private escapeHtml(text: string): string {
         return text
-            .replace(/&/g, "\\u0026amp;")
-            .replace(/</g, "\\u003C")
-            .replace(/>/g, "\\u003E")
-            .replace(/"/g, "\\u0026quot;")
-            .replace(/'/g, "\\u0026#39;");
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
     }
 
     /**
-     * Formats a small markdown subset for the changelog modal.
-     * Supported: **bold**, `code`, [label](https://example.com)
-     * @param text Inline markdown text.
-     * @returns {string} Safe HTML.
-     */
-    private formatInlineMarkdown(text: string): string {
-        const tokens: string[] = [];
-        let remaining = text;
-        const patterns = [
-            /\*\*([^*]+)\*\*/,
-            /`([^`]+)`/,
-            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/,
-        ];
-
-        while (remaining.length > 0) {
-            let earliestMatch: RegExpMatchArray | null = null;
-            let earliestIndex = Infinity;
-            let earliestPatternIndex = -1;
-
-            patterns.forEach((pattern, patternIndex) => {
-                const match = remaining.match(pattern);
-                if (match && match.index !== undefined && match.index < earliestIndex) {
-                    earliestMatch = match;
-                    earliestIndex = match.index;
-                    earliestPatternIndex = patternIndex;
-                }
-            });
-
-            if (!earliestMatch || earliestIndex === Infinity) {
-                tokens.push(this.escapeHtml(remaining));
-                break;
-            }
-
-            if (earliestIndex > 0) {
-                tokens.push(this.escapeHtml(remaining.slice(0, earliestIndex)));
-            }
-
-            if (earliestPatternIndex === 0) {
-                tokens.push(`<strong>${this.escapeHtml(earliestMatch[1])}</strong>`);
-            } else if (earliestPatternIndex === 1) {
-                tokens.push(`<code style="background:#f5f5f5;padding:2px 5px;border-radius:4px;font-size:.92em">${this.escapeHtml(earliestMatch[1])}</code>`);
-            } else {
-                tokens.push(`<a href="${earliestMatch[2]}" target="_blank" rel="noopener noreferrer" style="color:#0095e2">${this.escapeHtml(earliestMatch[1])}</a>`);
-            }
-
-            remaining = remaining.slice(earliestIndex + earliestMatch[0].length);
-        }
-
-        return tokens.join("");
-    }
-
-    /**
-     * Generates a cleaner changelog layout from caption text using a small markdown subset.
+     * Generates a compact changelog layout from caption text.
      * @param text The changelog text to convert into HTML.
      * @returns {string} The generated HTML block as a string.
      */
     private generateChangelogHtml(text: string): string {
-        const lines = text.split("\n").map(line => line.trimEnd());
-        const htmlParts: string[] = [];
-        let listItems: string[] = [];
+        const lines = text.split("\n").map(line => line.trim());
+        const parts: string[] = [];
+        let items = "";
 
-        const flushList = () => {
-            if (listItems.length === 0) {
+        const flushItems = () => {
+            if (!items) {
                 return;
             }
-
-            htmlParts.push(
-                `<ul style="margin:0 0 16px;padding-left:24px;list-style:disc outside;color:#495057">
-                    ${listItems.join("")}
-                </ul>`
-            );
-            listItems = [];
+            parts.push(`<ul style="margin:0 0 12px;padding-left:20px">${items}</ul>`);
+            items = "";
         };
 
-        lines.forEach((rawLine, index) => {
-            const line = rawLine.trim();
-
+        lines.forEach((line, index) => {
             if (!line) {
-                flushList();
+                flushItems();
                 return;
             }
 
             if (/^[-*]\s+/.test(line)) {
-                const content = line.replace(/^[-*]\s+/, "");
-                listItems.push(`<li style="display:list-item;margin:0 0 8px 0;padding-left:2px">${this.formatInlineMarkdown(content)}</li>`);
+                items += `<li style="margin:0 0 6px">${this.escapeHtml(line.slice(2))}</li>`;
                 return;
             }
 
-            flushList();
-
-            if (/^#{1,3}\s+/.test(line)) {
-                const level = Math.min((line.match(/^#+/)?.[0].length || 1) + 3, 6);
-                const content = line.replace(/^#{1,3}\s+/, "");
-                htmlParts.push(
-                    `<h${level} style="margin:${index === 0 ? "0" : "10px"} 0 10px;font-size:16px;font-weight:700;line-height:1.35;color:#212529">
-                        ${this.formatInlineMarkdown(content)}
-                    </h${level}>`
-                );
-                return;
-            }
-
-            htmlParts.push(
-                `<p style="margin:0 0 14px;color:#495057;line-height:1.6">
-                    ${this.formatInlineMarkdown(line)}
-                </p>`
-            );
+            flushItems();
+            const cleanLine = this.escapeHtml(line.replace(/^\*\*(.*)\*\*$/, "$1"));
+            parts.push(`<p style="margin:${index ? "0 0 12px" : "0 0 12px"};line-height:1.5">${cleanLine}</p>`);
         });
 
-        flushList();
-
-        return `<div style="padding:18px 20px 8px;text-align:left">${htmlParts.join("")}</div>`;
+        flushItems();
+        return `<div style="padding:18px 20px 8px;text-align:left">${parts.join("")}</div>`;
     }
 
     /**
@@ -268,8 +182,8 @@ export class VersionUpdater {
     private storeVersionInfo(localVersion: string, onlineVersion: string): void {
         const expirationDate = new Date();
         expirationDate.setHours(expirationDate.getHours() + 6); // Set expiration to 6 hours later
-        const normalizedLocalVersion = this.normalizeVersionString(localVersion);
-        const normalizedOnlineVersion = this.normalizeVersionString(onlineVersion);
+        const normalizedLocalVersion = normalizeVersionString(localVersion);
+        const normalizedOnlineVersion = normalizeVersionString(onlineVersion);
 
         // Store version info in an object
         const versionInfo = {
@@ -292,8 +206,8 @@ export class VersionUpdater {
      */
     private isUpdateNecessary(localVersion: string, onlineVersion: string): boolean {
         const data = JSON.parse(window.localStorage.getItem(this.storageKey) || "{}");
-        const installedVersion = new Date(this.normalizeVersionString(localVersion));
-        const latestOnlineVersion = new Date(this.normalizeVersionString(onlineVersion));
+        const installedVersion = new Date(normalizeVersionString(localVersion));
+        const latestOnlineVersion = new Date(normalizeVersionString(onlineVersion));
 
         // Check if the online version is newer or if the stored data has expired
         const isVersionOutdated = latestOnlineVersion > installedVersion;
@@ -310,11 +224,7 @@ export class VersionUpdater {
      */
     private showUpdateModal(localVersion: string, onlineVersion: string, changelogHtml: string): void {
         new Modal({
-            heading: [`<h5>
-                <span class="header-text-left">${logo}</span>
-                <span class="header-text-middle">${localize("u.t")}</span>
-                <span class="header-text-right">v${localVersion} -> v${onlineVersion.replace(/-/g, ".")}</span>
-            </h5>`],
+            heading: [buildModalHeader(logo, formatVersionTransition(localVersion, onlineVersion), localize("u.t"))],
             body: [changelogHtml],
             bodyStyle: "padding:0!important",
             buttonList: [{ active: true, text: localize("c") }],

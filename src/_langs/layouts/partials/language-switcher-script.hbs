@@ -14,6 +14,31 @@
         }
     }
 
+    function getHostedLangHref(lang) {
+        switch (lang) {
+            case 'de-DE':
+                return '/instantgram/lang/de-de/';
+            case 'pt-BR':
+                return '/instantgram/lang/pt-br/';
+            case 'es-AR':
+                return '/instantgram/lang/es-ar/';
+            default:
+                return '/instantgram/';
+        }
+    }
+
+    function getLocalRootPrefix() {
+        return /\/lang\/[^/]+\/index\.html$/i.test(location.pathname) ? '../../' : './';
+    }
+
+    function getLocalLangHref(lang) {
+        return getLocalRootPrefix() + (lang === 'en-US' ? 'index.html' : 'lang/' + lang.toLowerCase() + '/index.html');
+    }
+
+    function getLangHref(lang) {
+        return location.protocol === 'file:' ? getLocalLangHref(lang) : getHostedLangHref(lang);
+    }
+
     // identify which language's page
     var switchesLang = document.querySelectorAll('.language-bar a');
     var defaultLang = "en-US";
@@ -23,6 +48,7 @@
         if (regex.test(location.pathname)) {
             defaultLang = lang;
         }
+        switchesLang[i].href = getLangHref(lang) + '?force=true';
     }
     document
         .querySelector("[data-lang='" + defaultLang + "'] span")
@@ -31,20 +57,20 @@
 
     var language = navigator.languages && navigator.languages[0] || navigator.language || navigator.userLanguage;
     var regex = new RegExp(language.toLowerCase(), 'g');
-    if (!regex.test(location.pathname) && !GetQueryStringParams('force') && location.protocol !== 'file:') {
+    if (!regex.test(location.pathname) && !GetQueryStringParams('force')) {
         if (typeof language !== 'undefined') {
             switch (language.substring(0, 2)) {
                 case 'de':
-                    window.location.href = '/instantgram/lang/de-de/';
+                    window.location.href = getLangHref('de-DE');
                     break;
                 case 'pt':
-                    window.location.href = '/instantgram/lang/pt-br/';
+                    window.location.href = getLangHref('pt-BR');
                     break;
                 case 'es':
-                    window.location.href = '/instantgram/lang/es-ar/';
+                    window.location.href = getLangHref('es-AR');
                     break;
                 default:
-                    window.location.href = '/instantgram/?force=true';
+                    window.location.href = getLangHref('en-US') + '?force=true';
             }
         }
     }

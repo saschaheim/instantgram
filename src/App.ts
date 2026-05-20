@@ -40,8 +40,6 @@ export type Program = {
    * Example: 'www.instagram.com'
    */
   hostname: string;
-  path: string;
-  regexHostname: RegExp;
 
   /**
    * The path of the current URL.
@@ -88,7 +86,6 @@ export type Program = {
    * Example: /^\/stories\/[a-zA-Z0-9_-]+$/
    */
   regexStoriesURI: RegExp;
-  foundByModule: string | null | undefined;
 
   /**
    * The module that found the current media (e.g., 'FeedScanner', 'ReelsScanner').
