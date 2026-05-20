@@ -20,6 +20,10 @@ export class VersionUpdater {
     private checkPromise: Promise<void> | null = null;
     private readonly changelogPostShortcode = "DYigGqejL3X";
 
+    private normalizeVersionString(version: string): string {
+        return version.replace(/^v/i, "").trim().replace(/\./g, "-");
+    }
+
     /**
      * Constructor initializes the VersionUpdater with the given program configuration.
      * @param program The program object that contains configuration and context for the updater.
@@ -114,14 +118,15 @@ export class VersionUpdater {
         const changelogHtml = this.generateChangelogHtml(textBody);
 
         // Check if the online version is greater than the local version
-        const onlineVersion = date;
+        const onlineVersion = this.normalizeVersionString(date);
+        const normalizedLocalVersion = this.normalizeVersionString(localVersion);
 
         // Log a success message
         console.info(localize("modules.update@update_successful"));
 
-        if (new Date(onlineVersion) > new Date(localVersion)) {
+        if (new Date(onlineVersion) > new Date(normalizedLocalVersion)) {
             // If an update is available, show the update modal
-            this.showUpdateModal(localVersion, onlineVersion, changelogHtml);
+            this.showUpdateModal(normalizedLocalVersion, onlineVersion, changelogHtml);
             // Inform the developer about the outdated version in the console
             this.informOutdatedVersionInDevConsole();
         }
@@ -263,11 +268,13 @@ export class VersionUpdater {
     private storeVersionInfo(localVersion: string, onlineVersion: string): void {
         const expirationDate = new Date();
         expirationDate.setHours(expirationDate.getHours() + 6); // Set expiration to 6 hours later
+        const normalizedLocalVersion = this.normalizeVersionString(localVersion);
+        const normalizedOnlineVersion = this.normalizeVersionString(onlineVersion);
 
         // Store version info in an object
         const versionInfo = {
-            version: localVersion,
-            onlineVersion,
+            version: normalizedLocalVersion,
+            onlineVersion: normalizedOnlineVersion,
             lastVerification: Date.now(),
             dateExpiration: expirationDate.getTime(),
         };
@@ -285,8 +292,8 @@ export class VersionUpdater {
      */
     private isUpdateNecessary(localVersion: string, onlineVersion: string): boolean {
         const data = JSON.parse(window.localStorage.getItem(this.storageKey) || "{}");
-        const installedVersion = new Date(localVersion);
-        const latestOnlineVersion = new Date(onlineVersion);
+        const installedVersion = new Date(this.normalizeVersionString(localVersion));
+        const latestOnlineVersion = new Date(this.normalizeVersionString(onlineVersion));
 
         // Check if the online version is newer or if the stored data has expired
         const isVersionOutdated = latestOnlineVersion > installedVersion;
