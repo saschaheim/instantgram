@@ -1,7 +1,7 @@
 const locale = process.env.LOCALE || "en-US";
 
 const enUS = {
-    "h.ld": "[instantgram] language: en-US\nFor more information about available languages please check http://saschaheim.github.io/instantgram",
+    "h.ld": "[instantgram] language: en-US\nFor more information about available languages please check https://saschaheim.github.io/instantgram",
     "a.wo": "Works only on instagram.com",
     "a.nf": "Did you open any Instagram post? Like for example",
     "ms.t": "Settings",
@@ -28,7 +28,7 @@ const enUS = {
     "s": "Save",
     "sd": "Saved",
     "c": "Close",
-    "u.i": "[instantgram] is outdated. Please check http://saschaheim.github.io/instantgram for available updates.",
+    "u.i": "[instantgram] is outdated. Please check https://saschaheim.github.io/instantgram for available updates.",
     "u.v": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
     "u.t": "Update available",
     "ad": "Sponsored",
@@ -40,7 +40,7 @@ export type LocalizationKey = keyof typeof enUS;
 type LocalizationDictionary = Record<LocalizationKey, string>;
 
 const deDE: LocalizationDictionary = {
-    "h.ld": "[instantgram] Sprache: de-DE\nWeitere Informationen zu den verfugbaren Sprachen findest du auf http://saschaheim.github.io/instantgram",
+    "h.ld": "[instantgram] Sprache: de-DE\nWeitere Informationen zu den verfugbaren Sprachen findest du auf https://saschaheim.github.io/instantgram",
     "a.wo": "Funktioniert nur auf instagram.com",
     "a.nf": "Hast du einen Instagram Post geoffnet? Zum Beispiel",
     "ms.t": "Einstellungen",
@@ -67,7 +67,7 @@ const deDE: LocalizationDictionary = {
     "s": "Speichern",
     "sd": "Gespeichert",
     "c": "Schliessen",
-    "u.i": "[instantgram] ist veraltet. Bitte prufe http://saschaheim.github.io/instantgram auf verfugbare Updates.",
+    "u.i": "[instantgram] ist veraltet. Bitte prufe https://saschaheim.github.io/instantgram auf verfugbare Updates.",
     "u.v": "[instantgram] Installierte Version: ${data.version} | Neues Update: ${data.onlineVersion}",
     "u.t": "Update verfugbar",
     "ad": "Gesponsert",
@@ -75,7 +75,7 @@ const deDE: LocalizationDictionary = {
 };
 
 const esAR: LocalizationDictionary = {
-    "h.ld": "[instantgram] idioma: es-AR\nPara mas informacion sobre los idiomas disponibles visita http://saschaheim.github.io/instantgram",
+    "h.ld": "[instantgram] idioma: es-AR\nPara mas informacion sobre los idiomas disponibles visita https://saschaheim.github.io/instantgram",
     "a.wo": "Funciona solo en instagram.com",
     "a.nf": "Abriste alguna publicacion de Instagram? Por ejemplo",
     "ms.t": "Configuracion",
@@ -102,7 +102,7 @@ const esAR: LocalizationDictionary = {
     "s": "Guardar",
     "sd": "Guardado",
     "c": "Cerrar",
-    "u.i": "[instantgram] esta desactualizado. Revisa http://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
+    "u.i": "[instantgram] esta desactualizado. Revisa https://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
     "u.v": "[instantgram] Version instalada: ${data.version} | Nueva actualizacion: ${data.onlineVersion}",
     "u.t": "Actualizacion disponible",
     "ad": "Patrocinado",
@@ -110,7 +110,7 @@ const esAR: LocalizationDictionary = {
 };
 
 const ptBR: LocalizationDictionary = {
-    "h.ld": "[instantgram] idioma: pt-BR\nPara mais informacoes sobre os idiomas disponiveis acesse http://saschaheim.github.io/instantgram",
+    "h.ld": "[instantgram] idioma: pt-BR\nPara mais informacoes sobre os idiomas disponiveis acesse https://saschaheim.github.io/instantgram",
     "a.wo": "Funciona apenas em instagram.com",
     "a.nf": "Voce abriu alguma postagem do Instagram? Por exemplo",
     "ms.t": "Configuracoes",
@@ -137,7 +137,7 @@ const ptBR: LocalizationDictionary = {
     "s": "Salvar",
     "sd": "Salvo",
     "c": "Fechar",
-    "u.i": "[instantgram] esta desatualizado. Verifique http://saschaheim.github.io/instantgram para atualizacoes disponiveis.",
+    "u.i": "[instantgram] esta desatualizado. Verifique https://saschaheim.github.io/instantgram para atualizacoes disponiveis.",
     "u.v": "[instantgram] Versao instalada: ${data.version} | Nova atualizacao: ${data.onlineVersion}",
     "u.t": "Atualizacao disponivel",
     "ad": "Patrocinado",
