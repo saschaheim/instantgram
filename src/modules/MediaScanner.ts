@@ -9,9 +9,9 @@ import { PostAndReelScanner } from "./PostAndReelScanner";
 import { ProfileScanner } from "./ProfileScanner";
 import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
-import localize from "../helpers/localize";
 import { userFilenameFormatter } from "../helpers/mediaFormatting";
 import { buildModalHeader, formatVersionLabel } from "../helpers/common";
+import localize from "../helpers/localize";
 
 type MediaScannerSettingConfig = {
     id: string;
@@ -29,24 +29,24 @@ type ScannerClass =
     | typeof ReelsScanner;
 
 const SETTINGS_CONFIG: MediaScannerSettingConfig[] = [
-    { id: "settings_general_1", pane: "general", title: "msg.t1", description: "msg.d1" },
-    { id: "settings_general_2", pane: "general", title: "msg.t2", description: "msg.d2" },
-    { id: "settings_general_3", pane: "general", title: "msg.t3", description: "msg.d3" },
-    { id: "settings_general_5", pane: "general", title: "msg.t5", description: "msg.d5" },
-    { id: "settings_general_4", pane: "general", title: "msg.t4", description: "msg.d4", largeInput: true },
-    { id: "settings_stories_1", pane: "stories", title: "mss.t1", description: "mss.d1" },
-    { id: "settings_stories_2", pane: "stories", title: "mss.t2", description: "mss.d2" },
-    { id: "settings_stories_3", pane: "stories", title: "mss.t3", description: "mss.d3" },
+    { id: "g1", pane: "general", title: "msg.t1", description: "msg.d1" },
+    { id: "g2", pane: "general", title: "msg.t2", description: "msg.d2" },
+    { id: "g3", pane: "general", title: "msg.t3", description: "msg.d3" },
+    { id: "g5", pane: "general", title: "msg.t5", description: "msg.d5" },
+    { id: "g4", pane: "general", title: "msg.t4", description: "msg.d4", largeInput: true },
+    { id: "s1", pane: "stories", title: "mss.t1", description: "mss.d1" },
+    { id: "s2", pane: "stories", title: "mss.t2", description: "mss.d2" },
+    { id: "s3", pane: "stories", title: "mss.t3", description: "mss.d3" },
 ];
 
 const SETTINGS_PROGRAM_KEYS = {
-    settings_general_1: "showAds",
-    settings_general_2: "openInNewTab",
-    settings_general_3: "autoSlideshow",
-    settings_general_4: "formattedFilenameInput",
-    settings_general_5: "videosMuted",
-    settings_stories_1: "storiesMuted",
-    settings_stories_3: "noMultiStories",
+    g1: "showAds",
+    g2: "openInNewTab",
+    g3: "autoSlideshow",
+    g4: "formattedFilenameInput",
+    g5: "videosMuted",
+    s1: "storiesMuted",
+    s3: "noMultiStories",
 } as const;
 
 const SETTINGS_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="12" cy="12" r="8.635" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle><path d="M14.232 3.656a1.269 1.269 0 0 1-.796-.66L12.93 2h-1.86l-.505.996a1.269 1.269 0 0 1-.796.66m-.001 16.688a1.269 1.269 0 0 1 .796.66l.505.996h1.862l.505-.996a1.269 1.269 0 0 1 .796-.66M3.656 9.768a1.269 1.269 0 0 1-.66.796L2 11.07v1.862l.996.505a1.269 1.269 0 0 1 .66.796m16.688-.001a1.269 1.269 0 0 1 .66-.796L22 12.93v-1.86l-.996-.505a1.269 1.269 0 0 1-.66-.796M7.678 4.522a1.269 1.269 0 0 1-1.03.096l-1.06-.348L4.27 5.587l.348 1.062a1.269 1.269 0 0 1-.096 1.03m11.8 11.799a1.269 1.269 0 0 1 1.03-.096l1.06.348 1.318-1.317-.348-1.062a1.269 1.269 0 0 1 .096-1.03m-14.956.001a1.269 1.269 0 0 1 .096 1.03l-.348 1.06 1.317 1.318 1.062-.348a1.269 1.269 0 0 1 1.03.096m11.799-11.8a1.269 1.269 0 0 1-.096-1.03l.348-1.06-1.317-1.318-1.062.348a1.269 1.269 0 0 1-1.03-.096" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>`;
@@ -67,14 +67,10 @@ export class MediaScanner implements Module {
     private readonly modalBodyStyleReset = "padding:0!important";
     private readonly utilityBodyStyle = "text-align:center;padding:20px";
     private readonly externalRel = "noopener noreferrer";
-    private readonly saveFilenameButtonId = "settings-general-btn-4";
+    private readonly saveFilenameButtonId = "g4b";
 
     private getStyleId(program: Program, suffix: string): string {
         return `${program.DOM_PREFIX}-${suffix}`;
-    }
-
-    private toDomSettingId(settingId: string): string {
-        return settingId.replace(/_/g, "-");
     }
 
     private syncProgramSetting(program: Program, settingKey: string, value: string | boolean): void {
@@ -187,8 +183,8 @@ export class MediaScanner implements Module {
      * @param program The program object that contains the configuration and context.
      */
     private initModalSettingsListeners(el: HTMLElement, program: Program) {
-        const myTabs = document.querySelectorAll("div.st > button.tb");
-        const panes = document.querySelectorAll(".tp");
+        const myTabs = el.querySelectorAll("div.st>button.tb");
+        const panes = el.querySelectorAll(".tp");
 
         // Handle tab switching functionality
         const handleClick = (e: MouseEvent): void => {
@@ -201,9 +197,9 @@ export class MediaScanner implements Module {
             const target = e.currentTarget as HTMLElement;
             target.classList.add("active");
 
-            const activePaneID = target.getAttribute("data-target");
+            const activePaneID = target.getAttribute("data-t");
             if (activePaneID) {
-                const activePane = document.querySelector(activePaneID) as HTMLElement;
+                const activePane = el.querySelector(activePaneID) as HTMLElement;
                 if (activePane) {
                     activePane.classList.add("show", "active");
                 }
@@ -217,20 +213,20 @@ export class MediaScanner implements Module {
 
         // Handle checkbox interactions for settings
         Array.from(el.querySelectorAll<HTMLInputElement>('label.slideon input[type="checkbox"]')).forEach((checkbox) => {
-            const checkboxKey = `${program.STORAGE_NAME}_${checkbox.id.replace(/-/g, "_")}`;
+            const checkboxKey = `${program.STORAGE_NAME}_${checkbox.id}`;
             checkbox.checked = localStorage.getItem(checkboxKey) === "true";
             checkbox.addEventListener("change", () => {
                 localStorage.setItem(checkboxKey, String(checkbox.checked)); // Save state to localStorage
-                const settingKey = checkbox.id.replace(/-/g, "_");
+                const settingKey = checkbox.id;
                 this.syncProgramSetting(program, settingKey, checkbox.checked);
                 this.emitSettingsChanged(settingKey, checkbox.checked);
             });
         });
 
         // Handle input text and button interaction for filename format
-        const filenameSetting = SETTINGS_CONFIG.find(setting => setting.id === "settings_general_4");
+        const filenameSetting = SETTINGS_CONFIG.find(setting => setting.id === "g4");
         const inputFileFormat = filenameSetting
-            ? el.querySelector<HTMLInputElement>(`#${this.toDomSettingId(filenameSetting.id)}`)
+            ? el.querySelector<HTMLInputElement>(`#${filenameSetting.id}`)
             : null;
         if (inputFileFormat) {
             const inputKey = `${program.STORAGE_NAME}_${filenameSetting.id}`;
@@ -326,7 +322,7 @@ export class MediaScanner implements Module {
     private buildMediaHeading(userLink: string, userName: string): string {
         return buildModalHeader(
             logo,
-            `<button class="${this.expandButtonClass}" type="button" aria-pressed="false" title="Grosser anzeigen">${this.svgExpand}</button>${this.buildSettingsAction()}`,
+            `<button class="${this.expandButtonClass}" type="button" aria-pressed="false">${this.svgExpand}</button>${this.buildSettingsAction()}`,
             `<a href="${userLink}">@${userName}</a>`
         );
     }
@@ -500,6 +496,20 @@ export class MediaScanner implements Module {
             restartSlideTimer(currentSession);
         };
 
+        const playCurrentVideoWithoutAdvance = () => {
+            const currentSlide = slides[sliderIndex];
+            const video = currentSlide?.querySelector("video") as HTMLVideoElement | null;
+            if (!video) {
+                return;
+            }
+            activeVideo = video;
+            video.onended = null;
+            video.ontimeupdate = null;
+            video.onseeking = null;
+            video.onseeked = null;
+            void video.play().catch(() => undefined);
+        };
+
         const updateSliderPosition = (resetTimer: boolean, immediate = false) => {
             if (document.fullscreenElement) {
                 return;
@@ -525,11 +535,11 @@ export class MediaScanner implements Module {
                 clearTimeout(slideTimer);
                 slideTimer = undefined;
             }
-            const currentSlideHasVideo = Boolean(slides[sliderIndex]?.querySelector("video"));
-            const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_settings_general_3`) === "true"
-                || currentSlideHasVideo;
+            const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_g3`) === "true";
             if (shouldRunProgress) {
                 checkAndPlayVideoOrStartTimer();
+            } else {
+                playCurrentVideoWithoutAdvance();
             }
         };
 
@@ -576,7 +586,7 @@ export class MediaScanner implements Module {
             this.refreshLiveDownloadLinks(modalElement, program);
             this.applyLiveVideoSettings(modalElement, program);
 
-            if (settingKey === "settings_general_3") {
+            if (settingKey === "g3") {
                 if (program.settings.autoSlideshow) {
                     checkAndPlayVideoOrStartTimer();
                 } else {
@@ -584,6 +594,7 @@ export class MediaScanner implements Module {
                     Array.from(sliderControls.children).forEach((button) => {
                         (button as HTMLElement).style.setProperty("--progress", "0");
                     });
+                    playCurrentVideoWithoutAdvance();
                 }
             }
         };
@@ -709,7 +720,6 @@ export class MediaScanner implements Module {
             modalWindow.classList.toggle("instg-media-expanded", expanded);
             expandButton.classList.toggle("active", expanded);
             expandButton.setAttribute("aria-pressed", String(expanded));
-            expandButton.setAttribute("title", expanded ? "Kleiner anzeigen" : "Grosser anzeigen");
         };
 
         const animateExpandState = (expanded: boolean) => {
@@ -821,7 +831,7 @@ export class MediaScanner implements Module {
             const item = createElement('div', 'si');
             const row = createElement('div', 'sr');
             const col = createElement('div', 'sgw');
-            const domId = this.toDomSettingId(id);
+            const domId = id;
             const localizedTitle = localize(title);
             const localizedDescription = localize(description);
             col.appendChild(createElement('strong', 'mb-0', {}, localizedTitle));
@@ -859,21 +869,19 @@ export class MediaScanner implements Module {
 
         const container = createElement('div', 'sg');
         const content = createElement('div', 'sy');
-        const navTabs = createElement('div', 'st', { id: 'nav-tab', role: 'tablist' });
+        const navTabs = createElement('div', 'st');
 
         // Setting up tab buttons and panes for the modal
         navTabs.appendChild(createElement('button', 'tb active', {
-            id: 'nav-general-tab', 'data-toggle': 'tab', 'data-target': '#nav-general', type: 'button', role: 'tab',
-            'aria-controls': 'nav-general', 'aria-selected': 'true'
+            'data-t': '#g', type: 'button'
         }, `${localize("ms.g")}`));
         navTabs.appendChild(createElement('button', 'tb', {
-            id: 'nav-stories-tab', 'data-toggle': 'tab', 'data-target': '#nav-stories', type: 'button', role: 'tab',
-            'aria-controls': 'nav-stories', 'aria-selected': 'false'
+            'data-t': '#s', type: 'button'
         }, 'Stories'));
 
-        const tabContent = createElement('div', 'tc', { id: 'nav-tabContent' });
-        const generalPane = createElement('div', 'tp fade active show', { id: 'nav-general', role: 'tabpanel', 'aria-labelledby': 'nav-general-tab' });
-        const storiesPane = createElement('div', 'tp fade', { id: 'nav-stories', role: 'tabpanel', 'aria-labelledby': 'nav-stories-tab' });
+        const tabContent = createElement('div', 'tc');
+        const generalPane = createElement('div', 'tp fade active show', { id: 'g' });
+        const storiesPane = createElement('div', 'tp fade', { id: 's' });
 
         SETTINGS_CONFIG.forEach((setting) => {
             const pane = setting.pane === "general" ? generalPane : storiesPane;
@@ -888,15 +896,8 @@ export class MediaScanner implements Module {
         content.appendChild(createElement('div', 'sw mt-3', {}, localize("ms.a")));
         container.appendChild(content);
 
-        const mediaVideos = sourceModalElement
-            ? Array.from(sourceModalElement.querySelectorAll<HTMLVideoElement>("video"))
-            : [];
-        const pausedForSettings = mediaVideos
-            .filter((video) => !video.paused && !video.ended)
-            .map((video) => {
-                video.pause();
-                return video;
-            });
+        const pausedForSettings = Array.from(sourceModalElement?.querySelectorAll<HTMLVideoElement>("video") || [])
+            .filter((video) => !video.paused && !video.ended && (video.pause(), true));
 
         // Open the modal with the constructed settings content
         this.openModal({
@@ -905,7 +906,7 @@ export class MediaScanner implements Module {
             buttonList: [{ active: true, text: localize("c") }],
             onClose: () => {
                 pausedForSettings.forEach((video) => {
-                    void video.play().catch(() => undefined);
+                    void video.play().catch(() => {});
                 });
             },
             callback: (_modal, el) => {
