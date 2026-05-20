@@ -312,7 +312,7 @@ export class MediaScanner implements Module {
     }
 
     private buildSettingsAction(): string {
-        return `<button class="${uiClasses.settings}" style="margin-left:10px">${this.svgSettings}</button>`;
+        return `<button class="${uiClasses.settings}">${this.svgSettings}</button>`;
     }
 
     private buildUtilityHeading(program: Program): string {
