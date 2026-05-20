@@ -2,6 +2,23 @@ import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from ".
 
 const mediaIdCache: Map<string, string> = new Map();
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const shortcodePattern = new RegExp(`^[${shortcodeAlphabet.replace(/[-_]/g, "\\$&")}]+$`);
+const canonicalShortcodeLength = 11;
+
+const normalizePostId = (postId: string | null): string | null => {
+    if (!postId) {
+        return null;
+    }
+
+    const trimmed = postId.trim();
+    if (!shortcodePattern.test(trimmed)) {
+        return trimmed;
+    }
+
+    return trimmed.length > canonicalShortcodeLength
+        ? trimmed.slice(0, canonicalShortcodeLength)
+        : trimmed;
+};
 
 export const findAppId = (): string | null => {
     const appIdPattern = /"X-IG-App-ID":"([\d]+)"/;
@@ -16,26 +33,29 @@ export const findAppId = (): string | null => {
 export const findPostId = (articleNode: HTMLElement) => {
     const pathname = window.location.pathname;
     const segments = pathname.split('/');
-
-    const prefixHandlers = {
-        '/reel/': () => segments[2],
-        '/reels/': () => segments[2],
-        '/stories/': () => segments[3],
-    };
-
-    for (const prefix in prefixHandlers) {
-        if (pathname.startsWith(prefix)) return prefixHandlers[prefix]();
+    const normalizedPathId = pathname.startsWith("/reel/") || pathname.startsWith("/reels/")
+        ? normalizePostId(segments[2])
+        : pathname.startsWith("/stories/")
+            ? segments[3]
+            : null;
+    if (normalizedPathId) {
+        return normalizedPathId;
     }
 
     const locationPostIdMatch = window.location.href.match(/instagram\.com\/p\/([^/?#]+)/i);
     if (locationPostIdMatch) {
-        return locationPostIdMatch[1];
+        return normalizePostId(locationPostIdMatch[1]);
     }
 
-    const postIdPattern = /^\/p\/([^/?#]+)(?:\/|\?|#|$)/;
-    return Array.from(articleNode.querySelectorAll("a[href]"))
+    const locationReelIdMatch = window.location.href.match(/instagram\.com\/(?:reel|reels)\/([^/?#]+)/i);
+    if (locationReelIdMatch) {
+        return normalizePostId(locationReelIdMatch[1]);
+    }
+
+    const postIdPattern = /^\/(?:p|reel|reels)\/([^/?#]+)(?:\/|\?|#|$)/;
+    return normalizePostId(Array.from(articleNode.querySelectorAll("a[href]"))
         .map(a => a.getAttribute("href")?.match(postIdPattern))
-        .find(match => match)?.[1] || null;
+        .find(match => match)?.[1] || null);
 };
 
 export const shortcodeToMediaId = (shortcode: string): string | null => {
@@ -56,6 +76,7 @@ export const shortcodeToMediaId = (shortcode: string): string | null => {
 };
 
 export async function findMediaId(postId: string) {
+    postId = normalizePostId(postId) || postId;
     const match = window.location.href.match(/www.instagram.com\/stories\/[^/]+\/(\d+)/);
     if (match) return match[1];
 
