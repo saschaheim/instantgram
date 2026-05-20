@@ -41,7 +41,7 @@ export class StoriesScanner implements Module {
      * @returns {boolean} True if the story should be paused, false otherwise.
      */
     private shouldPauseStory(program: Program): boolean {
-        return localStorage.getItem(program.STORAGE_NAME + "_settings_stories_2") === "true";
+        return localStorage.getItem(program.STORAGE_NAME + "_s2") === "true";
     }
 
     /**

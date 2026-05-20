@@ -32,13 +32,13 @@ export const program: Program = {
 
     // User settings, fetched from localStorage to persist across sessions
     settings: {
-        showAds: localStorage.getItem(`${STORAGE_NAME}_settings_general_1`) === "true", // User preference for showing ads
-        openInNewTab: localStorage.getItem(`${STORAGE_NAME}_settings_general_2`) === "true", // Open links in new tab setting
-        autoSlideshow: localStorage.getItem(`${STORAGE_NAME}_settings_general_3`) === "true", // Auto slideshow setting
-        videosMuted: localStorage.getItem(`${STORAGE_NAME}_settings_general_5`) === "true", // Mute regular videos by default
-        formattedFilenameInput: localStorage.getItem(`${STORAGE_NAME}_settings_general_4`) || "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}", // Filename format for downloaded files
-        storiesMuted: localStorage.getItem(`${STORAGE_NAME}_settings_stories_1`) === "true", // Mute stories by default setting
-        noMultiStories: localStorage.getItem(`${STORAGE_NAME}_settings_stories_3`) === "true" // Prevent multiple stories from being shown at once
+        showAds: localStorage.getItem(`${STORAGE_NAME}_g1`) === "true", // User preference for showing ads
+        openInNewTab: localStorage.getItem(`${STORAGE_NAME}_g2`) === "true", // Open links in new tab setting
+        autoSlideshow: localStorage.getItem(`${STORAGE_NAME}_g3`) === "true", // Auto slideshow setting
+        videosMuted: localStorage.getItem(`${STORAGE_NAME}_g5`) === "true", // Mute regular videos by default
+        formattedFilenameInput: localStorage.getItem(`${STORAGE_NAME}_g4`) || "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}", // Filename format for downloaded files
+        storiesMuted: localStorage.getItem(`${STORAGE_NAME}_s1`) === "true", // Mute stories by default setting
+        noMultiStories: localStorage.getItem(`${STORAGE_NAME}_s3`) === "true" // Prevent multiple stories from being shown at once
     }
 };
 
