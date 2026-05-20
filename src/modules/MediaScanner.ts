@@ -439,7 +439,6 @@ export class MediaScanner implements Module {
                 return;
             }
             ensureSlideMediaLoaded((sliderIndex + 1) % slides.length);
-            ensureSlideMediaLoaded((sliderIndex - 1 + slides.length) % slides.length);
         };
 
         const clearVideoState = (video: HTMLVideoElement | null, reset = false) => {
