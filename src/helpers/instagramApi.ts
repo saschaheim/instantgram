@@ -1,6 +1,7 @@
 import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
 
 const mediaIdCache: Map<string, string> = new Map();
+const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export const findAppId = (): string | null => {
     const appIdPattern = /"X-IG-App-ID":"([\d]+)"/;
@@ -37,11 +38,34 @@ export const findPostId = (articleNode: HTMLElement) => {
         .find(match => match)?.[1] || null;
 };
 
+export const shortcodeToMediaId = (shortcode: string): string | null => {
+    if (!shortcode) {
+        return null;
+    }
+
+    let mediaId = 0n;
+    for (const char of shortcode) {
+        const index = shortcodeAlphabet.indexOf(char);
+        if (index === -1) {
+            return null;
+        }
+        mediaId = (mediaId * 64n) + BigInt(index);
+    }
+
+    return mediaId.toString();
+};
+
 export async function findMediaId(postId: string) {
     const match = window.location.href.match(/www.instagram.com\/stories\/[^/]+\/(\d+)/);
     if (match) return match[1];
 
     if (!mediaIdCache.has(postId)) {
+        const shortcodeMediaId = shortcodeToMediaId(postId);
+        if (shortcodeMediaId) {
+            mediaIdCache.set(postId, shortcodeMediaId);
+            return shortcodeMediaId;
+        }
+
         const mediaIdPattern = /instagram:\/\/media\?id=(\d+)|["' ]media_id["' ]:["' ](\d+)["' ]/;
         const postUrl = `https://www.instagram.com/p/${postId}/`;
         const resp = await fetch(postUrl);

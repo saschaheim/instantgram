@@ -2,6 +2,7 @@ import { Program } from "../App";
 import { Modal } from "../components/Modal";
 import { logo } from "../components/Interconnect";
 import { uiClasses } from "../components/uiTokens";
+import { findAppId, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";
 import { MediaScanner } from "./MediaScanner";
 
@@ -19,6 +20,7 @@ export class VersionUpdater {
     program: Program; // The program object containing configuration and context
     storageKey: string; // The key to store version info in localStorage
     private checkPromise: Promise<void> | null = null;
+    private readonly changelogPostShortcode = "DYigGqejL3X";
 
     /**
      * Constructor initializes the VersionUpdater with the given program configuration.
@@ -75,14 +77,27 @@ export class VersionUpdater {
      */
     private async fetchChangelog(): Promise<Changelog | null> {
         try {
-            const response = await fetch(
-                "https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={%22id%22:45039295328,%22first%22:100}"
-            );
-            const json = await response.json();
+            const appId = findAppId();
+            if (!appId) {
+                throw new Error("Instagram App ID not found");
+            }
 
-            // Parse the changelog data from the API response
-            const text = json.data.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+            const mediaId = shortcodeToMediaId(this.changelogPostShortcode);
+            if (!mediaId) {
+                throw new Error(`No media ID found for shortcode ${this.changelogPostShortcode}`);
+            }
+
+            const json = await secureFetch(`https://i.instagram.com/api/v1/media/${mediaId}/info/`, appId);
+            const text = json?.items?.[0]?.caption?.text;
+            if (!text) {
+                throw new Error("No caption text found in media info response");
+            }
+
             const [date, textBody] = text.split("::");
+            if (!date || !textBody) {
+                throw new Error("Caption does not match the expected changelog format");
+            }
+
             return { date, textBody }; // Return the parsed changelog data
         } catch (error) {
             // Log any errors that occur during the fetch process
