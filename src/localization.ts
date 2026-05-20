@@ -30,6 +30,7 @@ const enUS = {
     "c": "Close",
     "u.i": "[instantgram] is outdated. Please check http://saschaheim.github.io/instantgram for available updates.",
     "u.v": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
+    "u.t": "Update available",
     "ad": "Sponsored",
     "modules.update@update_successful": "[instantgram] Update check successful."
 } as const;
@@ -68,6 +69,7 @@ const deDE: LocalizationDictionary = {
     "c": "Schliessen",
     "u.i": "[instantgram] ist veraltet. Bitte prufe http://saschaheim.github.io/instantgram auf verfugbare Updates.",
     "u.v": "[instantgram] Installierte Version: ${data.version} | Neues Update: ${data.onlineVersion}",
+    "u.t": "Update verfugbar",
     "ad": "Gesponsert",
     "modules.update@update_successful": "[instantgram] Update-Prufung erfolgreich."
 };
@@ -102,6 +104,7 @@ const esAR: LocalizationDictionary = {
     "c": "Cerrar",
     "u.i": "[instantgram] esta desactualizado. Revisa http://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
     "u.v": "[instantgram] Version instalada: ${data.version} | Nueva actualizacion: ${data.onlineVersion}",
+    "u.t": "Actualizacion disponible",
     "ad": "Patrocinado",
     "modules.update@update_successful": "[instantgram] Comprobacion de actualizacion completada."
 };
@@ -136,6 +139,7 @@ const ptBR: LocalizationDictionary = {
     "c": "Fechar",
     "u.i": "[instantgram] esta desatualizado. Verifique http://saschaheim.github.io/instantgram para atualizacoes disponiveis.",
     "u.v": "[instantgram] Versao instalada: ${data.version} | Nova atualizacao: ${data.onlineVersion}",
+    "u.t": "Atualizacao disponivel",
     "ad": "Patrocinado",
     "modules.update@update_successful": "[instantgram] Verificacao de atualizacao concluida."
 };

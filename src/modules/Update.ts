@@ -1,10 +1,8 @@
 import { Program } from "../App";
 import { Modal } from "../components/Modal";
 import { logo } from "../components/Interconnect";
-import { uiClasses } from "../components/uiTokens";
 import { findAppId, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";
-import { MediaScanner } from "./MediaScanner";
 
 type Changelog = {
     date: string; // Represents the date of the changelog or version release
@@ -113,8 +111,7 @@ export class VersionUpdater {
      * @param changelog The fetched changelog data.
      */
     private processChangelog(localVersion: string, { date, textBody }: Changelog): void {
-        // Generate the HTML list from the changelog text body
-        const ulHtml = this.generateHtmlListFromText(textBody);
+        const changelogHtml = this.generateChangelogHtml(textBody);
 
         // Check if the online version is greater than the local version
         const onlineVersion = date;
@@ -124,22 +121,138 @@ export class VersionUpdater {
 
         if (new Date(onlineVersion) > new Date(localVersion)) {
             // If an update is available, show the update modal
-            this.showUpdateModal(localVersion, onlineVersion, ulHtml);
+            this.showUpdateModal(localVersion, onlineVersion, changelogHtml);
             // Inform the developer about the outdated version in the console
             this.informOutdatedVersionInDevConsole();
         }
     }
 
     /**
-     * Generates an HTML list from the given changelog text.
-     * The text is split into sentences and each sentence is added as an item in the list.
+     * Escapes user-controlled text before inserting it into modal HTML.
      * @param text The changelog text to convert into an HTML list.
-     * @returns {string} The generated HTML list as a string.
+     * @returns {string} The escaped text.
      */
-    private generateHtmlListFromText(text: string): string {
-        const sentences = text.split(/[.!?]/).filter(sentence => sentence.trim() !== ""); // Split text into sentences
-        const ul = sentences.reduce((list, sentence) => list + `<li>${sentence.trim()}</li>`, "<ul style='padding: 20px;'>");
-        return ul + "</ul>"; // Return the HTML list
+    private escapeHtml(text: string): string {
+        return text
+            .replace(/&/g, "\\u0026amp;")
+            .replace(/</g, "\\u003C")
+            .replace(/>/g, "\\u003E")
+            .replace(/"/g, "\\u0026quot;")
+            .replace(/'/g, "\\u0026#39;");
+    }
+
+    /**
+     * Formats a small markdown subset for the changelog modal.
+     * Supported: **bold**, `code`, [label](https://example.com)
+     * @param text Inline markdown text.
+     * @returns {string} Safe HTML.
+     */
+    private formatInlineMarkdown(text: string): string {
+        const tokens: string[] = [];
+        let remaining = text;
+        const patterns = [
+            /\*\*([^*]+)\*\*/,
+            /`([^`]+)`/,
+            /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/,
+        ];
+
+        while (remaining.length > 0) {
+            let earliestMatch: RegExpMatchArray | null = null;
+            let earliestIndex = Infinity;
+            let earliestPatternIndex = -1;
+
+            patterns.forEach((pattern, patternIndex) => {
+                const match = remaining.match(pattern);
+                if (match && match.index !== undefined && match.index < earliestIndex) {
+                    earliestMatch = match;
+                    earliestIndex = match.index;
+                    earliestPatternIndex = patternIndex;
+                }
+            });
+
+            if (!earliestMatch || earliestIndex === Infinity) {
+                tokens.push(this.escapeHtml(remaining));
+                break;
+            }
+
+            if (earliestIndex > 0) {
+                tokens.push(this.escapeHtml(remaining.slice(0, earliestIndex)));
+            }
+
+            if (earliestPatternIndex === 0) {
+                tokens.push(`<strong>${this.escapeHtml(earliestMatch[1])}</strong>`);
+            } else if (earliestPatternIndex === 1) {
+                tokens.push(`<code style="background:#f5f5f5;padding:2px 5px;border-radius:4px;font-size:.92em">${this.escapeHtml(earliestMatch[1])}</code>`);
+            } else {
+                tokens.push(`<a href="${earliestMatch[2]}" target="_blank" rel="noopener noreferrer" style="color:#0095e2">${this.escapeHtml(earliestMatch[1])}</a>`);
+            }
+
+            remaining = remaining.slice(earliestIndex + earliestMatch[0].length);
+        }
+
+        return tokens.join("");
+    }
+
+    /**
+     * Generates a cleaner changelog layout from caption text using a small markdown subset.
+     * @param text The changelog text to convert into HTML.
+     * @returns {string} The generated HTML block as a string.
+     */
+    private generateChangelogHtml(text: string): string {
+        const lines = text.split("\n").map(line => line.trimEnd());
+        const htmlParts: string[] = [];
+        let listItems: string[] = [];
+
+        const flushList = () => {
+            if (listItems.length === 0) {
+                return;
+            }
+
+            htmlParts.push(
+                `<ul style="margin:0 0 16px;padding-left:24px;list-style:disc outside;color:#495057">
+                    ${listItems.join("")}
+                </ul>`
+            );
+            listItems = [];
+        };
+
+        lines.forEach((rawLine, index) => {
+            const line = rawLine.trim();
+
+            if (!line) {
+                flushList();
+                return;
+            }
+
+            if (/^[-*]\s+/.test(line)) {
+                const content = line.replace(/^[-*]\s+/, "");
+                listItems.push(`<li style="display:list-item;margin:0 0 8px 0;padding-left:2px">${this.formatInlineMarkdown(content)}</li>`);
+                return;
+            }
+
+            flushList();
+
+            if (/^#{1,3}\s+/.test(line)) {
+                const level = Math.min((line.match(/^#+/)?.[0].length || 1) + 3, 6);
+                const content = line.replace(/^#{1,3}\s+/, "");
+                htmlParts.push(
+                    `<h${level} style="margin:${index === 0 ? "0" : "10px"} 0 10px;font-size:16px;font-weight:700;line-height:1.35;color:#212529">
+                        ${this.formatInlineMarkdown(content)}
+                    </h${level}>`
+                );
+                return;
+            }
+
+            htmlParts.push(
+                `<p style="margin:0 0 14px;color:#495057;line-height:1.6">
+                    ${this.formatInlineMarkdown(line)}
+                </p>`
+            );
+        });
+
+        flushList();
+
+        return `<div style="padding:18px 20px 8px;text-align:left">${htmlParts.join("")}</div>`;
     }
 
     /**
@@ -189,19 +302,15 @@ export class VersionUpdater {
      * @param changelogHtml The HTML representation of the changelog.
      */
     private showUpdateModal(localVersion: string, onlineVersion: string, changelogHtml: string): void {
-        const mS = new MediaScanner(); // Create a new MediaScanner instance
-
-        // Open the modal with the changelog details
         new Modal({
-            heading: [`<h5><span class="header-text-left">${logo}</span><span class="header-text-right">v${localVersion}</span></h5>`],
-            body: [`<div>Update available v${onlineVersion}</div><div>${changelogHtml}</div>`],
-            buttonList: [{ active: true, text: "Ok" }],
-            callback: (_modal, el) => {
-                // Set up a click listener on the settings button to open the settings menu
-                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
-                    mS.handleSettingsButtonClick(this.program);
-                });
-            },
+            heading: [`<h5>
+                <span class="header-text-left">${logo}</span>
+                <span class="header-text-middle">${localize("u.t")}</span>
+                <span class="header-text-right">v${localVersion} -> v${onlineVersion.replace(/-/g, ".")}</span>
+            </h5>`],
+            body: [changelogHtml],
+            bodyStyle: "padding:0!important",
+            buttonList: [{ active: true, text: localize("c") }],
         }).open();
     }
 
