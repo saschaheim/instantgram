@@ -62,6 +62,8 @@ export class MediaScanner implements Module {
     private readonly postExampleUrl = "https://www.instagram.com/p/CIGrv1VMBkS/";
     private readonly expandButtonClass = "instg-modal-action";
     private readonly settingsChangedEvent = "instg:settings-change";
+    private readonly expandTransitionStartEvent = "instg:media-expand-transition-start";
+    private readonly expandTransitionEndEvent = "instg:media-expand-transition-end";
     private readonly modalBodyStyleReset = "padding:0!important";
     private readonly utilityBodyStyle = "text-align:center;padding:20px";
     private readonly externalRel = "noopener noreferrer";
@@ -552,15 +554,14 @@ export class MediaScanner implements Module {
             }
         };
 
-        const handleExpandToggle = () => {
+        const handleExpandTransitionStart = () => {
             isExpandTransitioning = true;
+            stopActivePlayback(false);
         };
 
-        const handleModalTransitionEnd = (event: TransitionEvent) => {
-            if (event.target === modalWindow && event.propertyName === "width") {
-                isExpandTransitioning = false;
-                queueSliderRealign();
-            }
+        const handleExpandTransitionEnd = () => {
+            isExpandTransitioning = false;
+            queueSliderRealign();
         };
 
         const handleSettingsChanged = (event: Event) => {
@@ -595,8 +596,8 @@ export class MediaScanner implements Module {
             stopActivePlayback(true);
             document.removeEventListener("fullscreenchange", handleFullscreenChange);
             document.removeEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-            modalElement.removeEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
-            modalWindow.removeEventListener("transitionend", handleModalTransitionEnd);
+            modalElement.removeEventListener(this.expandTransitionStartEvent, handleExpandTransitionStart as EventListener);
+            modalElement.removeEventListener(this.expandTransitionEndEvent, handleExpandTransitionEnd as EventListener);
             resizeObserver.disconnect();
             observer.disconnect();
         };
@@ -610,8 +611,8 @@ export class MediaScanner implements Module {
         updateSliderPosition(false);
         document.addEventListener("fullscreenchange", handleFullscreenChange);
         document.addEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-        modalElement.addEventListener("instg:media-expand-toggle", handleExpandToggle as EventListener);
-        modalWindow.addEventListener("transitionend", handleModalTransitionEnd);
+        modalElement.addEventListener(this.expandTransitionStartEvent, handleExpandTransitionStart as EventListener);
+        modalElement.addEventListener(this.expandTransitionEndEvent, handleExpandTransitionEnd as EventListener);
         resizeObserver.observe(sliderContainer);
         observer.observe(document.body, { childList: true, subtree: true });
     }
@@ -659,23 +660,142 @@ export class MediaScanner implements Module {
 
         const expandButton = modalElement.querySelector(`.${this.expandButtonClass}`) as HTMLButtonElement | null;
         const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
+        let expandAnimations: Animation[] = [];
         if (!expandButton || !modalWindow) {
             return;
         }
 
-        const updateExpandState = (expanded: boolean) => {
+        const playFlipAnimation = (
+            element: HTMLElement | null,
+            firstRect: DOMRect | undefined,
+            lastRect: DOMRect | undefined
+        ): Animation | null => {
+            if (!element || !firstRect || !lastRect || !lastRect.width || !lastRect.height) {
+                return null;
+            }
+
+            const scaleX = firstRect.width / lastRect.width;
+            const scaleY = firstRect.height / lastRect.height;
+            const translateX = firstRect.left - lastRect.left;
+            const translateY = firstRect.top - lastRect.top;
+            const noVisualChange = Math.abs(scaleX - 1) < 0.001
+                && Math.abs(scaleY - 1) < 0.001
+                && Math.abs(translateX) < 0.5
+                && Math.abs(translateY) < 0.5;
+
+            if (noVisualChange) {
+                return null;
+            }
+
+            return element.animate([
+                {
+                    transformOrigin: "top center",
+                    transform: `translate(${translateX}px,${translateY}px) scale(${scaleX},${scaleY})`
+                },
+                {
+                    transformOrigin: "top center",
+                    transform: "translate(0,0) scale(1,1)"
+                }
+            ], {
+                duration: 280,
+                easing: "cubic-bezier(.22,.61,.36,1)",
+                fill: "both"
+            });
+        };
+
+        const applyExpandState = (expanded: boolean) => {
             modalWindow.classList.toggle("instg-media-expanded", expanded);
             expandButton.classList.toggle("active", expanded);
             expandButton.setAttribute("aria-pressed", String(expanded));
             expandButton.setAttribute("title", expanded ? "Kleiner anzeigen" : "Grosser anzeigen");
-            modalElement.dispatchEvent(new CustomEvent("instg:media-expand-toggle", {
-                detail: { expanded }
-            }));
         };
 
-        updateExpandState(false);
+        const animateExpandState = (expanded: boolean) => {
+            expandAnimations.forEach((animation) => animation.cancel());
+            expandAnimations = [];
+
+            const sliderContainer = modalWindow.querySelector(".slider-container") as HTMLElement | null;
+            const sliderTrack = modalWindow.querySelector(".slider") as HTMLElement | null;
+            const slides = Array.from(modalWindow.querySelectorAll<HTMLElement>(".slide"));
+            const activeSlideIndex = Number((modalElement.querySelector(".slider-controls button.active") as HTMLElement | null)?.dataset.index || "0");
+            const activeSlide = slides[activeSlideIndex] || slides[0] || null;
+            const activeMedia = activeSlide?.querySelector<HTMLElement>("img,video") || null;
+
+            const firstModalRect = modalWindow.getBoundingClientRect();
+
+            const previousModalTransition = modalWindow.style.transition;
+            const previousContainerTransition = sliderContainer?.style.transition ?? "";
+            const previousTrackTransition = sliderTrack?.style.transition ?? "";
+            const previousMediaTransition = activeMedia?.style.transition ?? "";
+
+            modalWindow.style.transition = "none";
+            if (sliderContainer) {
+                sliderContainer.style.transition = "none";
+            }
+            if (sliderTrack) {
+                sliderTrack.style.transition = "none";
+            }
+            if (activeMedia) {
+                activeMedia.style.transition = "none";
+            }
+
+            modalElement.dispatchEvent(new CustomEvent(this.expandTransitionStartEvent, {
+                detail: { expanded }
+            }));
+            applyExpandState(expanded);
+
+            const lastModalRect = modalWindow.getBoundingClientRect();
+
+            const restoreTransitions = () => {
+                modalWindow.style.transition = previousModalTransition;
+                if (sliderContainer) {
+                    sliderContainer.style.transition = previousContainerTransition;
+                }
+                if (sliderTrack) {
+                    sliderTrack.style.transition = previousTrackTransition;
+                }
+                if (activeMedia) {
+                    activeMedia.style.transition = previousMediaTransition;
+                }
+            };
+
+            const finish = () => {
+                restoreTransitions();
+                modalElement.dispatchEvent(new CustomEvent(this.expandTransitionEndEvent, {
+                    detail: { expanded }
+                }));
+            };
+
+            const animations = [
+                playFlipAnimation(modalWindow, firstModalRect, lastModalRect),
+            ].filter((animation): animation is Animation => Boolean(animation));
+
+            if (animations.length === 0) {
+                finish();
+                return;
+            }
+
+            expandAnimations = animations;
+            let settledAnimations = 0;
+            let finalized = false;
+            const settle = () => {
+                settledAnimations += 1;
+                if (!finalized && settledAnimations >= animations.length) {
+                    finalized = true;
+                    expandAnimations = [];
+                    finish();
+                }
+            };
+
+            animations.forEach((animation) => {
+                animation.addEventListener("finish", settle, { once: true });
+                animation.addEventListener("cancel", settle, { once: true });
+            });
+        };
+
+        applyExpandState(false);
         expandButton.addEventListener("click", () => {
-            updateExpandState(!modalWindow.classList.contains("instg-media-expanded"));
+            animateExpandState(!modalWindow.classList.contains("instg-media-expanded"));
         });
     }
 
