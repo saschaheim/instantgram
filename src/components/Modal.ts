@@ -27,6 +27,7 @@ export interface ModalOptions {
   buttonList?: ModalButton[]; // Array of buttons to display in the modal
   closeOnOverlayClick?: boolean; // Whether clicking the overlay should close the modal
   callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback to execute after opening the modal
+  onClose?(): void; // Optional callback to execute after closing the modal
 }
 
 /**
@@ -41,6 +42,7 @@ export class Modal {
   public buttonList?: ModalButton[]; // List of buttons to display in the modal
   public closeOnOverlayClick: boolean; // Whether overlay click closes the modal
   public callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback function for modal actions
+  public onClose?(): void; // Optional callback function after close
 
   private modal: HTMLDivElement | null = null; // Stores the modal element
   private closePromise: Promise<void> | null = null;
@@ -84,6 +86,7 @@ export class Modal {
     this.buttonList = modalOptions.buttonList || [];
     this.closeOnOverlayClick = modalOptions.closeOnOverlayClick ?? true;
     this.callback = modalOptions.callback || null;
+    this.onClose = modalOptions.onClose || null;
 
     const element = document.getElementById(this.domPrefix + "-modal");
     if (element == null) {
@@ -249,6 +252,9 @@ export class Modal {
       }
       if (this.modal === modal) {
         this.modal = null;
+      }
+      if (this.onClose) {
+        this.onClose();
       }
       this.closePromise = null;
     })();
