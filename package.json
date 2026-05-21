@@ -1,6 +1,6 @@
 {
   "name": "instantgram",
-  "version": "2026.05.21",
+  "version": "2026.05.22",
   "description": "A bookmarklet for download photos in Instagram",
   "homepage": "https://saschaheim.github.io/instantgram/",
   "repository": {
@@ -21,9 +21,10 @@
     "build:release": "npm run build:bookmarklet && npm run build:pages",
     "build:release:dev": "npm run build:bookmarklet:dev && npm run build:pages",
     "build:rollup": "rollup -c",
-    "dev": "concurrently \"npm run dev:rollup\" \"npm run dev:watch\"",
+    "dev": "nodemon --watch src\\components --watch src\\helpers --watch src\\model --watch src\\modules --watch src\\_langs\\src --watch src\\_langs\\layouts --watch src\\localization.ts --watch src\\index.ts --watch scripts --watch package.json --watch rollup.config.js --ignore src\\_langs\\bookmarklets.js --ext ts,js,json,md,hbs,css --exec \"npm run dev:build\"",
+    "dev:build": "npm run build:bundles && npm run build:release:dev",
     "dev:rollup": "rollup -c -w",
-    "dev:watch": "nodemon --watch dist --ext js --exec \"npm run build:release:dev\"",
+    "dev:watch": "nodemon --watch src\\components --watch src\\helpers --watch src\\model --watch src\\modules --watch src\\_langs\\src --watch src\\_langs\\layouts --watch src\\localization.ts --watch src\\index.ts --watch scripts --watch package.json --watch rollup.config.js --ignore src\\_langs\\bookmarklets.js --ext ts,js,json,md,hbs,css --exec \"npm run dev:build\"",
     "lint": "eslint **/*.ts",
     "size": "node scripts/size-bookmarklets.js",
     "size:build": "npm run build:bundles && npm run build:bookmarklet && npm run size",

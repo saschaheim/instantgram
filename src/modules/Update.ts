@@ -1,6 +1,5 @@
 import { Program } from "../App";
 import { Modal } from "../components/Modal";
-import { logo } from "../components/Interconnect";
 import { findAppId, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";
 import { buildModalHeader, formatVersionTransition, normalizeVersionString } from "../helpers/common";
@@ -20,6 +19,7 @@ export class VersionUpdater {
     storageKey: string; // The key to store version info in localStorage
     private checkPromise: Promise<void> | null = null;
     private readonly changelogPostShortcode = "DYigGqejL3X";
+    private readonly logo = "Instantgram";
 
     /**
      * Constructor initializes the VersionUpdater with the given program configuration.
@@ -224,7 +224,7 @@ export class VersionUpdater {
      */
     private showUpdateModal(localVersion: string, onlineVersion: string, changelogHtml: string): void {
         new Modal({
-            heading: [buildModalHeader(logo, formatVersionTransition(localVersion, onlineVersion), localize("u.t"))],
+            heading: [buildModalHeader(this.logo, formatVersionTransition(localVersion, onlineVersion), localize("u.t"))],
             body: [changelogHtml],
             bodyStyle: "padding:0!important",
             buttonList: [{ active: true, text: localize("c") }],

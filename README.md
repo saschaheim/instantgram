@@ -1,5 +1,5 @@
-# <img style="float: left; vertical-align: bottom;" width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2026.05.21
-![GitHub release](https://img.shields.io/badge/release-v2026.05.21-green)
+# <img style="float: left; vertical-align: bottom;" width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> [instantgram] v2026.05.22
+![GitHub release](https://img.shields.io/badge/release-v2026.05.22-green)
 
 ![badge](https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square)
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com/)
@@ -37,6 +37,7 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) for more information. :heart:
 
 ## Changelog
 
+- v2026.05.22 - [instantgram] Maintenance and UX polish release. Added the new auto-expand media option, reduced burst-loading by deferring slide media requests, improved the development workflow so live rebuilds no longer get stuck on stale outputs or rebuild loops, cleaned up the remaining Interconnect barrel indirection, and refined the settings modal with better tab emphasis, integrated notice styling, and smaller visual consistency fixes.
 - v2026.05.21 - [instantgram] Follow-up polish release. Reduced the localized bookmarklet output again to stay within Firefox bookmark length limits, shortened internal settings/storage keys, slimmed down the settings modal markup, refined the expand button behavior, paused modal videos while the settings dialog is open, and fixed slideshow handling so disabling slideshow no longer advances slides automatically while videos can still play normally.
 - v2026.05.20 - [instantgram] Large refactor and feature update release. Split oversized helper/style modules into focused files, improved modal handling and race-condition safety, added loader feedback, added expand mode for media, improved slider progress/playback behavior, added live settings updates for the open modal, added a separate mute setting for regular videos, improved profile/story/post detection and URL handling, restored browser/debug logging, switched to language-specific bookmarklet builds with multiple drag buttons on the overview page, and cleaned up the build pipeline so each locale now ships its own dedicated bundle.
 - v2024.12.18 - Inserted comments across the entire code to clarify the logic, steps, and reasoning behind key parts of the implementation. Focused on areas that were previously unclear or complex to ensure the code is easier to follow for future developers.
