@@ -2,7 +2,8 @@ import { Program } from "../App";
 import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { Modal, ModalButton } from "../components/Modal";
-import { cssCarouselSlider, cssGeneral, cssSlideOn, logo } from "../components/Interconnect";
+import { cssCarouselSlider } from "../components/sliderStyles";
+import { cssGeneral, cssSlideOn } from "../components/generalStyles";
 import { uiClasses } from "../components/uiTokens";
 import { FeedScanner } from "./FeedScanner";
 import { PostAndReelScanner } from "./PostAndReelScanner";
@@ -61,6 +62,7 @@ const EXPAND_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="n
 export class MediaScanner implements Module {
     svgSettings = SETTINGS_ICON_SVG;
     svgExpand = EXPAND_ICON_SVG;
+    private readonly logo = "Instantgram";
     private readonly postExampleUrl = "https://www.instagram.com/p/CIGrv1VMBkS/";
     private readonly expandButtonClass = "instg-modal-action";
     private readonly settingsChangedEvent = "instg:settings-change";
@@ -298,7 +300,7 @@ export class MediaScanner implements Module {
 
     private createLoadingModal(program: Program): Modal {
         return new Modal({
-            heading: [buildModalHeader(logo, formatVersionLabel(program.VERSION))],
+            heading: [buildModalHeader(this.logo, formatVersionLabel(program.VERSION))],
             body: [`<div class="${uiClasses.loading}">
                 <div class="${uiClasses.loadingSpinner}" aria-hidden="true"></div>
                 <div class="${uiClasses.loadingText}">${localize("l")}</div>
@@ -318,19 +320,19 @@ export class MediaScanner implements Module {
     }
 
     private buildUtilityHeading(program: Program): string {
-        return buildModalHeader(logo, `${formatVersionLabel(program.VERSION)}${this.buildSettingsAction()}`);
+        return buildModalHeader(this.logo, `${formatVersionLabel(program.VERSION)}${this.buildSettingsAction()}`);
     }
 
     private buildMediaHeading(userLink: string, userName: string): string {
         return buildModalHeader(
-            logo,
+            this.logo,
             `<button class="${this.expandButtonClass}" type="button" aria-pressed="false">${this.svgExpand}</button>${this.buildSettingsAction()}`,
             `<a href="${userLink}">@${userName}</a>`
         );
     }
 
     private buildSettingsHeading(program: Program): string {
-        return buildModalHeader(logo, `<span style="margin-right:0">${formatVersionLabel(program.VERSION)}</span>`, localize("ms.t"));
+        return buildModalHeader(this.logo, `<span style="margin-right:0">${formatVersionLabel(program.VERSION)}</span>`, localize("ms.t"));
     }
 
     private resolveScannerClass(program: Program): ScannerClass | null {
@@ -939,8 +941,8 @@ export class MediaScanner implements Module {
                     'sf',
                     {},
                     `<strong>${localizedTitle}</strong>
-                     <p class="sm smi mb-0">${localizedDescription}</p>
-                     <input type="text" class="fi" id="${domId}" placeholder="${localizedTitle}">
+                     <p class="sm mb-0">${localizedDescription}</p>
+                     <input type="text" class="fi" id="${domId}" placeholder="{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}">
                      <button type="submit" class="${uiClasses.btn} ${uiClasses.btnPrimary} mt-2" id="${this.saveFilenameButtonId}">${localize("s")}</button>`
                 );
 
@@ -969,6 +971,7 @@ export class MediaScanner implements Module {
         const tabContent = createElement('div', 'tc');
         const generalPane = createElement('div', 'tp fade active show', { id: 'g' });
         const storiesPane = createElement('div', 'tp fade', { id: 's' });
+        generalPane.appendChild(createElement('div', 'sw mb-0', {}, localize("ms.a")));
 
         SETTINGS_CONFIG.forEach((setting) => {
             const pane = setting.pane === "general" ? generalPane : storiesPane;
@@ -980,7 +983,6 @@ export class MediaScanner implements Module {
         tabContent.appendChild(storiesPane);
         content.appendChild(navTabs);
         content.appendChild(tabContent);
-        content.appendChild(createElement('div', 'sw mt-3', {}, localize("ms.a")));
         container.appendChild(content);
 
         const pausedForSettings = Array.from(sourceModalElement?.querySelectorAll<HTMLVideoElement>("video") || [])
@@ -993,7 +995,15 @@ export class MediaScanner implements Module {
             buttonList: [{ active: true, text: localize("c") }],
             onClose: () => {
                 pausedForSettings.forEach((video) => {
-                    void video.play().catch(() => {});
+                    if (
+                        sourceModalElement &&
+                        document.body.contains(sourceModalElement) &&
+                        video.isConnected &&
+                        sourceModalElement.contains(video) &&
+                        !video.ended
+                    ) {
+                        void video.play().catch(() => {});
+                    }
                 });
             },
             callback: (_modal, el) => {
@@ -1048,7 +1058,7 @@ export class MediaScanner implements Module {
      * @returns {boolean} True if the modal is open, otherwise false.
      */
     private isModalOpen(): boolean {
-        return !!document.querySelector(`div.${uiClasses.modalOverlay}.${uiClasses.modalVisible}.${uiClasses.modalShow}`);
+        return !!document.querySelector(`div.${uiClasses.modalOverlay}.${uiClasses.modalVisible}`);
     }
 
     /** 

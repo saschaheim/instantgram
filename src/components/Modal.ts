@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { program } from "..";
-import { cssModal } from "./Interconnect";
+import { cssModal } from "./modalStyles";
 import { uiClasses } from "./uiTokens";
 import { sleep } from "../helpers/common";
 
@@ -266,22 +266,7 @@ export class Modal {
    * Refreshes the modal by closing and reopening it.
    */
   public async refresh(): Promise<void> {
-    if (this.closePromise) {
-      await this.closePromise;
-    }
-    if (this.modal) {
-      const modal = this.modal;
-      if (this.openTimerId !== null) {
-        clearTimeout(this.openTimerId);
-        this.openTimerId = null;
-      }
-      if (modal.parentNode) {
-        modal.parentNode.removeChild(modal);
-      }
-      if (this.modal === modal) {
-        this.modal = null;
-      }
-    }
+    await this.close();
     await this.open(); // Reopen the modal
 
     // Re-trigger the callback function if it exists
