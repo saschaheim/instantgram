@@ -1,0 +1,40 @@
+{
+    "reels_media": [
+        {
+            "user": {
+                "id": "2000002",
+                "username": "multi_story_user"
+            },
+            "items": [
+                {
+                    "taken_at": 1732000400,
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/story_slide_1.jpg", "width": 1080, "height": 1920 }
+                        ]
+                    }
+                },
+                {
+                    "taken_at": 1732000450,
+                    "video_duration": 14.2,
+                    "video_versions": [
+                        { "url": "https://scontent.cdninstagram.com/v/story_slide_2.mp4" }
+                    ],
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/story_slide_2_cover.jpg", "width": 1080, "height": 1920 }
+                        ]
+                    }
+                },
+                {
+                    "taken_at": 1732000500,
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/story_slide_3.jpg", "width": 1080, "height": 1920 }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

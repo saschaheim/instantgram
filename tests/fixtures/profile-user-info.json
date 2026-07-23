@@ -1,0 +1,11 @@
+{
+    "user": {
+        "id": "3000001",
+        "username": "profile_user",
+        "hd_profile_pic_url_info": {
+            "url": "https://scontent.cdninstagram.com/v/profile_hd.jpg",
+            "width": 1080,
+            "height": 1080
+        }
+    }
+}

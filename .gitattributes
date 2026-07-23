@@ -1,0 +1,9 @@
+# Normalize all text files to CRLF line endings so the repository storage
+# format matches what core.autocrlf produces in the working tree, avoiding
+# "LF will be replaced by CRLF" conversion warnings on every git operation.
+* text=auto eol=crlf
+
+# Binary assets must never be touched by line-ending normalization.
+*.png binary
+*.gif binary
+*.ico binary

@@ -3,7 +3,7 @@ import { uiClasses } from "../components/uiTokens";
 import localize from "./localize";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
-import { fetchDataFromApi, findPostId, getIGUsername } from "./instagramApi";
+import { fetchDataFromApi, findPostId, getIGUsername, resolveUserIdFromSearch } from "./instagramApi";
 import { findAD, resolveCurrentStoryIndex } from "./domDetection";
 import { findMediaUrl } from "./reactMedia";
 import {
@@ -82,7 +82,8 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);
     const userId = isPathMatch("/stories/")
-        ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName }))?.data?.user?.id ?? null
+        ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName }))?.data?.user?.id
+            ?? (await resolveUserIdFromSearch(userName))
         : null;
 
     let modalBody = "";
@@ -139,9 +140,13 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
         }
     }
 
-    processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
+    const itemCount = processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
         modalBody = addMediaToBody(modalBody, media, index, userName, program);
     });
+
+    if (itemCount === 0) {
+        return { found: false, errorMessage: "No story items returned by Instagram." };
+    }
 
     const sliderHtml = wrapInSliderContainer(modalBody);
     const selectedSliderIndex = resolveCurrentStoryIndex(el);
@@ -164,16 +169,20 @@ export async function generateModalBodyHelper(
     program: Program
 ): Promise<MediaScanResult | null> {
     let modalBody = "";
-    let itemCount = 0;
+    let itemCount: number;
 
     if (program.settings.noMultiStories && mediaInfo.reels_media?.[0]?.items.length > 0) {
         const itemIndex = resolveCurrentStoryIndex(el);
         modalBody = addMediaToBody(modalBody, mediaInfo.reels_media[0].items[itemIndex], itemIndex, userName, program);
         itemCount = 1;
     } else {
-        processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
+        itemCount = processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
             modalBody = addMediaToBody(modalBody, media, index, userName, program);
         });
+    }
+
+    if (itemCount === 0) {
+        return { found: false, errorMessage: "No media items returned by Instagram." };
     }
 
     const sliderHtml = wrapInSliderContainer(modalBody);
@@ -215,13 +224,13 @@ export const getMediaInfo = async (
     userId: string | null
 ): Promise<InstagramMediaInfoResponse | null> => {
     if (!postId) {
-        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId });
+        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId, isHighlight: false });
     }
 
     if (window.location.pathname.startsWith("/stories/highlights/")) {
-        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: null });
+        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: null, isHighlight: true });
     } else if (window.location.pathname.startsWith("/stories/")) {
-        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId });
+        return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId, isHighlight: false });
     } else {
         return await fetchDataFromApi({ type: 'getMediaFromInfo', articleNode: el });
     }
@@ -231,7 +240,7 @@ export const processMediaInfo = (
     mediaInfo: InstagramMediaInfoResponse,
     // eslint-disable-next-line no-unused-vars
     callback: (...args: [InstagramMediaItem, number, number]) => void
-) => {
+): number => {
     let count = 0;
 
     if (mediaInfo.reels_media?.[0]?.items) {
@@ -251,4 +260,6 @@ export const processMediaInfo = (
         count = 1;
         callback(mediaInfo.user.hd_profile_pic_url_info, 0, count);
     }
+
+    return count;
 };

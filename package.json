@@ -1,6 +1,6 @@
 {
   "name": "instantgram",
-  "version": "2026.05.22",
+  "version": "2026.07.23",
   "description": "A bookmarklet for download photos in Instagram",
   "homepage": "https://saschaheim.github.io/instantgram/",
   "repository": {
@@ -18,14 +18,17 @@
     "build:bookmarklet": "node scripts/bookmarkletify.js",
     "build:bookmarklet:dev": "node scripts/bookmarkletify.js --dev",
     "build:pages": "node \"src/_langs/metalsmith.js\"",
-    "build:release": "npm run build:bookmarklet && npm run build:pages",
-    "build:release:dev": "npm run build:bookmarklet:dev && npm run build:pages",
+    "build:normalize-eol": "node scripts/normalize-line-endings.js",
+    "build:release": "npm run build:bookmarklet && npm run build:pages && npm run build:normalize-eol",
+    "build:release:dev": "npm run build:bookmarklet:dev && npm run build:pages && npm run build:normalize-eol",
     "build:rollup": "rollup -c",
     "dev": "nodemon --watch src\\components --watch src\\helpers --watch src\\model --watch src\\modules --watch src\\_langs\\src --watch src\\_langs\\layouts --watch src\\localization.ts --watch src\\index.ts --watch scripts --watch package.json --watch rollup.config.js --ignore src\\_langs\\bookmarklets.js --ext ts,js,json,md,hbs,css --exec \"npm run dev:build\"",
     "dev:build": "npm run build:bundles && npm run build:release:dev",
     "dev:rollup": "rollup -c -w",
     "dev:watch": "nodemon --watch src\\components --watch src\\helpers --watch src\\model --watch src\\modules --watch src\\_langs\\src --watch src\\_langs\\layouts --watch src\\localization.ts --watch src\\index.ts --watch scripts --watch package.json --watch rollup.config.js --ignore src\\_langs\\bookmarklets.js --ext ts,js,json,md,hbs,css --exec \"npm run dev:build\"",
     "lint": "eslint **/*.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "size": "node scripts/size-bookmarklets.js",
     "size:build": "npm run build:bundles && npm run build:bookmarklet && npm run size",
     "start": "npm run dev"
@@ -44,6 +47,7 @@
     "eslint": "^10.0.0",
     "globals": "^17.6.0",
     "handlebars": "^4.7.9",
+    "jsdom": "^29.1.1",
     "jstransformer-handlebars": "^1.2.0",
     "metalsmith": "^2.7.0",
     "metalsmith-define": "^2.1.3",
@@ -57,7 +61,8 @@
     "signale": "^1.4.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.4",
-    "uglify-js": "^3.19.3"
+    "uglify-js": "^3.19.3",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "util": "^0.12.5"

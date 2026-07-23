@@ -1,0 +1,41 @@
+{
+    "items": [
+        {
+            "taken_at": 1732000100,
+            "user": {
+                "id": "1000002",
+                "username": "carousel_user"
+            },
+            "carousel_media": [
+                {
+                    "taken_at": 1732000100,
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/carousel_slide_1.jpg", "width": 1080, "height": 1080 }
+                        ]
+                    }
+                },
+                {
+                    "taken_at": 1732000100,
+                    "video_duration": 12.4,
+                    "video_versions": [
+                        { "url": "https://scontent.cdninstagram.com/v/carousel_slide_2.mp4" }
+                    ],
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/carousel_slide_2_cover.jpg", "width": 1080, "height": 1080 }
+                        ]
+                    }
+                },
+                {
+                    "taken_at": 1732000100,
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/carousel_slide_3.jpg", "width": 1080, "height": 1080 }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

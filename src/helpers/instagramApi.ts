@@ -131,10 +131,22 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
         'getReelsMediaFromFeed': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
             const id = "id" in config ? config.id : undefined;
+            const isHighlight = "isHighlight" in config ? config.isHighlight : false;
+
+            // A regular (non-highlight) story's reel_ids must be the owner's
+            // user id. If that id couldn't be resolved (e.g. web_profile_info
+            // failed), there is no valid query to build here -- bail out
+            // instead of guessing, which previously misread "no id" as "this
+            // must be a highlight" and sent a nonsensical highlight-prefixed
+            // request for a media id (see issue #45).
+            if (!isHighlight && !id) {
+                return null;
+            }
+
             const postId = articleNode ? findPostId(articleNode) : null;
             const mediaId = id || (postId ? await findMediaId(postId) : null);
             if (!mediaId) return null;
-            return `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${id ? '' : 'highlight%3A'}${mediaId}`;
+            return `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${isHighlight ? 'highlight%3A' : ''}${mediaId}`;
         },
         'getMediaFromInfo': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
@@ -187,6 +199,27 @@ export const secureFetch = async (url: string, appId: string) => {
     } finally {
         clearTimeout(timeoutId);
     }
+};
+
+/**
+ * Resolves a username to its numeric user id via Instagram's web search
+ * endpoint. Some accounts currently trigger a deleted-schema error
+ * ("ig_business_category_subvertical") from web_profile_info even though
+ * search still returns them -- use this as a fallback when that lookup
+ * fails.
+ */
+export const resolveUserIdFromSearch = async (userName: string): Promise<string | null> => {
+    const appId = findAppId();
+    if (!appId) {
+        return null;
+    }
+
+    const url = `https://www.instagram.com/web/search/topsearch/?query=${encodeURIComponent(userName)}`;
+    const payload = await secureFetch(url, appId);
+    const users = payload?.users as Array<{ user?: { username?: string; id?: string } }> | undefined;
+    const wanted = userName.toLowerCase();
+    const match = users?.find(entry => entry.user?.username?.toLowerCase() === wanted && entry.user?.id);
+    return match?.user?.id ?? null;
 };
 
 export const getIGUsername = (url: string): string | null => {
