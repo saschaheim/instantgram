@@ -40,8 +40,12 @@ Metalsmith(__dirname)  // Initialize Metalsmith with the current directory
     pattern: /\.hbs$/  // Only look for files with the '.hbs' extension (Handlebars templates)
   }))
   .use(layouts({
-    engine: 'handlebars',  // Use Handlebars for templating
-    directory: 'layouts'  // Set the directory where the layout templates are stored
+    transform: 'handlebars',  // Use Handlebars for templating (renamed from `engine` in @metalsmith/layouts v3)
+    directory: 'layouts',  // Set the directory where the layout templates are stored
+    // Source files are markdown, converted to .html by @metalsmith/markdown
+    // above; v3's default pattern only matches the transform's own input
+    // formats (.hbs/.handlebars), so it must be widened to catch them.
+    pattern: '**/*.html'
   }))
   .use(permalinks(':lang/'))  // Generate permalinks with the language as part of the URL structure
   .build(function (err) {
