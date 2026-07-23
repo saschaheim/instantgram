@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { fetchDataFromApi, getIGUsername } from "../helpers/instagramApi";
+import { fetchDataFromApi, getIGUsername, resolveUserIdFromSearch } from "../helpers/instagramApi";
 import { generateModalBodyHelper } from "../helpers/modalMedia";
 
 type ProfilePictureInfo = {
@@ -68,23 +68,23 @@ export class ProfileScanner implements Module {
         }
 
         try {
-            // Fetch user information based on the extracted username
+            // Fetch user information based on the extracted username. Some
+            // accounts currently trigger a deleted-schema error from
+            // web_profile_info (see issue #45); fall back to the search
+            // endpoint, which still resolves the same account id.
             const userInfo = await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName });
-            if (!userInfo?.data?.user) {
-                return { found: false, errorMessage: 'No user data found in web profile response' };
-            }
-            
-            // If no user ID is found, return an error
-            if (!userInfo.data.user.id) {
+            const userId = userInfo?.data?.user?.id ?? (await resolveUserIdFromSearch(userName));
+
+            // If no user ID could be resolved through either path, return an error
+            if (!userId) {
                 return { found: false, errorMessage: 'No userID found in userInfo' };
             }
 
-            const userId = userInfo.data.user.id;
             // Fetch detailed user information using the user ID
             const userDetails = await fetchDataFromApi({ type: 'getUserFromInfo', userId });
             const fallbackProfileInfo = this.resolveProfilePictureInfo(
                 userDetails?.user,
-                userInfo.data.user,
+                userInfo?.data?.user,
                 userDetails?.data?.user
             );
 

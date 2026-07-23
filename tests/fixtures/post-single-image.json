@@ -1,0 +1,20 @@
+{
+    "items": [
+        {
+            "taken_at": 1732000000,
+            "width": 1080,
+            "height": 1350,
+            "caption": { "text": "A single photo post" },
+            "user": {
+                "id": "1000001",
+                "username": "public_photo_user"
+            },
+            "image_versions2": {
+                "candidates": [
+                    { "url": "https://scontent.cdninstagram.com/v/photo_1080x1350.jpg", "width": 1080, "height": 1350 },
+                    { "url": "https://scontent.cdninstagram.com/v/photo_640x800.jpg", "width": 640, "height": 800 }
+                ]
+            }
+        }
+    ]
+}

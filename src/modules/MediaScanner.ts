@@ -157,10 +157,9 @@ export class MediaScanner implements Module {
     }
 
     private applyLiveVideoSettings(modalElement: HTMLElement, program: Program): void {
-        const shouldMute = window.location.pathname.startsWith("/stories/")
-            ? program.settings.storiesMuted
-            : program.settings.videosMuted;
+        const shouldMute = this.resolveShouldMuteVideos(program);
         modalElement.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
+            video.defaultMuted = shouldMute;
             video.muted = shouldMute;
             if (shouldMute) {
                 video.setAttribute("muted", "");
@@ -168,6 +167,12 @@ export class MediaScanner implements Module {
                 video.removeAttribute("muted");
             }
         });
+    }
+
+    private resolveShouldMuteVideos(program: Program): boolean {
+        return window.location.pathname.startsWith("/stories/")
+            ? program.settings.storiesMuted
+            : program.settings.videosMuted;
     }
 
     /**
@@ -311,7 +316,19 @@ export class MediaScanner implements Module {
         });
     }
 
-    private buildNotFoundBody(): string {
+    /**
+     * "No target found." means the scanner couldn't locate any post/story/
+     * profile structure on the page at all -- the user is likely just on the
+     * wrong kind of page, so the "did you open a post?" hint is accurate.
+     * Any other errorMessage means a target WAS found but fetching/processing
+     * its data failed (e.g. an Instagram API error) -- showing the same
+     * "wrong page" hint there is misleading, so use a distinct message.
+     */
+    private buildNotFoundBody(errorMessage?: string): string {
+        if (errorMessage && errorMessage !== "No target found.") {
+            console.info(`[${this.getName()}] Instagram returned an error:`, errorMessage);
+            return localize("a.ie");
+        }
         return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="${this.externalRel}">${this.postExampleUrl}</a></div>`;
     }
 
@@ -390,6 +407,14 @@ export class MediaScanner implements Module {
             }
             window.setTimeout(() => {
                 if (element instanceof HTMLVideoElement) {
+                    const shouldMute = this.resolveShouldMuteVideos(program);
+                    element.defaultMuted = shouldMute;
+                    element.muted = shouldMute;
+                    if (shouldMute) {
+                        element.setAttribute("muted", "");
+                    } else {
+                        element.removeAttribute("muted");
+                    }
                     element.removeAttribute("src");
                     element.load();
                     element.src = mediaSrc;
@@ -415,7 +440,15 @@ export class MediaScanner implements Module {
             element.dataset.mediaRetries = "0";
 
             if (element instanceof HTMLVideoElement) {
+                const shouldMute = this.resolveShouldMuteVideos(program);
                 element.preload = "metadata";
+                element.defaultMuted = shouldMute;
+                element.muted = shouldMute;
+                if (shouldMute) {
+                    element.setAttribute("muted", "");
+                } else {
+                    element.removeAttribute("muted");
+                }
                 element.onerror = () => queueMediaRetry(element);
                 element.src = mediaSrc;
                 element.load();
@@ -530,7 +563,15 @@ export class MediaScanner implements Module {
                 return;
             }
             if (video) {
+                const shouldMute = this.resolveShouldMuteVideos(program);
                 activeVideo = video;
+                video.defaultMuted = shouldMute;
+                video.muted = shouldMute;
+                if (shouldMute) {
+                    video.setAttribute("muted", "");
+                } else {
+                    video.removeAttribute("muted");
+                }
                 const syncVideoProgress = () => {
                     if (!isCurrentSlide()) {
                         return;
@@ -574,6 +615,14 @@ export class MediaScanner implements Module {
                 return;
             }
             activeVideo = video;
+            const shouldMute = this.resolveShouldMuteVideos(program);
+            video.defaultMuted = shouldMute;
+            video.muted = shouldMute;
+            if (shouldMute) {
+                video.setAttribute("muted", "");
+            } else {
+                video.removeAttribute("muted");
+            }
             video.onended = null;
             video.ontimeupdate = null;
             video.onseeking = null;
@@ -1043,7 +1092,7 @@ export class MediaScanner implements Module {
             if (scannerResult?.found) {
                 this.showScannerResult(scannerResult, program);
             } else {
-                this.openUtilityModal(program, this.buildNotFoundBody());
+                this.openUtilityModal(program, this.buildNotFoundBody(scannerResult?.errorMessage));
             }
         } catch (error) {
             await loadingModal.close();

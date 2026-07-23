@@ -1,0 +1,20 @@
+{
+    "reels_media": [
+        {
+            "user": {
+                "id": "2000001",
+                "username": "story_user"
+            },
+            "items": [
+                {
+                    "taken_at": 1732000300,
+                    "image_versions2": {
+                        "candidates": [
+                            { "url": "https://scontent.cdninstagram.com/v/story_frame.jpg", "width": 1080, "height": 1920 }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}
