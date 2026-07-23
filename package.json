@@ -66,5 +66,9 @@
   },
   "dependencies": {
     "util": "^0.12.5"
+  },
+  "overrides": {
+    "shell-quote": "^1.10.0",
+    "yaml": "^2.9.0"
   }
 }
