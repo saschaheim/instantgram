@@ -59,7 +59,7 @@ export type FetchRequestType =
     | "getUserInfoFromWebProfile";
 
 export type FetchDataConfig =
-    | { type: "getReelsMediaFromFeed"; articleNode?: HTMLElement; id?: string | null }
+    | { type: "getReelsMediaFromFeed"; articleNode?: HTMLElement; id?: string | null; isHighlight?: boolean }
     | { type: "getMediaFromInfo"; articleNode: HTMLElement }
     | { type: "getUserFromInfo"; userId: string }
     | { type: "getUserInfoFromWebProfile"; userName: string };

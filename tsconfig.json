@@ -31,5 +31,11 @@
         "sourceMap": true,
         "strictFunctionTypes": true,
         "strictNullChecks": false
-    }
+    },
+    "exclude": [
+        "node_modules",
+        "dist",
+        "tests",
+        "vitest.config.ts"
+    ]
 }
