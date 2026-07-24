@@ -23,7 +23,7 @@ body:
     attributes:
       label: Instagram URL where it fails
       description: The exact post/reel/story/profile URL you opened (or a similar public example if the real one is private).
-      placeholder: https://www.instagram.com/p/XXXXXXXXXXX/
+      placeholder: https://www.instagram.com/...
     validations:
       required: true
 
