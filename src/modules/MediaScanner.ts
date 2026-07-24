@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module } from "./Module";
+import { Module, NO_TARGET_FOUND } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { Modal, ModalButton } from "../components/Modal";
 import { cssCarouselSlider } from "../components/sliderStyles";
@@ -10,8 +10,8 @@ import { PostAndReelScanner } from "./PostAndReelScanner";
 import { ProfileScanner } from "./ProfileScanner";
 import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
-import { userFilenameFormatter } from "../helpers/mediaFormatting";
-import { buildModalHeader, formatVersionLabel } from "../helpers/common";
+import { buildProxyDownloadUrl, userFilenameFormatter } from "../helpers/mediaFormatting";
+import { buildModalHeader, formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
 import localize from "../helpers/localize";
 
 type MediaScannerSettingConfig = {
@@ -144,7 +144,7 @@ export class MediaScanner implements Module {
                 filename = `${formattedBase}_${index + 1}.${extension}`;
             }
 
-            const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(directUrl)}:${btoa(filename)}`;
+            const encodedUrl = buildProxyDownloadUrl(directUrl, filename);
             anchor.href = program.settings.openInNewTab ? directUrl : encodedUrl;
             if (program.settings.openInNewTab) {
                 anchor.target = "_blank";
@@ -157,22 +157,20 @@ export class MediaScanner implements Module {
     }
 
     private applyLiveVideoSettings(modalElement: HTMLElement, program: Program): void {
-        const shouldMute = this.resolveShouldMuteVideos(program);
         modalElement.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
-            video.defaultMuted = shouldMute;
-            video.muted = shouldMute;
-            if (shouldMute) {
-                video.setAttribute("muted", "");
-            } else {
-                video.removeAttribute("muted");
-            }
+            this.applyVideoMuteState(video, program);
         });
     }
 
-    private resolveShouldMuteVideos(program: Program): boolean {
-        return window.location.pathname.startsWith("/stories/")
-            ? program.settings.storiesMuted
-            : program.settings.videosMuted;
+    private applyVideoMuteState(video: HTMLVideoElement, program: Program): void {
+        const shouldMute = resolveShouldMuteVideos(program);
+        video.defaultMuted = shouldMute;
+        video.muted = shouldMute;
+        if (shouldMute) {
+            video.setAttribute("muted", "");
+        } else {
+            video.removeAttribute("muted");
+        }
     }
 
     /**
@@ -325,7 +323,7 @@ export class MediaScanner implements Module {
      * "wrong page" hint there is misleading, so use a distinct message.
      */
     private buildNotFoundBody(errorMessage?: string): string {
-        if (errorMessage && errorMessage !== "No target found.") {
+        if (errorMessage && errorMessage !== NO_TARGET_FOUND) {
             console.info(`[${this.getName()}] Instagram returned an error:`, errorMessage);
             return localize("a.ie");
         }
@@ -407,14 +405,7 @@ export class MediaScanner implements Module {
             }
             window.setTimeout(() => {
                 if (element instanceof HTMLVideoElement) {
-                    const shouldMute = this.resolveShouldMuteVideos(program);
-                    element.defaultMuted = shouldMute;
-                    element.muted = shouldMute;
-                    if (shouldMute) {
-                        element.setAttribute("muted", "");
-                    } else {
-                        element.removeAttribute("muted");
-                    }
+                    this.applyVideoMuteState(element, program);
                     element.removeAttribute("src");
                     element.load();
                     element.src = mediaSrc;
@@ -440,15 +431,8 @@ export class MediaScanner implements Module {
             element.dataset.mediaRetries = "0";
 
             if (element instanceof HTMLVideoElement) {
-                const shouldMute = this.resolveShouldMuteVideos(program);
                 element.preload = "metadata";
-                element.defaultMuted = shouldMute;
-                element.muted = shouldMute;
-                if (shouldMute) {
-                    element.setAttribute("muted", "");
-                } else {
-                    element.removeAttribute("muted");
-                }
+                this.applyVideoMuteState(element, program);
                 element.onerror = () => queueMediaRetry(element);
                 element.src = mediaSrc;
                 element.load();
@@ -563,15 +547,8 @@ export class MediaScanner implements Module {
                 return;
             }
             if (video) {
-                const shouldMute = this.resolveShouldMuteVideos(program);
                 activeVideo = video;
-                video.defaultMuted = shouldMute;
-                video.muted = shouldMute;
-                if (shouldMute) {
-                    video.setAttribute("muted", "");
-                } else {
-                    video.removeAttribute("muted");
-                }
+                this.applyVideoMuteState(video, program);
                 const syncVideoProgress = () => {
                     if (!isCurrentSlide()) {
                         return;
@@ -615,14 +592,7 @@ export class MediaScanner implements Module {
                 return;
             }
             activeVideo = video;
-            const shouldMute = this.resolveShouldMuteVideos(program);
-            video.defaultMuted = shouldMute;
-            video.muted = shouldMute;
-            if (shouldMute) {
-                video.setAttribute("muted", "");
-            } else {
-                video.removeAttribute("muted");
-            }
+            this.applyVideoMuteState(video, program);
             video.onended = null;
             video.ontimeupdate = null;
             video.onseeking = null;

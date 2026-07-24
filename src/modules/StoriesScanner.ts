@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module } from "./Module";
+import { Module, NO_TARGET_FOUND, getErrorMessage } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { getElementWithHighestWidth } from "../helpers/domDetection";
 import { generateModalBody } from "../helpers/modalMedia";
@@ -168,7 +168,7 @@ export class StoriesScanner implements Module {
         try {
             const $container: HTMLElement = document.querySelector('[id^="mount_"]'); // Get the container element
             if (!$container) {
-                return { found: false, errorMessage: 'No target found.' }; // Return error if no container is found
+                return { found: false, errorMessage: NO_TARGET_FOUND }; // Return error if no container is found
             }
 
             const path = window.location.pathname; // Get the current URL path
@@ -182,13 +182,11 @@ export class StoriesScanner implements Module {
                 return await this.handleFeedStories($container, program)
                     || { found: false, errorMessage: "Feed stories handler returned null" };
             } else {
-                return { found: false, errorMessage: 'No target found.' }; // Return error if path does not match any story type
+                return { found: false, errorMessage: NO_TARGET_FOUND }; // Return error if path does not match any story type
             }
         } catch (e) {
-            // Log any errors during execution
             console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            const errorMessage = e instanceof Error ? e.message : String(e);
-            return { found: false, errorMessage, error: { cause: e } }; // Return error information
+            return { found: false, errorMessage: getErrorMessage(e), error: { cause: e } };
         }
     }
 }

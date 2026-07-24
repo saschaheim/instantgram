@@ -1,4 +1,11 @@
+import { Program } from "../App";
+
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
+
+export const resolveShouldMuteVideos = (program: Program): boolean =>
+    window.location.pathname.startsWith("/stories/")
+        ? program.settings.storiesMuted
+        : program.settings.videosMuted;
 
 export const normalizeVersionString = (version: string): string =>
     version.replace(/^v/i, "").trim().replace(/\./g, "-");

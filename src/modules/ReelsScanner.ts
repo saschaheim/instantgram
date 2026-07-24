@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module } from "./Module";
+import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { getElementInViewPercentage } from "../helpers/domDetection";
 import { generateModalBody } from "../helpers/modalMedia";
@@ -69,17 +69,14 @@ export class ReelsScanner implements Module {
 
             // If no relevant article is found, return an error
             if (!mostRelevantArticle) {
-                return { found: false, errorMessage: 'No target found.' };
+                return { found: false, errorMessage: NO_TARGET_FOUND };
             }
 
             // Generate modal data for the most relevant article
             const modalData = await generateModalBody(mostRelevantArticle, program);
             return modalData; // Return the modal data
         } catch (e) {
-            // Log any errors during execution
-            console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            const errorMessage = e instanceof Error ? e.message : String(e);
-            return { found: false, errorMessage, error: e }; // Return error information
+            return handleScanError(program, this.getName(), e);
         }
     }
 }

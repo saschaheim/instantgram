@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module } from "./Module";
+import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { generateModalBody } from "../helpers/modalMedia";
 
@@ -39,17 +39,14 @@ export class PostAndReelScanner implements Module {
 
             // If no article is found, return an error
             if (!$article) {
-                return { found: false, errorMessage: 'No target found.' };
+                return { found: false, errorMessage: NO_TARGET_FOUND };
             }
 
             // Generate the modal data based on the article element
             const modalData = await generateModalBody($article, program);
             return modalData; // Return the generated modal data
         } catch (e) {
-            // Log any errors that occur during execution
-            console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            const errorMessage = e instanceof Error ? e.message : String(e);
-            return { found: false, errorMessage, error: e }; // Return error information
+            return handleScanError(program, this.getName(), e);
         }
     }
 }

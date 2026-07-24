@@ -9,7 +9,7 @@ vi.mock("../../src/helpers/localize", () => ({
     default: (key: string) => {
         const strings: Record<string, string> = {
             "a.nf": "Did you open any Instagram post? Like for example",
-            "a.ie": "This media could not be loaded because it isn't supported yet.",
+            "a.ie": "This media isn't supported yet.",
         };
         return strings[key] ?? key;
     },
@@ -42,7 +42,7 @@ describe("MediaScanner > buildNotFoundBody", () => {
 
     it("shows an unsupported-media message (not the 'wrong page' hint) when a target was found but Instagram's API failed", () => {
         const body = buildNotFoundBody("No story items returned by Instagram.");
-        expect(body).toContain("This media could not be loaded because it isn't supported yet.");
+        expect(body).toContain("This media isn't supported yet.");
         expect(body).not.toContain("Did you open any Instagram post?");
         expect(body).not.toContain("https://www.instagram.com/p/CIGrv1VMBkS/");
     });

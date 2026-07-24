@@ -1,34 +1,26 @@
 import { MediaType } from "../model/MediaType";
 import { DownloadableMedia, InstagramMediaItem, isDownloadableImageLike, isInstagramMediaItem } from "./instagramTypes";
 
+const buildDatePlaceholders = (date: Date, userName: string): Record<string, string> => ({
+    Minute: date.getMinutes().toString().padStart(2, "0"),
+    Hour: date.getHours().toString().padStart(2, "0"),
+    Day: date.getDate().toString().padStart(2, "0"),
+    Month: (date.getMonth() + 1).toString().padStart(2, "0"),
+    Year: date.getFullYear().toString(),
+    Username: userName,
+});
+
 export const getFormattedFilenameAndUrl = (media: DownloadableMedia, userName: string, template: string, index: number) => {
     if (isDownloadableImageLike(media) && media.url) {
         return { formattedFilename: `${userName}.jpg`, url: media.url };
     }
 
     if (typeof media === "string") {
-        const date = new Date();
-        const placeholders: Record<string, string> = {
-            Minute: date.getMinutes().toString().padStart(2, "0"),
-            Hour: date.getHours().toString().padStart(2, "0"),
-            Day: date.getDate().toString().padStart(2, "0"),
-            Month: (date.getMonth() + 1).toString().padStart(2, "0"),
-            Year: date.getFullYear().toString(),
-            Username: userName,
-        };
-        const filename = userFilenameFormatter(template, placeholders);
+        const filename = userFilenameFormatter(template, buildDatePlaceholders(new Date(), userName));
         return { formattedFilename: `${filename}_${index + 1}.txt`, url: media };
     } else if (isInstagramMediaItem(media)) {
         const date = new Date((media.taken_at ?? Date.now() / 1000) * 1000);
-        const placeholders: Record<string, string> = {
-            Minute: date.getMinutes().toString().padStart(2, "0"),
-            Hour: date.getHours().toString().padStart(2, "0"),
-            Day: date.getDate().toString().padStart(2, "0"),
-            Month: (date.getMonth() + 1).toString().padStart(2, "0"),
-            Year: date.getFullYear().toString(),
-            Username: userName,
-        };
-        const filename = userFilenameFormatter(template, placeholders);
+        const filename = userFilenameFormatter(template, buildDatePlaceholders(date, userName));
         const { extension, url } = getImgOrVideoUrl(media);
         return { formattedFilename: `${filename}_${index + 1}.${extension}`, url };
     } else {
@@ -81,6 +73,9 @@ export const userFilenameFormatter = (filename: string, placeholders: Record<str
     }
     return filename.replace(/\s+/g, "-").replace(/[^\w-.]/g, "");
 };
+
+export const buildProxyDownloadUrl = (url: string, filename: string): string =>
+    `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(filename)}`;
 
 export const wrapInSliderContainer = (modalBody: string) =>
     `<div class="slider-container"><div class="slider">${modalBody}</div><div class="slider-controls"></div></div>`;

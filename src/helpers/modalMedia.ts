@@ -13,6 +13,7 @@ import {
     isInstagramMediaItem
 } from "./instagramTypes";
 import {
+    buildProxyDownloadUrl,
     getFormattedFilenameAndUrl,
     getImgOrVideoUrl,
     getMediaElement,
@@ -22,15 +23,21 @@ import {
     wrapInSliderContainer
 } from "./mediaFormatting";
 import { isDownloadableImageLike } from "./instagramTypes";
-
-const isStoriesPage = () => window.location.pathname.startsWith("/stories/");
-const resolveVideoMuted = (program: Program) => isStoriesPage() ? program.settings.storiesMuted : program.settings.videosMuted;
+import { resolveShouldMuteVideos as resolveVideoMuted } from "./common";
 
 const buildDownloadDataAttributes = (attributes: Record<string, string | number | undefined>) =>
     Object.entries(attributes)
         .filter(([, value]) => value !== undefined)
         .map(([key, value]) => `data-${key}="${String(value)}"`)
         .join(" ");
+
+const buildDateAttributes = (date: Date) => ({
+    year: date.getFullYear(),
+    month: String(date.getMonth() + 1).padStart(2, "0"),
+    day: String(date.getDate()).padStart(2, "0"),
+    hour: String(date.getHours()).padStart(2, "0"),
+    minute: String(date.getMinutes()).padStart(2, "0"),
+});
 
 const buildDownloadMetadataAttributes = (media: DownloadableMedia, userName: string, index: number): string => {
     if (isDownloadableImageLike(media) && media.url) {
@@ -41,22 +48,16 @@ const buildDownloadMetadataAttributes = (media: DownloadableMedia, userName: str
     }
 
     if (typeof media === "string") {
-        const date = new Date();
         return buildDownloadDataAttributes({
             "direct-url": media,
             username: userName,
             index,
             extension: "txt",
-            year: date.getFullYear(),
-            month: String(date.getMonth() + 1).padStart(2, "0"),
-            day: String(date.getDate()).padStart(2, "0"),
-            hour: String(date.getHours()).padStart(2, "0"),
-            minute: String(date.getMinutes()).padStart(2, "0"),
+            ...buildDateAttributes(new Date()),
         });
     }
 
     if (isInstagramMediaItem(media)) {
-        const date = new Date((media.taken_at ?? Date.now() / 1000) * 1000);
         const mediaUrl = getImgOrVideoUrl(media);
         if (!mediaUrl) {
             return "";
@@ -66,11 +67,7 @@ const buildDownloadMetadataAttributes = (media: DownloadableMedia, userName: str
             username: userName,
             index,
             extension: mediaUrl.extension,
-            year: date.getFullYear(),
-            month: String(date.getMonth() + 1).padStart(2, "0"),
-            day: String(date.getDate()).padStart(2, "0"),
-            hour: String(date.getHours()).padStart(2, "0"),
-            minute: String(date.getMinutes()).padStart(2, "0"),
+            ...buildDateAttributes(new Date((media.taken_at ?? Date.now() / 1000) * 1000)),
         });
     }
 
@@ -115,7 +112,7 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
             }
             const { formattedFilename, url } = getFormattedFilenameAndUrl(resolvedAdUrl, userName, program.settings.formattedFilenameInput, 0);
             const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
-            const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(formattedFilename)}`;
+            const encodedUrl = buildProxyDownloadUrl(url, formattedFilename);
             const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
             const downloadDataAttributes = buildDownloadDataAttributes({
                 "direct-url": url,
@@ -203,7 +200,7 @@ export const addMediaToBody = (modalBody: string, media: DownloadableMedia, inde
     const { formattedFilename, url } = getFormattedFilenameAndUrl(media, userName, program.settings.formattedFilenameInput, index);
     const mediaType = isInstagramMediaItem(media) ? resolveElementMediaType(media) : MediaType.Image;
     const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
-    const encodedUrl = `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(formattedFilename)}`;
+    const encodedUrl = buildProxyDownloadUrl(url, formattedFilename);
     const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
     const downloadDataAttributes = buildDownloadMetadataAttributes(media, userName, index);
 

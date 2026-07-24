@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module } from "./Module";
+import { Module, getErrorMessage, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { fetchDataFromApi, getIGUsername, resolveUserIdFromSearch } from "../helpers/instagramApi";
 import { generateModalBodyHelper } from "../helpers/modalMedia";
@@ -107,9 +107,7 @@ export class ProfileScanner implements Module {
                 return { found: false, errorMessage: 'Incomplete userDetails received' };
             }
         } catch (e) {
-            // If an error occurs during the fetch process, return the error message
-            const errorMessage = e instanceof Error ? e.message : String(e);
-            return { found: false, userName, errorMessage, error: e };
+            return { found: false, userName, errorMessage: getErrorMessage(e), error: e };
         }
     }
 
@@ -136,10 +134,7 @@ export class ProfileScanner implements Module {
 
             return result; // Return the profile scan result
         } catch (e) {
-            // Log errors that occur during execution
-            console.error(`[${program.NAME}] ${program.VERSION}`, this.getName() + "()", e);
-            const errorMessage = e instanceof Error ? e.message : String(e);
-            return { found: false, errorMessage, error: e }; // Return the error information
+            return handleScanError(program, this.getName(), e);
         }
     }
 }

@@ -28,6 +28,10 @@ const minify = (code) => {
       booleans: true,
       unused: true,
       if_return: true,
+      passes: 2,
+      toplevel: true,
+      join_vars: true,
+      pure_getters: true,
     },
     mangle: {
       toplevel: true,
