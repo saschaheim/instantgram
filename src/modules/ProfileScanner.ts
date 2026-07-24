@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module, getErrorMessage, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { fetchDataFromApi, getIGUsername, resolveUserIdFromSearch } from "../helpers/instagramApi";
+import { WEB_PROFILE_INFO_ENABLED, fetchDataFromApi, getIGUsername, resolveProfileFromFeed, resolveUserIdFromSearch } from "../helpers/instagramApi";
 import { generateModalBodyHelper } from "../helpers/modalMedia";
 
 type ProfilePictureInfo = {
@@ -68,24 +68,42 @@ export class ProfileScanner implements Module {
         }
 
         try {
-            // Fetch user information based on the extracted username. Some
-            // accounts currently trigger a deleted-schema error from
-            // web_profile_info (see issue #45); fall back to the search
-            // endpoint, which still resolves the same account id.
-            const userInfo = await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName });
-            const userId = userInfo?.data?.user?.id ?? (await resolveUserIdFromSearch(userName));
+            // web_profile_info is currently switched off (see
+            // WEB_PROFILE_INFO_ENABLED); go straight to the feed and search
+            // fallbacks, which resolve the same account id without it.
+            const userInfo = WEB_PROFILE_INFO_ENABLED
+                ? await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName })
+                : null;
+            let userId = userInfo?.data?.user?.id;
+            let feedOwner = null;
 
-            // If no user ID could be resolved through either path, return an error
+            if (!userId) {
+                const feedResult = await resolveProfileFromFeed(userName);
+                userId = feedResult.userId ?? undefined;
+                feedOwner = feedResult.owner;
+            }
+
+            if (!userId) {
+                userId = (await resolveUserIdFromSearch(userName)) ?? undefined;
+            }
+
+            // If no user ID could be resolved through any path, return an error
             if (!userId) {
                 return { found: false, errorMessage: 'No userID found in userInfo' };
             }
 
-            // Fetch detailed user information using the user ID
+            // Fetch detailed user information using the user ID. For some
+            // business/creator accounts, /users/{id}/info/ comes back
+            // without any profile_pic_url* field at all even though the id
+            // resolved fine -- the feed owner (when we had to fall back to
+            // it above) still carries a plain profile_pic_url and is used
+            // as a last resort.
             const userDetails = await fetchDataFromApi({ type: 'getUserFromInfo', userId });
             const fallbackProfileInfo = this.resolveProfilePictureInfo(
                 userDetails?.user,
                 userInfo?.data?.user,
-                userDetails?.data?.user
+                userDetails?.data?.user,
+                feedOwner
             );
 
             if (userDetails?.user && !userDetails.user.hd_profile_pic_url_info?.url && fallbackProfileInfo) {

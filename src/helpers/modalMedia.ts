@@ -3,7 +3,7 @@ import { uiClasses } from "../components/uiTokens";
 import localize from "./localize";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
-import { fetchDataFromApi, findPostId, getIGUsername, resolveUserIdFromSearch } from "./instagramApi";
+import { WEB_PROFILE_INFO_ENABLED, fetchDataFromApi, findPostId, getIGUsername, resolveUserIdFromFeed, resolveUserIdFromSearch } from "./instagramApi";
 import { findAD, resolveCurrentStoryIndex } from "./domDetection";
 import { findMediaUrl } from "./reactMedia";
 import {
@@ -79,7 +79,8 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);
     const userId = isPathMatch("/stories/")
-        ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName }))?.data?.user?.id
+        ? (WEB_PROFILE_INFO_ENABLED ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName }))?.data?.user?.id : null)
+            ?? (await resolveUserIdFromFeed(userName))
             ?? (await resolveUserIdFromSearch(userName))
         : null;
 

@@ -83,13 +83,17 @@ describe("processMediaInfo", () => {
         expect(seen[1].video_versions?.[0]?.url).toContain("story_slide_2.mp4");
     });
 
+    // tests/fixtures/profile-user-info.json is real captured data: a live
+    // usernameinfo/ response fetched via tools/instagram-fixtures for the
+    // account from issue #45's follow-up report, trimmed to the fields our
+    // code reads.
     it("processes a profile picture fallback (user.hd_profile_pic_url_info)", () => {
         const fixture = loadFixture("profile-user-info");
         const seen: InstagramMediaItem[] = [];
         const count = processMediaInfo(fixture, (media) => seen.push(media));
 
         expect(count).toBe(1);
-        expect(seen[0].url).toContain("profile_hd.jpg");
+        expect(seen[0].url).toContain("587552705_18547936279062074_3784513351514396768_n.jpg");
     });
 
     // Regression coverage for https://github.com/saschaheim/instantgram/issues/45:
@@ -196,7 +200,7 @@ describe("generateModalBody", () => {
         setLocation("https://www.instagram.com/stories/story_user/123456789/");
         stubAppId();
         (fetch as unknown as ReturnType<typeof vi.fn>)
-            .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("profile-web-info") })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ user: { pk: "3000001" } }] }) })
             .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-single") });
 
         const container = document.createElement("div");
@@ -212,51 +216,67 @@ describe("generateModalBody", () => {
     // https://i.instagram.com/api/v1/users/web_profile_info/?username=lascanaofficial
     // returned HTTP 400 with exactly this body (confirmed twice from a real
     // logged-in session) -- an Instagram-side schema removal
-    // ("ig_business_category_subvertical"), not an auth/CORS issue. When that
-    // happens the userId needed for a *regular* (non-highlight) story can't
-    // be resolved. The code used to silently treat "no id" as "this must be a
+    // ("ig_business_category_subvertical"), not an auth/CORS issue. That
+    // endpoint is unreliable enough that it's now switched off entirely (see
+    // WEB_PROFILE_INFO_ENABLED) rather than attempted and fallen back from.
+    // The code used to also silently treat "no id" as "this must be a
     // highlight" and fire a second, nonsensical
     // `reel_ids=highlight%3A<mediaId>` request, which Instagram answers with
     // an empty reels_media list -- reproducing the empty-slider bug from a
-    // different angle. It must now fail fast after the first request instead
-    // of guessing.
-    it("reports found: false when both web_profile_info and the search fallback find nothing (no bogus highlight query)", async () => {
+    // different angle. It must now fail fast after the fallbacks instead of
+    // guessing.
+    it("reports found: false when the feed fallback and the search fallback both find nothing (no bogus highlight query)", async () => {
         setLocation("https://www.instagram.com/stories/lascanaofficial/123456789/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({
-                ok: false,
-                status: 400,
-                json: async () => loadFixture("web-profile-info-error"),
-            })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
             .mockResolvedValueOnce({ ok: true, json: async () => ({ users: [] }) });
 
         const container = document.createElement("div");
         const result = await generateModalBody(container, program);
 
         expect(result.found).toBe(false);
-        // web_profile_info, then the search fallback -- but no reels_media
-        // request (highlight-prefixed or otherwise), since no id was resolved.
+        // web_profile_info is switched off, so only the feed fallback, then
+        // the search fallback are tried -- and no reels_media request
+        // (highlight-prefixed or otherwise), since no id was resolved.
         expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock.mock.calls[0][0]).toContain("web_profile_info");
+        expect(fetchMock.mock.calls[0][0]).toContain("feed/user/");
         expect(fetchMock.mock.calls[1][0]).toContain("topsearch");
     });
 
-    // The actual fix, not just a graceful failure: when web_profile_info is
-    // broken for an account (real, confirmed error above) but Instagram's
-    // search endpoint still resolves the same account id, the story should
-    // load normally instead of giving up.
-    it("resolves the story via the search fallback when web_profile_info fails but search finds the account", async () => {
+    // The actual fix, not just a graceful failure: with web_profile_info
+    // switched off (real, confirmed error above), the feed fallback resolves
+    // the account id directly and the story should load normally.
+    it("resolves the story via the feed fallback", async () => {
         setLocation("https://www.instagram.com/stories/lascanaofficial/123456789/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
             .mockResolvedValueOnce({
-                ok: false,
-                status: 400,
-                json: async () => loadFixture("web-profile-info-error"),
+                ok: true,
+                json: async () => ({ items: [{ user: { pk: "999888777" } }] }),
             })
+            .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-single") });
+
+        const container = document.createElement("div");
+        const result = await generateModalBody(container, program);
+
+        expect(result.found).toBe(true);
+        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toContain("feed/user/");
+        expect(fetchMock.mock.calls[1][0]).toContain("reel_ids=999888777");
+    });
+
+    // Confirms the search fallback still works as a second-level fallback
+    // when the feed fallback finds nothing.
+    it("resolves the story via the search fallback when the feed fallback finds nothing", async () => {
+        setLocation("https://www.instagram.com/stories/lascanaofficial/123456789/");
+        stubAppId();
+        const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+        fetchMock
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
             .mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ users: [{ user: { username: "lascanaofficial", id: "999888777" } }] }),

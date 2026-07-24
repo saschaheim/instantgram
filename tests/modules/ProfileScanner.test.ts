@@ -33,11 +33,24 @@ describe("ProfileScanner", () => {
         expect(result?.found).toBe(false);
     });
 
+    const stubAppId = () => {
+        document.body.innerHTML = "";
+        const script = document.createElement("script");
+        script.type = "application/json";
+        script.textContent = '"X-IG-App-ID":"123456789"';
+        document.body.appendChild(script);
+    };
+
     it("reports found: true with one slide when the profile has an hd_profile_pic_url_info", async () => {
         setLocation("https://www.instagram.com/profile_user/");
-        fetchDataFromApi
-            .mockResolvedValueOnce(loadFixture("profile-web-info"))
-            .mockResolvedValueOnce(loadFixture("profile-user-info"));
+        // web_profile_info is switched off (WEB_PROFILE_INFO_ENABLED), so the
+        // id is resolved via the feed fallback (stubbed global fetch) first.
+        stubAppId();
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ items: [{ user: { pk: "3000001" } }] }),
+        }));
+        fetchDataFromApi.mockResolvedValueOnce(loadFixture("profile-user-info"));
 
         const result = await new ProfileScanner().execute(program);
 
@@ -47,9 +60,12 @@ describe("ProfileScanner", () => {
 
     it("falls back to profile_pic_url_hd when hd_profile_pic_url_info is missing", async () => {
         setLocation("https://www.instagram.com/legacy_pic_user/");
-        fetchDataFromApi
-            .mockResolvedValueOnce({ data: { user: { id: "3000002", username: "legacy_pic_user" } } })
-            .mockResolvedValueOnce(loadFixture("profile-user-info-fallback"));
+        stubAppId();
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ items: [{ user: { pk: "3000002" } }] }),
+        }));
+        fetchDataFromApi.mockResolvedValueOnce(loadFixture("profile-user-info-fallback"));
 
         const result = await new ProfileScanner().execute(program);
 
@@ -57,12 +73,11 @@ describe("ProfileScanner", () => {
         expect((result?.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
     });
 
-    it("reports found: false when both web_profile_info and the search fallback find no user id", async () => {
+    it("reports found: false when both the feed fallback and the search fallback find no user id", async () => {
         setLocation("https://www.instagram.com/ghost_user/");
-        // No script tag with an app id -> resolveUserIdFromSearch's findAppId()
-        // returns null, so it bails out without making a request.
+        // No script tag with an app id -> findAppId() returns null for both
+        // fallbacks, so they bail out without making a request.
         document.body.innerHTML = "";
-        fetchDataFromApi.mockResolvedValueOnce({ data: { user: {} } });
 
         const result = await new ProfileScanner().execute(program);
 
@@ -71,12 +86,42 @@ describe("ProfileScanner", () => {
     });
 
     // The actual fix for https://github.com/saschaheim/instantgram/issues/45,
-    // not just a graceful failure: when web_profile_info returns no user id
-    // (e.g. the confirmed ig_business_category_subvertical schema error) but
-    // Instagram's search endpoint still resolves the account, the profile
-    // picture should load normally instead of giving up.
-    it("resolves the profile via the search fallback when web_profile_info has no user id", async () => {
+    // not just a graceful failure: when web_profile_info is switched off and
+    // the feed fallback finds nothing, Instagram's search endpoint still
+    // resolves the account, and the profile picture should load normally
+    // instead of giving up.
+    it("resolves the profile via the search fallback when the feed fallback has no user id", async () => {
         setLocation("https://www.instagram.com/ghost_user/");
+        document.body.innerHTML = "";
+        const script = document.createElement("script");
+        script.type = "application/json";
+        script.textContent = '"X-IG-App-ID":"123456789"';
+        document.body.appendChild(script);
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ users: [{ user: { username: "ghost_user", id: "555444333" } }] }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
+
+        fetchDataFromApi.mockResolvedValueOnce(loadFixture("profile-user-info"));
+
+        const result = await new ProfileScanner().execute(program);
+
+        expect(result?.found).toBe(true);
+        expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "555444333" });
+    });
+
+    // Confirmed via a real captured response (see
+    // tools/instagram-fixtures/output/profile-usernameinfo-artem_pakhniuk.json
+    // vs. the web-style /users/{id}/info/ response for the same account):
+    // some business/creator accounts get a response from getUserFromInfo
+    // with no profile_pic_url* field at all, even once the id resolves
+    // fine via the feed fallback. The feed owner's plain profile_pic_url
+    // must still be used as a last-resort source.
+    it("resolves the profile via the feed fallback's plain profile_pic_url when getUserFromInfo has no profile pic fields", async () => {
+        setLocation("https://www.instagram.com/creator_user/");
         document.body.innerHTML = "";
         const script = document.createElement("script");
         script.type = "application/json";
@@ -84,16 +129,17 @@ describe("ProfileScanner", () => {
         document.body.appendChild(script);
         vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => ({ users: [{ user: { username: "ghost_user", id: "555444333" } }] }),
+            json: async () => ({
+                items: [{ user: { pk: "777666555", profile_pic_url: "https://scontent.cdninstagram.com/v/feed_owner_pic.jpg" } }],
+            }),
         }));
 
-        fetchDataFromApi
-            .mockResolvedValueOnce({ data: { user: {} } })
-            .mockResolvedValueOnce(loadFixture("profile-user-info"));
+        fetchDataFromApi.mockResolvedValueOnce({ user: { id: "777666555", username: "creator_user" } });
 
         const result = await new ProfileScanner().execute(program);
 
         expect(result?.found).toBe(true);
-        expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "555444333" });
+        expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "777666555" });
+        expect(result?.modalBody).toContain("feed_owner_pic.jpg");
     });
 });

@@ -1,5 +1,12 @@
 import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
 
+// web_profile_info is currently switched off (not removed): it's a
+// known-brittle, per-account-gated endpoint that fails outright for many
+// accounts (see issue #45 and https://github.com/jackwener/opencli/issues/2147).
+// The feed and search fallbacks cover the same ground without it. Flip this
+// back on if Instagram fixes the endpoint upstream.
+export const WEB_PROFILE_INFO_ENABLED = false;
+
 const mediaIdCache: Map<string, string> = new Map();
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const shortcodePattern = new RegExp(`^[${shortcodeAlphabet.replace(/[-_]/g, "\\$&")}]+$`);
@@ -220,6 +227,56 @@ export const resolveUserIdFromSearch = async (userName: string): Promise<string 
     const wanted = userName.toLowerCase();
     const match = users?.find(entry => entry.user?.username?.toLowerCase() === wanted && entry.user?.id);
     return match?.user?.id ?? null;
+};
+
+type FeedOwner = {
+    pk?: string | number;
+    id?: string | number;
+    profile_pic_url?: string;
+    profile_pic_url_hd?: string;
+    hd_profile_pic_url_info?: { url?: string; width?: number; height?: number };
+};
+
+const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
+    const appId = findAppId();
+    if (!appId) {
+        return null;
+    }
+
+    const url = `https://www.instagram.com/api/v1/feed/user/${encodeURIComponent(userName)}/username/?count=1`;
+    const payload = await secureFetch(url, appId);
+    const items = payload?.items as Array<{ user?: FeedOwner }> | undefined;
+    return items?.[0]?.user ?? null;
+};
+
+/**
+ * Resolves a username to its numeric user id via a direct username-scoped
+ * feed lookup, with no separate id-resolution step. web_profile_info is a
+ * known-brittle, per-account-gated endpoint (see
+ * https://github.com/jackwener/opencli/issues/2147 and instaloader#2482,
+ * both reporting 400/401 for otherwise-valid public accounts); this endpoint
+ * isn't gated the same way and doesn't need web_profile_info at all. Used
+ * as a fallback alongside resolveUserIdFromSearch when web_profile_info
+ * fails.
+ */
+export const resolveUserIdFromFeed = async (userName: string): Promise<string | null> => {
+    const owner = await fetchFeedOwner(userName);
+    const userId = owner?.pk ?? owner?.id;
+    return userId != null ? String(userId) : null;
+};
+
+/**
+ * Same lookup as resolveUserIdFromFeed, but also returns the embedded owner
+ * object. Some business/creator accounts get a stripped-down response from
+ * the web-style /users/{id}/info/ endpoint (no profile_pic_url* fields at
+ * all, confirmed via a real captured response for a creator account), even
+ * once the id is resolved -- the feed owner's plain profile_pic_url is used
+ * as a last-resort fallback source in that case.
+ */
+export const resolveProfileFromFeed = async (userName: string): Promise<{ userId: string | null; owner: FeedOwner | null }> => {
+    const owner = await fetchFeedOwner(userName);
+    const userId = owner?.pk ?? owner?.id;
+    return { userId: userId != null ? String(userId) : null, owner };
 };
 
 export const getIGUsername = (url: string): string | null => {
