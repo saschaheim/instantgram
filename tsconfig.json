@@ -36,6 +36,7 @@
         "node_modules",
         "dist",
         "tests",
+        "tools",
         "vitest.config.ts"
     ]
 }

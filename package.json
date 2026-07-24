@@ -26,7 +26,7 @@
     "dev:build": "npm run build:bundles && npm run build:release:dev",
     "dev:rollup": "rollup -c -w",
     "dev:watch": "nodemon --watch src\\components --watch src\\helpers --watch src\\model --watch src\\modules --watch src\\_langs\\src --watch src\\_langs\\layouts --watch src\\localization.ts --watch src\\index.ts --watch scripts --watch package.json --watch rollup.config.js --ignore src\\_langs\\bookmarklets.js --ext ts,js,json,md,hbs,css --exec \"npm run dev:build\"",
-    "lint": "eslint **/*.ts",
+    "lint": "eslint src/**/*.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "size": "node scripts/size-bookmarklets.js",

@@ -5,6 +5,12 @@ import tsParser from "@typescript-eslint/parser";  // Import the TypeScript pars
 
 export default [
   {
+    // tools/instagram-fixtures is a standalone dev tool with its own
+    // tsconfig.json, never built/tested/shipped with the project -- lint it
+    // separately (e.g. `npx eslint tools/instagram-fixtures/*.ts`) if needed.
+    ignores: ["tools/**"],
+  },
+  {
     files: ["**/*.ts", "**/*.tsx"],  // Apply this configuration to TypeScript files (.ts and .tsx)
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },  // Define global variables for browser and node environments

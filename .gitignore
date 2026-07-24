@@ -1,3 +1,8 @@
 node_modules
 .vscode
 .history
+
+# tools/instagram-fixtures: local-only credentials and captured output.
+tools/instagram-fixtures/credentials.json
+tools/instagram-fixtures/output/
+tools/instagram-fixtures/dist/
