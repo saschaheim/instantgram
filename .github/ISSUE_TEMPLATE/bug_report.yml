@@ -1,0 +1,88 @@
+name: Bug report
+description: Something isn't working (download fails, empty modal, wrong error, etc.)
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Instagram changes its internal API constantly, so **the console/network output below is the single most useful thing you can provide** — without it we usually can't tell what actually broke on Instagram's side, and end up going back and forth for it anyway.
+
+  - type: checkboxes
+    id: prechecks
+    attributes:
+      label: Before you report
+      options:
+        - label: I re-dragged the latest bookmarklet from https://saschaheim.github.io/instantgram/ (a previously saved bookmarklet does not auto-update)
+          required: true
+        - label: I searched existing issues and this isn't a duplicate
+          required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: Instagram URL where it fails
+      description: The exact post/reel/story/profile URL you opened (or a similar public example if the real one is private).
+      placeholder: https://www.instagram.com/p/XXXXXXXXXXX/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: content-type
+    attributes:
+      label: What are you trying to download?
+      options:
+        - Post
+        - Reel
+        - Story
+        - Profile picture
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: "Firefox 141, Chrome 128, ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What you see instead — an empty bar, an error message (copy its exact text), nothing happens, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console / Network output (required)
+      description: |
+        Open DevTools (F12) → Network tab, filter by `instagram.com`, click the bookmarklet again, then paste:
+        - the request URL(s) that fired
+        - the response status + body for each (Preview or Response tab)
+
+        Also fine: a screenshot, or the Console tab output if there's a JS error. **Please remove any cookie/session values before pasting** — the `sessionid`/`csrftoken` request headers are equivalent to your password.
+      placeholder: |
+        GET https://i.instagram.com/api/v1/users/web_profile_info/?username=... -> 400
+        { "message": "...", "status": "fail" }
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Anything else?
+      description: Public vs. private account, business/creator account, ad blocker, browser extensions, etc.
+    validations:
+      required: false
