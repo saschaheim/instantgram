@@ -49,13 +49,6 @@ body:
       required: true
 
   - type: textarea
-    id: expected
-    attributes:
-      label: Expected behavior
-    validations:
-      required: true
-
-  - type: textarea
     id: actual
     attributes:
       label: Actual behavior
