@@ -1,10 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
-import { loginWithPassword } from "./login";
+import { loginWithPassword, privateRequest, LoginSession } from "./login";
 
 /**
- * CLI to log in (see login.ts) and fetch the same endpoints
- * src/helpers/instagramApi.ts calls from the browser, saving the raw
+ * CLI to log in (see login.ts) and fetch the same underlying data
+ * src/helpers/instagramApi.ts fetches from the browser, saving the raw
  * response to tools/instagram-fixtures/output/ for turning into a
  * tests/fixtures/*.json fixture by hand.
  *
@@ -16,11 +16,21 @@ import { loginWithPassword } from "./login";
  *
  * Requires tools/instagram-fixtures/credentials.json (gitignored) --
  * copy credentials.example.json and fill in your own username/password.
+ *
+ * Every request here goes through login.ts's privateRequest(), which reuses
+ * the exact device fingerprint, cookies and Authorization header the
+ * session was created with, hitting Instagram's private-API endpoints
+ * rather than src/helpers/instagramApi.ts's browser-style endpoints/headers
+ * -- mixing an Android-app session with browser-style requests reads as a
+ * suspicious identity switch to Instagram and gets rate-limited even with a
+ * valid session.
+ *
+ * The obtained session is cached to session.json (gitignored) and reused on
+ * later runs, so you're not logging in (and re-triggering 2FA and
+ * Instagram's "new login" security email) every single time. If a cached
+ * session turns out to be invalid/expired (HTTP 401/403), this logs in
+ * fresh once and updates the cache.
  */
-
-// Matches the web app id src/helpers/instagramApi.ts sends for these same
-// endpoints -- NOT the Android app id used only for the login request.
-const WEB_APP_ID = "936619743392459";
 
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
@@ -37,12 +47,30 @@ const shortcodeToMediaId = (shortcode: string): string | null => {
     return mediaId.toString();
 };
 
+// Capability flags the Android app sends along with feed/reels_media/
+// requests.
+const SUPPORTED_CAPABILITIES = [
+    {
+        value:
+            "119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0," +
+            "129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0," +
+            "139.0,140.0,141.0,142.0",
+        name: "SUPPORTED_SDK_VERSIONS",
+    },
+    { value: "14", name: "FACE_TRACKER_VERSION" },
+    { value: "ETC2_COMPRESSION", name: "COMPRESSION" },
+    { value: "gyroscope_enabled", name: "gyroscope" },
+];
+
 type Credentials = { username: string; password: string };
 
-// __dirname is tools/instagram-fixtures/dist/ once compiled; credentials.json
-// lives one level up, alongside credentials.example.json.
+// __dirname is tools/instagram-fixtures/dist/ once compiled; these files
+// live one level up, alongside credentials.example.json.
+const toolRoot = path.join(__dirname, "..");
+const credentialsPath = path.join(toolRoot, "credentials.json");
+const sessionPath = path.join(toolRoot, "session.json");
+
 const loadCredentials = (): Credentials => {
-    const credentialsPath = path.join(__dirname, "..", "credentials.json");
     if (!fs.existsSync(credentialsPath)) {
         console.error(
             `Missing ${credentialsPath}.\n` +
@@ -54,63 +82,98 @@ const loadCredentials = (): Credentials => {
     return JSON.parse(fs.readFileSync(credentialsPath, "utf8"));
 };
 
-const fetchAsSession = async (url: string, sessionId: string): Promise<{ status: number; body: unknown }> => {
-    const response = await fetch(url, {
-        headers: {
-            Accept: "*/*",
-            "X-IG-App-ID": WEB_APP_ID,
-            Cookie: `sessionid=${sessionId}`,
-        },
-    });
-    return { status: response.status, body: await response.json().catch(() => null) };
+type CachedSession = LoginSession & { savedAt: string };
+
+const loadCachedSession = (): CachedSession | null => {
+    if (!fs.existsSync(sessionPath)) return null;
+    try {
+        const parsed = JSON.parse(fs.readFileSync(sessionPath, "utf8"));
+        // Guards against a session.json left over from an older, incompatible
+        // shape of this tool (e.g. before deviceIds/cookies were cached) --
+        // fall back to a fresh login instead of crashing on missing fields.
+        if (!parsed?.sessionId || !parsed?.userId || !parsed?.deviceIds || !parsed?.cookies) {
+            return null;
+        }
+        return parsed;
+    } catch {
+        return null;
+    }
 };
 
+const saveSession = (session: LoginSession): void => {
+    const cached: CachedSession = { ...session, savedAt: new Date().toISOString() };
+    fs.writeFileSync(sessionPath, JSON.stringify(cached, null, 4));
+};
+
+const freshLogin = async (): Promise<LoginSession> => {
+    const { username, password } = loadCredentials();
+    console.log(`Logging in as ${username}...`);
+    const session = await loginWithPassword(username, password);
+    saveSession(session);
+    console.log(`Logged in (user id ${session.userId}).`);
+    return session;
+};
+
+const isAuthError = (status: number): boolean => status === 401 || status === 403;
+
 const saveFixture = (name: string, result: { status: number; body: unknown }): void => {
-    const outputDir = path.join(__dirname, "..", "output");
+    const outputDir = path.join(toolRoot, "output");
     fs.mkdirSync(outputDir, { recursive: true });
     const filePath = path.join(outputDir, `${name}.json`);
     fs.writeFileSync(filePath, JSON.stringify(result, null, 4));
     console.log(`Saved ${filePath} (HTTP ${result.status})`);
 };
 
-const commands: Record<string, (sessionId: string, arg: string) => Promise<void>> = {
-    async profile(sessionId, username) {
-        const result = await fetchAsSession(
-            `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
-            sessionId
-        );
-        saveFixture(`profile-web-info-${username}`, result);
+type CommandResult = { status: number; body: unknown };
+
+const commands: Record<string, (session: LoginSession, arg: string) => Promise<CommandResult>> = {
+    // GET users/<username>/usernameinfo/
+    async profile(session, username) {
+        const result = await privateRequest(session, `users/${encodeURIComponent(username)}/usernameinfo/`);
+        saveFixture(`profile-usernameinfo-${username}`, result);
+        return result;
     },
 
-    async media(sessionId, shortcode) {
+    // GET media/<id>/info/
+    async media(session, shortcode) {
         const mediaId = shortcodeToMediaId(shortcode);
         if (!mediaId) {
             throw new Error(`Could not convert shortcode "${shortcode}" to a media id.`);
         }
-        const result = await fetchAsSession(`https://i.instagram.com/api/v1/media/${mediaId}/info/`, sessionId);
+        const result = await privateRequest(session, `media/${mediaId}/info/`);
         saveFixture(`media-info-${shortcode}`, result);
+        return result;
     },
 
-    async story(sessionId, username) {
-        const profile = await fetchAsSession(
-            `https://i.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(username)}`,
-            sessionId
-        );
-        const userId = (profile.body as any)?.data?.user?.id;
+    // POST feed/reels_media/ for a regular (non-highlight) story: user_ids
+    // is just [userId], with no "highlight:" prefix.
+    async story(session, username) {
+        const profile = await privateRequest(session, `users/${encodeURIComponent(username)}/usernameinfo/`);
+        const userId = (profile.body as any)?.user?.pk;
         if (!userId) {
-            saveFixture(`story-web-profile-info-${username}`, profile);
+            saveFixture(`story-usernameinfo-${username}`, profile);
+            if (isAuthError(profile.status)) return profile;
             throw new Error(`Could not resolve a user id for @${username}; saved the profile lookup for inspection.`);
         }
-        const result = await fetchAsSession(`https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${userId}`, sessionId);
+        const result = await privateRequest(session, "feed/reels_media/", {
+            data: {
+                exclude_media_ids: "[]",
+                supported_capabilities_new: JSON.stringify(SUPPORTED_CAPABILITIES),
+                source: "profile",
+                user_ids: [String(userId)],
+            },
+        });
         saveFixture(`story-reels-media-${username}`, result);
+        return result;
     },
 
-    async search(sessionId, username) {
-        const result = await fetchAsSession(
-            `https://www.instagram.com/web/search/topsearch/?query=${encodeURIComponent(username)}`,
-            sessionId
-        );
+    // GET users/search/?query=<username>
+    async search(session, username) {
+        const result = await privateRequest(session, "users/search/", {
+            params: { query: username, count: "30" },
+        });
         saveFixture(`search-${username}`, result);
+        return result;
     },
 };
 
@@ -122,11 +185,27 @@ async function main(): Promise<void> {
         return;
     }
 
-    const { username, password } = loadCredentials();
-    console.log(`Logging in as ${username}...`);
-    const session = await loginWithPassword(username, password);
-    console.log(`Logged in (user id ${session.userId}). Fetching ${command} ${arg}...`);
-    await commands[command](session.sessionId, arg);
+    const cached = loadCachedSession();
+    let session: LoginSession;
+    let alreadyLoggedInFresh: boolean;
+
+    if (cached) {
+        console.log(`Using cached session (user id ${cached.userId}, saved ${cached.savedAt}).`);
+        session = cached;
+        alreadyLoggedInFresh = false;
+    } else {
+        session = await freshLogin();
+        alreadyLoggedInFresh = true;
+    }
+
+    console.log(`Fetching ${command} ${arg}...`);
+    let result = await commands[command](session, arg);
+
+    if (isAuthError(result.status) && !alreadyLoggedInFresh) {
+        console.log(`Cached session looks expired/invalid (HTTP ${result.status}); logging in again...`);
+        session = await freshLogin();
+        result = await commands[command](session, arg);
+    }
 }
 
 main().catch(err => {

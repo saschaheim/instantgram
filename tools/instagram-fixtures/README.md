@@ -7,17 +7,26 @@ and never runs in CI.
 
 Logging in and obtaining a `sessionid` is implemented with zero external
 dependencies (Node's built-in `crypto`/`fetch` cover the RSA+AES password
-encryption and HTTP calls). Data fetching then reuses the exact same
-web-style endpoints `src/helpers/instagramApi.ts` calls from the browser,
-just with the session sent as a `Cookie` header instead of a browser cookie
-jar.
+encryption and HTTP calls). The modern Android login response doesn't set a
+`sessionid` cookie at all -- it returns an
+`ig-set-authorization: Bearer IGT:2:<base64 JSON>` header whose decoded
+payload has a `sessionid` field. Data fetching then reuses the exact same
+device fingerprint, cookies, and Authorization header the session was
+created with, hitting Instagram's private (Android app) API endpoints.
+
+The obtained session is cached to `session.json` (gitignored) and reused on
+later runs, so you're not logging in -- and re-triggering 2FA and Instagram's
+"new login" security email -- on every single invocation. If the cached
+session turns out to be invalid/expired (HTTP 401/403), it logs in fresh
+once and updates the cache.
 
 ## Important caveats
 
-- **2FA is not supported.** If your account has two-factor auth enabled,
-  login will fail -- copy a `sessionid` cookie from your browser instead
-  (DevTools -> Application/Storage -> Cookies) and use it directly rather
-  than running this tool.
+- **Only the classic verification-code 2FA flow is supported** (you'll be
+  prompted on the terminal for the code Instagram sends you). The newer
+  "Bloks" 2FA flow is not implemented -- if you hit that instead, copy a
+  `sessionid` cookie from your browser instead (DevTools -> Application/
+  Storage -> Cookies) and use it directly.
 - **This mimics an Android app login from a script**, which is exactly the
   kind of activity Instagram's abuse detection watches for. Only run this
   from your own trusted network with your own account, and expect it may
@@ -26,9 +35,9 @@ jar.
   versioning id, etc.) go stale.** Instagram periodically retires old app
   versions. If login fails outright (not a bad-password error), re-sync
   those constants against a current Instagram Android app release.
-- **Never commit `credentials.json`** (it's gitignored) or anything under
-  `output/` without first checking it for personal data you don't want in
-  the fixture.
+- **Never commit `credentials.json` or `session.json`** (both gitignored) --
+  `session.json`'s sessionid is equivalent to your password. Also check
+  anything under `output/` for personal data before reusing it in a fixture.
 
 ## Setup
 
