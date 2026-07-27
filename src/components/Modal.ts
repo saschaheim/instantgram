@@ -25,6 +25,7 @@ export interface ModalOptions {
   body?: (HTMLElement | string)[]; // Body content, which can be strings or HTML element(s)
   bodyStyle?: string; // Optional custom CSS for the modal body
   buttonList?: ModalButton[]; // Array of buttons to display in the modal
+  modalClassName?: string; // Optional class applied to the modal root for per-modal styling
   closeOnOverlayClick?: boolean; // Whether clicking the overlay should close the modal
   callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback to execute after opening the modal
   onClose?(): void; // Optional callback to execute after closing the modal
@@ -40,6 +41,7 @@ export class Modal {
   public body?: (HTMLElement | string)[]; // Modal body content (string or HTML element(s))
   public bodyStyle?: string; // Custom styles for the modal body
   public buttonList?: ModalButton[]; // List of buttons to display in the modal
+  public modalClassName?: string; // Optional custom class for modal-specific styling
   public closeOnOverlayClick: boolean; // Whether overlay click closes the modal
   public callback?(modal: Modal, modalElement: HTMLElement): void; // Optional callback function for modal actions
   public onClose?(): void; // Optional callback function after close
@@ -84,6 +86,7 @@ export class Modal {
     this.body = modalOptions.body || [""];
     this.bodyStyle = modalOptions.bodyStyle || "";
     this.buttonList = modalOptions.buttonList || [];
+    this.modalClassName = modalOptions.modalClassName || "";
     this.closeOnOverlayClick = modalOptions.closeOnOverlayClick ?? true;
     this.callback = modalOptions.callback || null;
     this.onClose = modalOptions.onClose || null;
@@ -118,6 +121,9 @@ export class Modal {
 
     const modal = document.createElement("div");
     modal.classList.add(uiClasses.modal); // Main modal container
+    if (this.modalClassName) {
+      modal.classList.add(this.modalClassName);
+    }
     modalElement.appendChild(modal);
 
     const modalContent = document.createElement("div");
