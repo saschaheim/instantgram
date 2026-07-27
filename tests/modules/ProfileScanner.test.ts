@@ -142,4 +142,37 @@ describe("ProfileScanner", () => {
         expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "777666555" });
         expect(result?.modalBody).toContain("feed_owner_pic.jpg");
     });
+
+    // Real bug report: for a private account, the feed fallback returns no
+    // items (a private account's feed is empty for a non-follower) and
+    // getUserFromInfo (/users/{id}/info/) comes back completely empty
+    // ({"user":{},"status":"ok"}, confirmed via a real captured response)
+    // even once the id resolves via search. Search still returns
+    // profile_pic_url, since profile pictures are public even for private
+    // accounts, and must be used as a last-resort source.
+    it("resolves the profile via the search fallback's profile_pic_url for a private account with an empty getUserFromInfo response", async () => {
+        setLocation("https://www.instagram.com/private_user/");
+        document.body.innerHTML = "";
+        const script = document.createElement("script");
+        script.type = "application/json";
+        script.textContent = '"X-IG-App-ID":"123456789"';
+        document.body.appendChild(script);
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    users: [{ user: { username: "private_user", id: "31857140226", profile_pic_url: "https://scontent.cdninstagram.com/v/search_owner_pic.jpg" } }],
+                }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
+
+        fetchDataFromApi.mockResolvedValueOnce({ user: {}, status: "ok" });
+
+        const result = await new ProfileScanner().execute(program);
+
+        expect(result?.found).toBe(true);
+        expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "31857140226" });
+        expect(result?.modalBody).toContain("search_owner_pic.jpg");
+    });
 });

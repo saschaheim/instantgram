@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
-import { fetchDataFromApi, findPostId, getIGUsername, resolveProfileFromFeed, resolveUserIdFromFeed, resolveUserIdFromSearch, shortcodeToMediaId } from "../../src/helpers/instagramApi";
+import { fetchDataFromApi, findPostId, getIGUsername, resolveProfileFromFeed, resolveProfileFromSearch, resolveUserIdFromFeed, resolveUserIdFromSearch, shortcodeToMediaId } from "../../src/helpers/instagramApi";
 import { setLocation } from "../utils/location";
 
 describe("getIGUsername", () => {
@@ -201,6 +201,63 @@ describe("resolveUserIdFromSearch", () => {
         vi.stubGlobal("fetch", vi.fn());
 
         expect(await resolveUserIdFromSearch("lascanaofficial")).toBeNull();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+});
+
+describe("resolveProfileFromSearch", () => {
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        const script = document.createElement("script");
+        script.type = "application/json";
+        script.textContent = '"X-IG-App-ID":"123456789"';
+        document.body.appendChild(script);
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    // For private accounts, /users/{id}/info/ comes back completely empty
+    // ({"user":{},"status":"ok"}, confirmed via a real captured response)
+    // and the feed fallback is also empty (a private account's feed is
+    // empty for a non-follower) -- but search still returns profile_pic_url,
+    // since profile pictures are public even for private accounts.
+    it("returns both the matched user's id and the raw owner object", async () => {
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({
+                users: [{ user: { username: "lascanaofficial", id: "999888777", profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg" } }],
+            }),
+        }));
+
+        const result = await resolveProfileFromSearch("lascanaofficial");
+
+        expect(result.userId).toBe("999888777");
+        expect(result.owner?.profile_pic_url).toBe("https://scontent.cdninstagram.com/v/pic.jpg");
+    });
+
+    it("returns null userId and null owner when no user in the results matches the username", async () => {
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ users: [{ user: { username: "someone_else", id: "111" } }] }),
+        }));
+
+        const result = await resolveProfileFromSearch("lascanaofficial");
+
+        expect(result.userId).toBeNull();
+        expect(result.owner).toBeNull();
+    });
+
+    it("returns null userId and null owner without fetching when no Instagram app id can be found", async () => {
+        document.body.innerHTML = "";
+        vi.stubGlobal("fetch", vi.fn());
+
+        const result = await resolveProfileFromSearch("lascanaofficial");
+
+        expect(result.userId).toBeNull();
+        expect(result.owner).toBeNull();
         expect(fetch).not.toHaveBeenCalled();
     });
 });

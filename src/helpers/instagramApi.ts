@@ -208,6 +208,28 @@ export const secureFetch = async (url: string, appId: string) => {
     }
 };
 
+type SearchOwner = {
+    id?: string;
+    username?: string;
+    profile_pic_url?: string;
+    profile_pic_url_hd?: string;
+    hd_profile_pic_url_info?: { url?: string; width?: number; height?: number };
+};
+
+const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> => {
+    const appId = findAppId();
+    if (!appId) {
+        return null;
+    }
+
+    const url = `https://www.instagram.com/web/search/topsearch/?query=${encodeURIComponent(userName)}`;
+    const payload = await secureFetch(url, appId);
+    const users = payload?.users as Array<{ user?: SearchOwner }> | undefined;
+    const wanted = userName.toLowerCase();
+    const match = users?.find(entry => entry.user?.username?.toLowerCase() === wanted && entry.user?.id);
+    return match?.user ?? null;
+};
+
 /**
  * Resolves a username to its numeric user id via Instagram's web search
  * endpoint. Some accounts currently trigger a deleted-schema error
@@ -216,17 +238,23 @@ export const secureFetch = async (url: string, appId: string) => {
  * fails.
  */
 export const resolveUserIdFromSearch = async (userName: string): Promise<string | null> => {
-    const appId = findAppId();
-    if (!appId) {
-        return null;
-    }
+    const owner = await fetchSearchOwner(userName);
+    return owner?.id ?? null;
+};
 
-    const url = `https://www.instagram.com/web/search/topsearch/?query=${encodeURIComponent(userName)}`;
-    const payload = await secureFetch(url, appId);
-    const users = payload?.users as Array<{ user?: { username?: string; id?: string } }> | undefined;
-    const wanted = userName.toLowerCase();
-    const match = users?.find(entry => entry.user?.username?.toLowerCase() === wanted && entry.user?.id);
-    return match?.user?.id ?? null;
+/**
+ * Same lookup as resolveUserIdFromSearch, but also returns the matched
+ * search-result user object. For private accounts, /users/{id}/info/ comes
+ * back completely empty ({"user":{},"status":"ok"}, confirmed via a real
+ * captured response) even once the id resolves fine -- and the feed
+ * fallback also can't help here, since a private account's feed is empty
+ * for a non-follower. Search still returns the profile_pic_url (profile
+ * pictures are public even for private accounts), so it's kept as a
+ * last-resort profile-picture source too.
+ */
+export const resolveProfileFromSearch = async (userName: string): Promise<{ userId: string | null; owner: SearchOwner | null }> => {
+    const owner = await fetchSearchOwner(userName);
+    return { userId: owner?.id ?? null, owner };
 };
 
 type FeedOwner = {

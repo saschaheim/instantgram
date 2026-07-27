@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module, getErrorMessage, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { WEB_PROFILE_INFO_ENABLED, fetchDataFromApi, getIGUsername, resolveProfileFromFeed, resolveUserIdFromSearch } from "../helpers/instagramApi";
+import { WEB_PROFILE_INFO_ENABLED, fetchDataFromApi, getIGUsername, resolveProfileFromFeed, resolveProfileFromSearch } from "../helpers/instagramApi";
 import { generateModalBodyHelper } from "../helpers/modalMedia";
 
 type ProfilePictureInfo = {
@@ -76,6 +76,7 @@ export class ProfileScanner implements Module {
                 : null;
             let userId = userInfo?.data?.user?.id;
             let feedOwner = null;
+            let searchOwner = null;
 
             if (!userId) {
                 const feedResult = await resolveProfileFromFeed(userName);
@@ -84,7 +85,9 @@ export class ProfileScanner implements Module {
             }
 
             if (!userId) {
-                userId = (await resolveUserIdFromSearch(userName)) ?? undefined;
+                const searchResult = await resolveProfileFromSearch(userName);
+                userId = searchResult.userId ?? undefined;
+                searchOwner = searchResult.owner;
             }
 
             // If no user ID could be resolved through any path, return an error
@@ -92,18 +95,20 @@ export class ProfileScanner implements Module {
                 return { found: false, errorMessage: 'No userID found in userInfo' };
             }
 
-            // Fetch detailed user information using the user ID. For some
-            // business/creator accounts, /users/{id}/info/ comes back
-            // without any profile_pic_url* field at all even though the id
-            // resolved fine -- the feed owner (when we had to fall back to
-            // it above) still carries a plain profile_pic_url and is used
-            // as a last resort.
+            // Fetch detailed user information using the user ID. /users/{id}/info/
+            // comes back with no profile_pic_url* field at all for some
+            // business/creator accounts, and completely empty
+            // ({"user":{},"status":"ok"}, confirmed via a real captured
+            // response) for private accounts, even once the id resolved
+            // fine -- fall back to whichever of the feed/search lookups
+            // above actually ran and still carries a profile_pic_url.
             const userDetails = await fetchDataFromApi({ type: 'getUserFromInfo', userId });
             const fallbackProfileInfo = this.resolveProfilePictureInfo(
                 userDetails?.user,
                 userInfo?.data?.user,
                 userDetails?.data?.user,
-                feedOwner
+                feedOwner,
+                searchOwner
             );
 
             if (userDetails?.user && !userDetails.user.hd_profile_pic_url_info?.url && fallbackProfileInfo) {
