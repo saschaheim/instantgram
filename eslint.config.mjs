@@ -8,7 +8,7 @@ export default [
     // tools/instagram-fixtures is a standalone dev tool with its own
     // tsconfig.json, never built/tested/shipped with the project -- lint it
     // separately (e.g. `npx eslint tools/instagram-fixtures/*.ts`) if needed.
-    ignores: ["tools/**"],
+    ignores: ["tools/**", "packages/bookmarklet/tools/**", "apps/site/dist/**", "packages/bookmarklet/dist/**"],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],  // Apply this configuration to TypeScript files (.ts and .tsx)
@@ -18,7 +18,7 @@ export default [
       parserOptions: {
         ecmaVersion: 2020,  // Set the ECMAScript version to 2020
         sourceType: "module",  // Set the module type for the code
-        project: "./tsconfig.json",  // Reference the TypeScript configuration file for project settings
+        project: ["./packages/bookmarklet/tsconfig.json"],  // Reference the package TypeScript configuration file
       },
     },
     plugins: {

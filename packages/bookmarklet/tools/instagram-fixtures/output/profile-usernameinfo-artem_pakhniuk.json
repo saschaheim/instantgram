@@ -1,0 +1,490 @@
+{
+    "status": 200,
+    "body": {
+        "user": {
+            "account_type": 2,
+            "biography": "IFBB PRO Bodybuilder \n@reckful.ru \n@anvil_club\n@russian_turbine \nСгущенка team athlete ⬇️",
+            "biography_with_entities": {
+                "raw_text": "IFBB PRO Bodybuilder \n@reckful.ru \n@anvil_club\n@russian_turbine \nСгущенка team athlete ⬇️",
+                "entities": [
+                    {
+                        "user": {
+                            "id": 49059663430,
+                            "username": "reckful.ru"
+                        }
+                    },
+                    {
+                        "user": {
+                            "id": 47007552327,
+                            "username": "anvil_club"
+                        }
+                    },
+                    {
+                        "user": {
+                            "id": 1748375850,
+                            "username": "russian_turbine"
+                        }
+                    }
+                ]
+            },
+            "bio_links": [
+                {
+                    "icon_url": "",
+                    "image_url": "",
+                    "is_pinned": false,
+                    "is_verified": false,
+                    "link_id": 17973138244783148,
+                    "link_type": "external",
+                    "lynx_url": "https://l.instagram.com/?u=https%3A%2F%2Fyoutube.com%2Fchannel%2FUCsuOm6EutcXlzJaQmgtX2WA%3Ffbclid%3DPAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPNTY3MDY3MzQzMzUyNDI3AAGnMzhBcWkfsMeVgHwevhkF86HG1T-m4L_8fBwwMuSFF7iaLmQ61wwxfLQCbLo_aem_eik_uQZq4_0xJKdq1ghigQ&e=AUDzFpBGWXEmVzwOhJNmA12z1CIwueOu34MK1NHLrdW8LY_OwAKGwnsaWmOWV6LO3fjMid1zyz9U9BV5V-V7Oabh6s2mNWasnHiurKC7CuWHZkzd8ze55qGsQ8BO2tDkMQ",
+                    "media_accent_color_hex": "",
+                    "media_type": "none",
+                    "open_external_url_with_in_app_browser": true,
+                    "title": "My YouTube channel",
+                    "url": "https://youtube.com/channel/UCsuOm6EutcXlzJaQmgtX2WA",
+                    "creation_source": "NONE"
+                },
+                {
+                    "icon_url": "",
+                    "image_url": "",
+                    "is_pinned": false,
+                    "is_verified": false,
+                    "link_id": 18037926434346950,
+                    "link_type": "external",
+                    "lynx_url": "https://l.instagram.com/?u=https%3A%2F%2Ft.me%2Fartempakhniuk%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPNTY3MDY3MzQzMzUyNDI3AAGn1APT8Z6jA1Cihd1pzQd0_JToo3S6BPgiXidegFs39tjEYtkSRfbKVC5Oh48_aem_NgYJZwJ-2XjEpiI2m7a1_w&e=AUDk5uYPR1lq6ChoNhMHYU2tBbX0PjjarXdo0AypFmX6zusJu6fdEr07QiJUfD9Dt2l4jjqUnp6fA85efO9ANRNeXCTCVaTRkA6UtAyUpWlow7b-6XZF0-18yR1RL-Jg1Q",
+                    "media_accent_color_hex": "",
+                    "media_type": "none",
+                    "open_external_url_with_in_app_browser": true,
+                    "title": "Мой канал про накачку",
+                    "url": "https://t.me/artempakhniuk",
+                    "creation_source": "NONE"
+                },
+                {
+                    "icon_url": "",
+                    "image_url": "",
+                    "is_pinned": false,
+                    "is_verified": false,
+                    "link_id": 18077924219273310,
+                    "link_type": "external",
+                    "lynx_url": "https://l.instagram.com/?u=https%3A%2F%2Ft.me%2Fsgushchenka_team_bot%3Futm_source%3Dig%26utm_medium%3Dsocial%26utm_content%3Dlink_in_bio%26fbclid%3DPAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPNTY3MDY3MzQzMzUyNDI3AAGntgqY4R2ywQ7Yl_dCdI_TbtrS6-_EzLtGu8m4yDXXzegJzjLTLLmTapUAg5c_aem_qz3byl2I6xLnipvxD03cVQ&e=AUB9s1b_ixkMw-Zs_z1lenWuxDR7Sw82shnZ11wFrD7S285ZG3VehnHAlaeq7QPx-D1-EYe79Hs84h9sSaUphG7xxkJdrmoa852oQD2SGyN1S6jyq1bCybQscAHUflODgg",
+                    "media_accent_color_hex": "",
+                    "media_type": "none",
+                    "open_external_url_with_in_app_browser": true,
+                    "title": "Сгущенка team",
+                    "url": "https://t.me/sgushchenka_team_bot",
+                    "creation_source": "NONE"
+                }
+            ],
+            "birthday_today_visibility_for_viewer": "NOT_VISIBLE",
+            "eligible_for_text_app_activation_badge": false,
+            "fifa_country_code": "CA",
+            "follower_count": 26290,
+            "following_count": 312,
+            "full_name": "Artem Pakhniuk",
+            "has_highlight_reels": true,
+            "highlights_tray_type": "DEFAULT",
+            "id": "1434174073",
+            "is_active_on_text_post_app": false,
+            "is_business": true,
+            "is_call_to_action_enabled": false,
+            "is_onboarding_account": false,
+            "is_opal_enabled": false,
+            "is_prime_onboarding_account": false,
+            "is_private": false,
+            "is_profile_picture_expansion_enabled": true,
+            "is_ring_creator": false,
+            "is_verified": false,
+            "media_count": 587,
+            "pk": 1434174073,
+            "profile_pic_url": "https://scontent-fra5-2.cdninstagram.com/v/t51.82787-19/587552705_18547936279062074_3784513351514396768_n.jpg?stp=dst-jpg_e0_s150x150_tt6&_nc_cat=109&ig_cache_key=GMFXBSM65jrxP_VBAGAYvYzXSoU0bmNDAQAB1501500j-ccb7-5&ccb=7-5&_nc_sid=669407&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=71JEcL4yfskQ7kNvwE5BMFY&_nc_oc=AdpQcUJbvdNak6DmPLfEpcuKFktD1oecI0osxp6-zVxWKcEuXO8uJ-J3UjQhJHhziXw&_nc_ad=z-m&_nc_cid=0&_nc_zt=24&_nc_ht=scontent-fra5-2.cdninstagram.com&_nc_gid=Uuq4T9JeAiTRKbNDjsOJvQ&_nc_ss=7c3ba&oh=00_AQANaTf_H_ri7YKkncf23yHVB8IxPm1ZneOkk4WxJHii1Q&oe=6A694A1E",
+            "recon_features": {
+                "enable_recon_cta": true
+            },
+            "ring_creator_metadata": {},
+            "show_all_highlights_as_selected_in_management_screen": false,
+            "show_ring_award": false,
+            "show_schools_badge": null,
+            "strong_id__": "1434174073",
+            "third_party_downloads_enabled": 1,
+            "total_clips_count": 1,
+            "trial_clips_enabled": false,
+            "trial_clips_rate_limiting": {
+                "at_limit_body": "You've shared the maximum number of trial reels allowed within 24 hours. You can share this reel to everyone now as a regular reel or wait up to 24 hours to share it as a trial reel.",
+                "at_limit_title": "You've reached the limit",
+                "count": 20,
+                "warning_body": "You've almost reached the limit. Once you share this trial reel, you'll need to wait up to 24 hours to start using trial reels again.",
+                "warning_title": "You can share one more trial reel"
+            },
+            "username": "artem_pakhniuk",
+            "biography_font": null,
+            "can_message_pinned_carrera_interest_owner": true,
+            "can_see_support_inbox": null,
+            "existing_user_age_collection_enabled": true,
+            "has_fan_club_subscriptions": false,
+            "has_private_collections": false,
+            "has_public_tab_threads": true,
+            "is_creator_marketplace_badge_visible": false,
+            "creator_marketplace_accounts_reached_metric": null,
+            "is_eligible_for_meta_verified_ig_self_profile_not_verified_badge": false,
+            "is_eligible_for_meta_verified_label": true,
+            "is_favorite_for_stories": false,
+            "is_guardian_r_account_cannes_pair": false,
+            "is_parenting_account": false,
+            "meta_subs_benefit_quota_info": null,
+            "meta_verified_benefits_info": {
+                "active_meta_verified_benefits": [],
+                "is_eligible_for_meta_verified_content_protection": false,
+                "is_eligible_for_ig_meta_verified_label": false
+            },
+            "moonshot_joiner_number": null,
+            "short_drama_series_profiles": [],
+            "short_drama_producer_account": null,
+            "qa_freeform_banner": null,
+            "qa_freeform_banner_available_prompts": [
+                {
+                    "prompt": "CURRENT_OBSESSION",
+                    "display_text": "Current obsession",
+                    "hint": "Placeholder hint for current obsession prompt"
+                },
+                {
+                    "prompt": "DREAM_DESTINATION",
+                    "display_text": "Dream destination",
+                    "hint": "Placeholder hint for dream destination prompt"
+                },
+                {
+                    "prompt": "PLAYING",
+                    "display_text": "Playing",
+                    "hint": "Placeholder hint for playing prompt"
+                },
+                {
+                    "prompt": "READING",
+                    "display_text": "Reading",
+                    "hint": "Placeholder hint for reading prompt"
+                },
+                {
+                    "prompt": "WATCHING",
+                    "display_text": "Watching",
+                    "hint": "Placeholder hint for watching prompt"
+                },
+                {
+                    "prompt": "LOOKING_FOR_RECS",
+                    "display_text": "Looking for recs",
+                    "hint": "Placeholder hint for looking for recs prompt"
+                }
+            ],
+            "qa_freeform_banner_transparency": "The banner is visible to everyone on and off Instagram.",
+            "ig_ghost_badge_d3_should_show": false,
+            "ig_ghost_badge_variant": "NONE",
+            "mv_eligibility_v2": null,
+            "profile_hours_banner_v2": {
+                "has_hours": false
+            },
+            "profile_mentions_banner_v2": {
+                "mentions_count": 0
+            },
+            "school_affiliated_account_viewer_status": null,
+            "show_events_banner_on_profile": false,
+            "show_hours_banner_on_profile": false,
+            "show_mentions_banner_on_profile": false,
+            "short_drama_creator": null,
+            "short_drama_series_playlist_id": null,
+            "short_drama_series_episode_count": null,
+            "short_drama_series_seed_media_id": null,
+            "short_drama_series_title": null,
+            "short_drama_role": "NONE",
+            "show_post_insights_entry_point": true,
+            "show_wa_link_on_profile": false,
+            "has_gizmo": false,
+            "profile_overlay_info": {
+                "bloks_payload": null,
+                "overlay_format": "NONE"
+            },
+            "threads_profile_glyph_url": "barcelona://user?username=artem_pakhniuk&xmt=AQG0-S8Srg8szYfd-9kHoSUQ7pM8iyJmkSriqtVpq6rqQwM",
+            "show_text_post_app_badge": false,
+            "can_hide_category": true,
+            "can_hide_public_contacts": true,
+            "category": "Athlete",
+            "contact_phone_number": "",
+            "direct_messaging": "UNKNOWN",
+            "fan_club_info": {
+                "autosave_to_exclusive_highlight": null,
+                "connected_member_count": null,
+                "fan_club_id": null,
+                "fan_club_name": null,
+                "has_created_ssc": null,
+                "has_enough_subscribers_for_ssc": null,
+                "is_fan_club_gifting_eligible": null,
+                "is_fan_club_referral_eligible": null,
+                "is_free_trial_eligible": null,
+                "largest_public_bc_id": null,
+                "subscriber_count": null,
+                "fan_consideration_page_revamp_eligiblity": null,
+                "should_show_playlists_in_profile_tab": null
+            },
+            "fbid_v2": 17841401862212408,
+            "feed_post_reshare_disabled": false,
+            "has_anonymous_profile_picture": false,
+            "has_ever_selected_topics": false,
+            "has_ig_profile": true,
+            "has_nme_badge": false,
+            "has_views_fetching": true,
+            "interop_messaging_user_fbid": 114990369899023,
+            "is_bestie": false,
+            "is_creator_agent_enabled": false,
+            "is_favorite": false,
+            "latest_reel_media": 1784824160,
+            "live_subscription_status": "default",
+            "num_of_admined_pages": null,
+            "page_id": null,
+            "pk_id": "1434174073",
+            "primary_profile_link_type": 0,
+            "profile_pic_id": "3775822609515503426_1434174073",
+            "show_account_transparency_details": true,
+            "show_fb_link_on_profile": false,
+            "show_fb_page_link_on_profile": false,
+            "smb_support_partner": null,
+            "transparency_product_enabled": false,
+            "account_badges": [],
+            "business_contact_method": "CALL",
+            "category_id": "1600",
+            "city_id": "0",
+            "city_name": "",
+            "has_music_on_profile": false,
+            "has_videos": true,
+            "instagram_location_id": "",
+            "is_category_tappable": true,
+            "is_eligible_for_creator_product_links": false,
+            "is_eligible_for_lead_center": true,
+            "is_eligible_for_schools_search_upsell": false,
+            "is_eligible_for_smb_support_flow": true,
+            "latitude": 0,
+            "lead_details_app_id": "com.bloks.www.ig.smb.lead_gen.subpage",
+            "longitude": 0,
+            "page_name": "Artem Pahnyuk",
+            "professional_conversion_suggested_account_type": 3,
+            "public_email": "mr._green@mail.ru",
+            "public_phone_country_code": "",
+            "public_phone_number": "",
+            "reel_media_seen_timestamp": 1784824160,
+            "should_show_category": true,
+            "should_show_public_contacts": true,
+            "text_app_last_visited_time": null,
+            "zip": "",
+            "hd_profile_pic_url_info": {
+                "height": 1080,
+                "url": "https://scontent-fra5-1.cdninstagram.com/v/t51.82787-19/587552705_18547936279062074_3784513351514396768_n.jpg?efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_cat=102&_nc_oc=Q6cZ2gFpmsjD_MsEeBm2T-BsBS5j9uCE26MMHLZROV4YJ2hWgXCODKe0yKuXVYB1RmI71kQ&_nc_ohc=rpdAd74XwcEQ7kNvwGwHVte&_nc_gid=Uuq4T9JeAiTRKbNDjsOJvQ&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=GMFXBSM65jrxP_VBAGAYvYzXSoU0bmNDAQAB0j-ccb7-5&oh=00_AQCrrXndUHmv7JRI2nzpCvkHlPFvynqfqJIF3iDHn_1JgQ&oe=6A694A1E&_nc_sid=10d13b",
+                "width": 1080
+            },
+            "hd_profile_pic_versions": [
+                {
+                    "height": 320,
+                    "url": "https://scontent-fra5-1.cdninstagram.com/v/t51.82787-19/587552705_18547936279062074_3784513351514396768_n.jpg?stp=dst-jpg_s320x320_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_cat=102&_nc_oc=Q6cZ2gFpmsjD_MsEeBm2T-BsBS5j9uCE26MMHLZROV4YJ2hWgXCODKe0yKuXVYB1RmI71kQ&_nc_ohc=rpdAd74XwcEQ7kNvwGwHVte&_nc_gid=Uuq4T9JeAiTRKbNDjsOJvQ&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=GMFXBSM65jrxP_VBAGAYvYzXSoU0bmNDAQAB3203200j-ccb7-5&oh=00_AQBnWbtRhgAmPxxyL0JjJeDBei0wTrJnwEgRz-v5c5xQaA&oe=6A694A1E&_nc_sid=10d13b",
+                    "width": 320
+                },
+                {
+                    "height": 640,
+                    "url": "https://scontent-fra5-1.cdninstagram.com/v/t51.82787-19/587552705_18547936279062074_3784513351514396768_n.jpg?stp=dst-jpg_s640x640_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLmRqYW5nby4xMDgwLmMyIn0&_nc_ht=scontent-fra5-1.cdninstagram.com&_nc_cat=102&_nc_oc=Q6cZ2gFpmsjD_MsEeBm2T-BsBS5j9uCE26MMHLZROV4YJ2hWgXCODKe0yKuXVYB1RmI71kQ&_nc_ohc=rpdAd74XwcEQ7kNvwGwHVte&_nc_gid=Uuq4T9JeAiTRKbNDjsOJvQ&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=GMFXBSM65jrxP_VBAGAYvYzXSoU0bmNDAQAB6406400j-ccb7-5&oh=00_AQAA3j3m88vuBudRWer2B5vN7rJj-Iy8gAv0LRtvZAevsg&oe=6A694A1E&_nc_sid=10d13b",
+                    "width": 640
+                }
+            ],
+            "is_facebook_onboarded_charity": false,
+            "latest_besties_reel_media": 0,
+            "account_category": "",
+            "active_standalone_fundraisers": {
+                "total_count": 0,
+                "fundraisers": []
+            },
+            "additional_business_addresses": [],
+            "address_street": "",
+            "adjusted_banners_order": [],
+            "ads_incentive_expiration_date": null,
+            "ads_page_id": null,
+            "ads_page_name": null,
+            "allow_manage_memorialization": false,
+            "avatar_status": {
+                "has_avatar": true
+            },
+            "broadcast_chat_preference_status": {
+                "json_response": "{\"status\":\"ok\",\"status_code\":\"200\",\"is_broadcast_chat_creator\":true,\"notification_setting_type\":2}",
+                "is_broadcast_chat_creator": true,
+                "notification_setting_type": 2
+            },
+            "can_add_fb_group_link_on_profile": false,
+            "can_use_affiliate_partnership_messaging_as_brand": false,
+            "can_use_affiliate_partnership_messaging_as_creator": false,
+            "can_use_branded_content_discovery_as_brand": false,
+            "can_use_branded_content_discovery_as_creator": false,
+            "can_use_paid_partnership_messaging_as_creator": true,
+            "chaining_upsell_cards": [],
+            "charity_profile_fundraiser_info": {
+                "has_active_fundraiser": false,
+                "is_facebook_onboarded_charity": false,
+                "pk": 1434174073,
+                "consumption_sheet_config": {
+                    "can_viewer_donate": false,
+                    "currency": null,
+                    "donation_disabled_message": null,
+                    "donation_url": null,
+                    "has_viewer_donated": null,
+                    "privacy_disclaimer": null,
+                    "profile_fundraiser_id": null,
+                    "you_donated_message": null,
+                    "donation_amount_config": {
+                        "default_selected_donation_value": null,
+                        "donation_amount_selector_values": [],
+                        "maximum_donation_amount": null,
+                        "minimum_donation_amount": null,
+                        "prefill_amount": null,
+                        "user_currency": null
+                    }
+                }
+            },
+            "current_catalog_id": null,
+            "disable_profile_shop_cta": true,
+            "displayed_action_button_partner": null,
+            "displayed_action_button_type": null,
+            "enable_add_school_in_edit_profile": false,
+            "external_lynx_url": "https://l.instagram.com/?u=https%3A%2F%2Fyoutube.com%2Fchannel%2FUCsuOm6EutcXlzJaQmgtX2WA%3Ffbclid%3DPAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQPNTY3MDY3MzQzMzUyNDI3AAGnjQ4ikSgJVMSR5wZhLiI7SkGA3RyI7ZM1LKxCK_v7UPh0jnujCY0_OVYJiUk_aem_97hxLZ5bn7mkuZpbirKTLw&e=AUBwTJSw5kCCs0rf4VVJt9tzSIvucCFfXez7z3SE3lRmdAx4RucI0MeU_P6h-IZ0-s0ZxvTJDe1E75hYXP2A91zFdIoTOv1YOAldAkwmEg",
+            "external_url": "https://youtube.com/channel/UCsuOm6EutcXlzJaQmgtX2WA",
+            "fb_page_call_to_action_id": "",
+            "follow_friction_type": 0,
+            "has_active_charity_business_profile_fundraiser": false,
+            "has_collab_collections": false,
+            "has_exclusive_feed_content": false,
+            "has_gen_ai_personas_for_profile_banner": false,
+            "has_guides": false,
+            "has_visible_media_notes": true,
+            "highlight_reshare_disabled": false,
+            "include_direct_blacklist_status": true,
+            "instagram_pk": "1434174073",
+            "is_direct_roll_call_enabled": true,
+            "is_eligible_for_meta_verified_enhanced_link_sheet": false,
+            "is_eligible_for_meta_verified_enhanced_link_sheet_consumption": false,
+            "is_eligible_for_meta_verified_links_in_post": false,
+            "is_eligible_for_meta_verified_links_in_reels": false,
+            "is_eligible_for_meta_verified_multiple_addresses_consumption": false,
+            "is_eligible_for_meta_verified_multiple_addresses_creation": false,
+            "is_eligible_for_meta_verified_related_accounts": false,
+            "is_eligible_for_post_boost_mv_upsell": false,
+            "is_eligible_to_host_profile_reels_ads": true,
+            "is_favorite_for_clips": false,
+            "is_favorite_for_highlights": false,
+            "is_force_migrated_h2g": false,
+            "is_in_canada": false,
+            "is_interest_account": true,
+            "is_memorialized": false,
+            "is_meta_verified_related_accounts_display_enabled": false,
+            "is_new_to_instagram": false,
+            "is_open_to_collab": false,
+            "is_oregon_custom_gender_consented": false,
+            "is_potential_business": false,
+            "is_profile_audio_call_enabled": false,
+            "is_profile_broadcast_sharing_enabled": true,
+            "is_profile_search_enabled": false,
+            "is_profile_wa_calling_enabled": false,
+            "is_recon_ad_cta_on_profile_eligible_with_viewer": true,
+            "is_regulated_c18": false,
+            "is_regulated_news_in_viewer_location": false,
+            "is_remix_setting_enabled_for_posts": false,
+            "is_remix_setting_enabled_for_reels": false,
+            "is_secondary_account_creation": false,
+            "is_stories_teaser_muted": false,
+            "is_supervision_features_enabled": false,
+            "is_whatsapp_linked": false,
+            "meta_verified_related_accounts_count": 0,
+            "mini_shop_seller_onboarding_status": null,
+            "mutual_followers_count": 0,
+            "nametag": {
+                "available_theme_colors": [
+                    -1,
+                    7747834,
+                    13828293,
+                    16712041,
+                    16742912,
+                    0
+                ],
+                "background_image_url": "",
+                "emoji": "😀",
+                "emoji_color": 0,
+                "gradient": 2,
+                "is_background_image_blurred": false,
+                "mode": 2,
+                "selected_theme_color": -1,
+                "selfie_sticker": 0,
+                "selfie_url": "",
+                "theme_color": {
+                    "available_theme_colors": [
+                        {
+                            "display_label": "Default",
+                            "int_value": -1
+                        },
+                        {
+                            "display_label": "Purple",
+                            "int_value": 7747834
+                        },
+                        {
+                            "display_label": "Lavender",
+                            "int_value": 13828293
+                        },
+                        {
+                            "display_label": "Pink",
+                            "int_value": 16712041
+                        },
+                        {
+                            "display_label": "Orange",
+                            "int_value": 16742912
+                        },
+                        {
+                            "display_label": "Black",
+                            "int_value": 0
+                        }
+                    ],
+                    "selected_theme_color": {
+                        "display_label": "Default",
+                        "int_value": -1
+                    }
+                }
+            },
+            "nonpro_can_maybe_see_profile_hypercard": false,
+            "not_meta_verified_friction_info": {
+                "is_eligible_for_label_friction": false,
+                "label_friction_content": "Not Meta Verified"
+            },
+            "open_external_url_with_in_app_browser": true,
+            "pinned_channels_info": {
+                "has_public_channels": false,
+                "pinned_channels_list": []
+            },
+            "posts_subscription_status": "default",
+            "profile_context": "",
+            "profile_context_facepile_users": [],
+            "profile_context_links_with_user_ids": [],
+            "profile_pic_genai_tool_info": [],
+            "profile_reels_sorting_eligibility": "CHECK_VIEWER_QE",
+            "profile_type": 0,
+            "pronouns": [],
+            "recs_from_friends": {
+                "enable_recs_from_friends": false,
+                "recs_from_friends_entry_point_type": "banner"
+            },
+            "reels_subscription_status": "default",
+            "relevant_news_regulation_locations": [],
+            "can_reply_to_profile_banners": true,
+            "remove_message_entrypoint": false,
+            "request_contact_enabled": true,
+            "shopping_post_onboard_nux_type": null,
+            "should_show_tagged_tab": true,
+            "show_blue_badge_on_main_profile": false,
+            "smb_delivery_partner": null,
+            "smb_support_delivery_partner": null,
+            "spam_follower_setting_enabled": true,
+            "stories_subscription_status": "default",
+            "total_ar_effects": 0,
+            "upcoming_events": [],
+            "views_on_grid_status": "SHOW_VIEWS_ON_GRID",
+            "wa_calling_option_for_legacy_num": 0,
+            "wa_calling_option_for_wa_linked": 0,
+            "whatsapp_number": ""
+        },
+        "status": "ok"
+    }
+}

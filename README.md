@@ -10,7 +10,7 @@
 
 ### [:arrow_right: Bookmarklet][1]
 
-![gif demo](img/demo.gif)
+![gif demo](docs/img/demo.gif)
 
 :bulb: instantgram has been completely rewritten. \
 This version supports all modern browsers with ECMAScript 2015 (ES6) support.

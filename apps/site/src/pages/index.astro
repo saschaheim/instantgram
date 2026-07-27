@@ -1,0 +1,30 @@
+---
+import PageLayout from "../components/PageLayout.astro";
+import { readBookmarklets } from "../data/bookmarklets";
+import { localeContent, locales } from "../data/content";
+import siteVersion from "../generated/version.json";
+
+const locale = "en-US";
+const content = localeContent[locale];
+const bookmarklets = readBookmarklets();
+const languageLinks = locales.map((entry) => ({
+  lang: entry,
+  langIso: localeContent[entry].langIso,
+  name: localeContent[entry].name,
+  href: entry === "en-US" ? "./index.html" : `./lang/${entry.toLowerCase()}/index.html`,
+  alternateHref: localeContent[entry].link,
+}));
+---
+<PageLayout
+  locale={locale}
+  localeIso={content.langIso}
+  pageTitle={content.projectLead}
+  projectLead={content.projectLead}
+  projectButtonHelper={content.projectButtonHelper}
+  projectDescription={content.projectDescription}
+  bookmarkletHtml={bookmarklets[locale]}
+  version={siteVersion.version}
+  languageLinks={languageLinks}
+  assetBase="."
+  homeHref="./index.html"
+/>

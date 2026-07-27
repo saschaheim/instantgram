@@ -1,0 +1,14 @@
+{
+  "name": "@instantgram/site",
+  "version": "2026.07.25",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "set ASTRO_TELEMETRY_DISABLED=1 && node ../../node_modules/astro/astro.js build && node ./scripts/sync-gh-pages.mjs",
+    "dev": "set ASTRO_TELEMETRY_DISABLED=1 && node ../../node_modules/astro/astro.js dev",
+    "lint": "set ASTRO_TELEMETRY_DISABLED=1 && node ../../node_modules/astro/astro.js check"
+  },
+  "dependencies": {
+    "astro": "^5.13.2"
+  }
+}
