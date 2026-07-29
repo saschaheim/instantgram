@@ -52,7 +52,12 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
     const title = localize(setting.title);
     const description = localize(setting.description);
     return (
-      <div class="si" key={setting.id}>
+      <div
+        class={`si${setting.largeInput ? " wide" : ""}`}
+        key={setting.id}
+        title={setting.largeInput ? undefined : description}
+        onClick={setting.largeInput ? undefined : () => change(setting.id, !checks[setting.id])}
+      >
         <div class="sr">
           {setting.largeInput ? (
             <div class="sf">
@@ -67,10 +72,9 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
             <>
               <div class="sgw">
                 <strong class="mb-0">{title}</strong>
-                {description && <p class="sm mb-0">{description}</p>}
               </div>
               <div class="se">
-                <label class="slideon">
+                <label class="slideon" onClick={(event) => event.stopPropagation()}>
                   <input type="checkbox" checked={checks[setting.id] || false} onChange={(event) => change(setting.id, event.currentTarget.checked)} />
                   <span class="slideon-slider" />
                 </label>
