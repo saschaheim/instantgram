@@ -30,14 +30,18 @@ const minify = (code) => {
       booleans: true,
       unused: true,
       if_return: true,
-      passes: 2,
+      passes: 5,
       toplevel: true,
       join_vars: true,
       pure_getters: true,
+      drop_console: false,
     },
     mangle: {
       toplevel: true,
       reserved: ['$super', '$', 'exports', 'require'],
+      properties: {
+        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput)$/,
+      },
     },
     output: {
       code: true,
@@ -56,13 +60,19 @@ const minify = (code) => {
 
 const bookmarkletify = (code) => `javascript:(function(){;${encodeURI(minify(code))}})()`;
 
+const escapeHtmlAttr = (value) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+
 const hash = () => {
   return isDevBookmarklet
     ? ` ${Math.random().toString(36).substring(5, 15)}`
     : ` ${pkg.version}`;
 };
 
-const button = (bookmarklet) => `<a href="${bookmarklet}" class="btn" style="cursor: move;">[instantgram ${hash()}]</a>`;
+const button = (bookmarklet) => `<a href="${escapeHtmlAttr(bookmarklet)}" class="btn" style="cursor: move;">[instantgram ${hash()}]</a>`;
 
 const bundlePathForLang = (lang) => path.join(__dirname, '..', 'dist', `main.${lang.toLowerCase()}.js`);
 

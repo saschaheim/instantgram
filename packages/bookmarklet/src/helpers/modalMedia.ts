@@ -1,9 +1,8 @@
 import { Program } from "../App";
-import { uiClasses } from "../components/uiTokens";
 import localize from "./localize";
-import { MediaScanResult } from "../model/MediaScanResult";
+import { MediaScanResult, MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
-import { WEB_PROFILE_INFO_ENABLED, fetchDataFromApi, findPostId, getIGUsername, resolveUserIdFromFeed, resolveUserIdFromSearch } from "./instagramApi";
+import { fetchDataFromApi, findPostId, getIGUsername, resolveProfile } from "./instagramApi";
 import { findAD, resolveCurrentStoryIndex } from "./domDetection";
 import { findMediaUrl } from "./reactMedia";
 import {
@@ -13,81 +12,88 @@ import {
     isInstagramMediaItem
 } from "./instagramTypes";
 import {
-    buildProxyDownloadUrl,
     getFormattedFilenameAndUrl,
-    getImgOrVideoUrl,
-    getMediaElement,
     resolveElementMediaType,
-    resolveOverallMediaType,
-    resolveUserLink,
-    wrapInSliderContainer
+    resolveUserLink
 } from "./mediaFormatting";
-import { isDownloadableImageLike } from "./instagramTypes";
-import { resolveShouldMuteVideos as resolveVideoMuted } from "./common";
 
-const buildDownloadDataAttributes = (attributes: Record<string, string | number | undefined>) =>
-    Object.entries(attributes)
-        .filter(([, value]) => value !== undefined)
-        .map(([key, value]) => `data-${key}="${String(value)}"`)
-        .join(" ");
+type ProfilePictureInfo = {
+    url: string;
+    width?: number;
+    height?: number;
+};
 
-const buildDateAttributes = (date: Date) => ({
-    year: date.getFullYear(),
-    month: String(date.getMonth() + 1).padStart(2, "0"),
-    day: String(date.getDate()).padStart(2, "0"),
-    hour: String(date.getHours()).padStart(2, "0"),
-    minute: String(date.getMinutes()).padStart(2, "0"),
+const createMediaSlide = (media: DownloadableMedia, index: number, userName: string, program: Program): MediaSlide => {
+    const { formattedFilename, url } = getFormattedFilenameAndUrl(media, userName, program.settings.formattedFilenameInput, index);
+    const mediaType = isInstagramMediaItem(media) ? resolveElementMediaType(media) : MediaType.Image;
+
+    return {
+        mediaType,
+        mediaUrl: url,
+        downloadLabel: localize("d"),
+        downloadAttributes: {
+            "data-direct-url": url,
+            "data-static-filename": formattedFilename,
+        },
+    };
+};
+
+export const resolveProfilePictureInfo = (...sources: Array<unknown>): ProfilePictureInfo | null => {
+    for (const source of sources) {
+        if (!source || typeof source !== "object") {
+            continue;
+        }
+        const candidate = source as {
+            profile_pic_url_hd?: string;
+            profile_pic_url?: string;
+            hd_profile_pic_url_info?: ProfilePictureInfo;
+        };
+        if (candidate.hd_profile_pic_url_info?.url) {
+            return candidate.hd_profile_pic_url_info;
+        }
+        const fallbackUrl = candidate.profile_pic_url_hd || candidate.profile_pic_url;
+        if (fallbackUrl) {
+            return { url: fallbackUrl };
+        }
+    }
+    return null;
+};
+
+const buildResult = (
+    slides: MediaSlide[],
+    userName: string,
+    userLink: string,
+    selectedSliderIndex: number
+): MediaScanResult => ({
+    found: true,
+    slides,
+    selectedSliderIndex,
+    userName,
+    userLink,
 });
 
-const buildDownloadMetadataAttributes = (media: DownloadableMedia, userName: string, index: number): string => {
-    if (isDownloadableImageLike(media) && media.url) {
-        return buildDownloadDataAttributes({
-            "direct-url": media.url,
-            "static-filename": `${userName}.jpg`,
-        });
-    }
-
-    if (typeof media === "string") {
-        return buildDownloadDataAttributes({
-            "direct-url": media,
-            username: userName,
-            index,
-            extension: "txt",
-            ...buildDateAttributes(new Date()),
-        });
-    }
-
-    if (isInstagramMediaItem(media)) {
-        const mediaUrl = getImgOrVideoUrl(media);
-        if (!mediaUrl) {
-            return "";
-        }
-        return buildDownloadDataAttributes({
-            "direct-url": mediaUrl.url,
-            username: userName,
-            index,
-            extension: mediaUrl.extension,
-            ...buildDateAttributes(new Date((media.taken_at ?? Date.now() / 1000) * 1000)),
-        });
-    }
-
-    return "";
+const createAdSlide = (resolvedAdUrl: string, userName: string, program: Program): MediaSlide => {
+    const { formattedFilename, url } = getFormattedFilenameAndUrl(resolvedAdUrl, userName, program.settings.formattedFilenameInput, 0);
+    return {
+        mediaType: MediaType.Video,
+        mediaUrl: url,
+        downloadLabel: localize("d"),
+        downloadAttributes: {
+            "data-direct-url": url,
+            "data-static-filename": formattedFilename,
+        },
+    };
 };
 
 export const generateModalBody = async (el: HTMLElement, program: Program): Promise<MediaScanResult> => {
     const isPathMatch = (path: string) => window.location.pathname.startsWith(path);
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);
-    const userId = isPathMatch("/stories/")
-        ? (WEB_PROFILE_INFO_ENABLED ? (await fetchDataFromApi({ type: 'getUserInfoFromWebProfile', userName }))?.data?.user?.id : null)
-            ?? (await resolveUserIdFromFeed(userName))
-            ?? (await resolveUserIdFromSearch(userName))
-        : null;
+    const userId = isPathMatch("/stories/") ? (await resolveProfile(userName)).userId : null;
 
-    let modalBody = "";
     const mediaInfo = await getMediaInfo(el, postId, userId);
     if (!mediaInfo) {
-        return { found: false, errorMessage: "No media info found." };
+        return { found: false };
     }
 
     if (userName === postId && (isPathMatch("/p/") || isPathMatch("/reels/"))) {
@@ -101,62 +107,21 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
     const userLink = resolveUserLink('https://www.instagram.com', window.location.pathname, userName);
 
     if (findAD(el, isPathMatch("/stories/"))) {
-        if (program.settings.showAds) {
-            const targetNode = el.querySelector("video[playsinline]") || el.querySelector('img[draggable]');
-            if (!targetNode) return { found: false };
-
-            const mediaUrl = findMediaUrl(el, 'post');
-            const mediaType = MediaType.Video;
-            const resolvedAdUrl = mediaUrl.mostFrequentUrl || mediaUrl.mediaUrlElements[0]?.url;
-            if (!resolvedAdUrl) {
-                return { found: false, errorMessage: "No ad media URL found." };
-            }
-            const { formattedFilename, url } = getFormattedFilenameAndUrl(resolvedAdUrl, userName, program.settings.formattedFilenameInput, 0);
-            const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
-            const encodedUrl = buildProxyDownloadUrl(url, formattedFilename);
-            const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
-            const downloadDataAttributes = buildDownloadDataAttributes({
-                "direct-url": url,
-                "static-filename": formattedFilename,
-            });
-            modalBody += `
-                <div class="slide">
-                    ${mediaElement}
-                    <a href="${downloadUrl}" ${downloadDataAttributes} class="${uiClasses.modalDb}">${localize("d")}</a>
-                </div>`;
-            return {
-                found: true,
-                mediaType: resolveOverallMediaType(),
-                mediaInfo,
-                modalBody: wrapInSliderContainer(modalBody),
-                selectedSliderIndex: 0,
-                userName,
-                userLink,
-            };
-        } else {
+        if (!program.settings.showAds) {
             return { found: false };
         }
+        const targetNode = el.querySelector("video[playsinline]") || el.querySelector('img[draggable]');
+        if (!targetNode) return { found: false };
+        const mediaUrl = findMediaUrl(el, 'post');
+        const resolvedAdUrl = mediaUrl.mostFrequentUrl || mediaUrl.mediaUrlElements[0]?.url;
+        if (!resolvedAdUrl) {
+            return { found: false };
+        }
+        return buildResult([createAdSlide(resolvedAdUrl, userName, program)], userName, userLink, 0);
     }
 
-    const itemCount = processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
-        modalBody = addMediaToBody(modalBody, media, index, userName, program);
-    });
-
-    if (itemCount === 0) {
-        return { found: false, errorMessage: "No story items returned by Instagram." };
-    }
-
-    const sliderHtml = wrapInSliderContainer(modalBody);
-    const selectedSliderIndex = resolveCurrentStoryIndex(el);
-    return {
-        found: true,
-        mediaType: resolveOverallMediaType(),
-        mediaInfo,
-        modalBody: sliderHtml,
-        selectedSliderIndex,
-        userName,
-        userLink,
-    };
+    return (await generateModalBodyHelper(el, mediaInfo, userName, userLink, program))
+        || { found: false };
 };
 
 export async function generateModalBodyHelper(
@@ -166,55 +131,24 @@ export async function generateModalBodyHelper(
     userLink: string,
     program: Program
 ): Promise<MediaScanResult | null> {
-    let modalBody = "";
-    let itemCount: number;
+    const slides: MediaSlide[] = [];
+    const storyItems = mediaInfo.reels_media?.[0]?.items;
 
-    if (program.settings.noMultiStories && mediaInfo.reels_media?.[0]?.items.length > 0) {
+    if (program.settings.noMultiStories && storyItems?.length) {
         const itemIndex = resolveCurrentStoryIndex(el);
-        modalBody = addMediaToBody(modalBody, mediaInfo.reels_media[0].items[itemIndex], itemIndex, userName, program);
-        itemCount = 1;
+        slides.push(createMediaSlide(storyItems[itemIndex], itemIndex, userName, program));
     } else {
-        itemCount = processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
-            modalBody = addMediaToBody(modalBody, media, index, userName, program);
+        processMediaInfo(mediaInfo, (media: InstagramMediaItem, index: number) => {
+            slides.push(createMediaSlide(media, index, userName, program));
         });
     }
 
-    if (itemCount === 0) {
-        return { found: false, errorMessage: "No media items returned by Instagram." };
+    if (!slides.length) {
+        return { found: false };
     }
 
-    const sliderHtml = wrapInSliderContainer(modalBody);
-    const selectedSliderIndex = itemCount > 0 ? resolveCurrentStoryIndex(el) : 0;
-
-    return {
-        found: true,
-        mediaType: resolveOverallMediaType(),
-        mediaInfo,
-        modalBody: sliderHtml,
-        selectedSliderIndex,
-        userName,
-        userLink,
-    };
+    return buildResult(slides, userName, userLink, resolveCurrentStoryIndex(el));
 }
-
-export const addMediaToBody = (modalBody: string, media: DownloadableMedia, index: number, userName: string, program: Program): string => {
-    const { formattedFilename, url } = getFormattedFilenameAndUrl(media, userName, program.settings.formattedFilenameInput, index);
-    const mediaType = isInstagramMediaItem(media) ? resolveElementMediaType(media) : MediaType.Image;
-    const mediaElement = getMediaElement(mediaType, url, resolveVideoMuted(program));
-    const encodedUrl = buildProxyDownloadUrl(url, formattedFilename);
-    const downloadUrl = program.settings.openInNewTab ? url : encodedUrl;
-    const downloadDataAttributes = buildDownloadMetadataAttributes(media, userName, index);
-
-    return modalBody + `
-        <div class="slide">
-            ${mediaElement}
-            <a href="${downloadUrl}"
-               ${downloadDataAttributes}
-               ${program.settings.openInNewTab ? 'target="_blank" rel="noopener noreferrer"' : ''} 
-               class="${uiClasses.modalDb}">${localize("d")}
-            </a>
-        </div>`;
-};
 
 export const getMediaInfo = async (
     el: HTMLElement,

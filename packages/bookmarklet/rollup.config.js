@@ -1,5 +1,6 @@
 const typescript = require('@rollup/plugin-typescript'); // Import the TypeScript plugin for Rollup
 const replace = require('@rollup/plugin-replace'); // Import the Replace plugin to inject environment variables into the code
+const { nodeResolve } = require('@rollup/plugin-node-resolve');
 const analyze = require('rollup-plugin-analyzer'); // Import the Rollup Analyzer plugin to provide bundle statistics
 const postcss = require('rollup-plugin-postcss'); // Import the PostCSS plugin to handle CSS files
 const cssnano = require('cssnano'); // Import the CSSNano plugin for minifying CSS
@@ -8,6 +9,7 @@ const { swc } = require('rollup-plugin-swc3'); // Import SWC (Speedy Web Compile
 const development = process.env.ROLLUP_WATCH === 'true'; // Determine if the environment is in development mode (based on ROLLUP_WATCH)
 const buildLocale = process.env.BUILD_LOCALE || 'en-US';
 const outputFile = process.env.BUILD_OUT_FILE || 'dist/main.js';
+const detailedAnalysis = process.env.ROLLUP_ANALYZE_VERBOSE === 'true';
 module.exports = {
     input: 'src/index.ts', // Entry file for the Rollup build (TypeScript file)
     output: {
@@ -27,11 +29,15 @@ module.exports = {
             tsconfig: './tsconfig.json', // Use the TypeScript configuration from tsconfig.json
             sourceMap: false, // Avoid generating intermediary TS source map hints that SWC tries to resolve
         }),
+        nodeResolve({
+            browser: true,
+            extensions: ['.mjs', '.js', '.json', '.ts', '.tsx'],
+        }),
         swc({
             jsc: {
                 parser: {
                     syntax: 'typescript', // Specify that the input is TypeScript
-                    tsx: false, // Disable TSX parsing (not needed here)
+                    tsx: true,
                 },
                 transform: {},
                 target: 'esnext', // Target modern JavaScript (ESNext)
@@ -48,7 +54,10 @@ module.exports = {
             minimize: !development, // Skip CSS minification in watch mode
             inject: false, // Optional: if you want to extract the CSS to a separate file
         }),
-        analyze({ summaryOnly: true }) // Analyze the build and show only the summary of the bundle
+        analyze({
+            summaryOnly: !detailedAnalysis,
+            limit: detailedAnalysis ? 80 : undefined,
+        }) // Analyze the build and show only the summary by default
     ],
     onwarn: (warning, warn) => {
         if (warning.code === 'CIRCULAR_DEPENDENCY') return; // Ignore circular dependency warnings

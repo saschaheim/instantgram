@@ -34,7 +34,6 @@ export type Program = {
    */
   VERSION: string;
   browser: { name: string; version: string };
-
   /**
    * The hostname of the current webpage or application.
    * Example: 'www.instagram.com'

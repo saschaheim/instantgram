@@ -1,7 +1,21 @@
 import { Program } from "../App";
+import { h } from "preact";
 import { Module, NO_TARGET_FOUND } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { Modal, ModalButton } from "../components/Modal";
+import { Modal, ModalContent } from "../components/Modal";
+import {
+    createMediaViewerStore,
+    createUtilityViewerStore,
+    LoadingBody,
+    NotFoundBody,
+    ReactiveMediaModalBody,
+    ReactiveMediaModalHeading,
+    ReactiveUtilityModalBody,
+    ReactiveUtilityModalHeading,
+    SettingsConfig,
+    UtilityMessageBody,
+    UtilityModalHeading
+} from "../components/mediaModalApp";
 import { cssCarouselSlider } from "../components/sliderStyles";
 import { cssGeneral, cssSlideOn } from "../components/generalStyles";
 import { uiClasses } from "../components/uiTokens";
@@ -10,17 +24,7 @@ import { PostAndReelScanner } from "./PostAndReelScanner";
 import { ProfileScanner } from "./ProfileScanner";
 import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
-import { buildProxyDownloadUrl, userFilenameFormatter } from "../helpers/mediaFormatting";
-import { buildModalHeader, formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
 import localize from "../helpers/localize";
-
-type MediaScannerSettingConfig = {
-    id: string;
-    pane: "general" | "stories";
-    title: string;
-    description: string;
-    largeInput?: boolean;
-};
 
 type ScannerClass =
     | typeof StoriesScanner
@@ -29,7 +33,7 @@ type ScannerClass =
     | typeof PostAndReelScanner
     | typeof ReelsScanner;
 
-const SETTINGS_CONFIG: MediaScannerSettingConfig[] = [
+const SETTINGS_CONFIG: SettingsConfig[] = [
     { id: "g1", pane: "general", title: "msg.t1", description: "msg.d1" },
     { id: "g2", pane: "general", title: "msg.t2", description: "msg.d2" },
     { id: "g3", pane: "general", title: "msg.t3", description: "msg.d3" },
@@ -52,31 +56,19 @@ const SETTINGS_PROGRAM_KEYS = {
     s3: "noMultiStories",
 } as const;
 
-const SETTINGS_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none"><circle cx="12" cy="12" r="8.635" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></circle><path d="M14.232 3.656a1.269 1.269 0 0 1-.796-.66L12.93 2h-1.86l-.505.996a1.269 1.269 0 0 1-.796.66m-.001 16.688a1.269 1.269 0 0 1 .796.66l.505.996h1.862l.505-.996a1.269 1.269 0 0 1 .796-.66M3.656 9.768a1.269 1.269 0 0 1-.66.796L2 11.07v1.862l.996.505a1.269 1.269 0 0 1 .66.796m16.688-.001a1.269 1.269 0 0 1 .66-.796L22 12.93v-1.86l-.996-.505a1.269 1.269 0 0 1-.66-.796M7.678 4.522a1.269 1.269 0 0 1-1.03.096l-1.06-.348L4.27 5.587l.348 1.062a1.269 1.269 0 0 1-.096 1.03m11.8 11.799a1.269 1.269 0 0 1 1.03-.096l1.06.348 1.318-1.317-.348-1.062a1.269 1.269 0 0 1 .096-1.03m-14.956.001a1.269 1.269 0 0 1 .096 1.03l-.348 1.06 1.317 1.318 1.062-.348a1.269 1.269 0 0 1 1.03.096m11.799-11.8a1.269 1.269 0 0 1-.096-1.03l.348-1.06-1.317-1.318-1.062.348a1.269 1.269 0 0 1-1.03-.096" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path></svg>`;
-const EXPAND_ICON_SVG = `<svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5M9 3 3 9M15 3l6 6M21 15l-6 6M3 15l6 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"></path></svg>`;
+const SETTINGS_ICON_HTML = "&#9881;";
+const EXPAND_ICON_HTML = "&#9974;";
+const CLOSE_TEXT = localize("c");
+const SETTINGS_TITLE = localize("ms.t");
+const WRONG_HOST_TEXT = localize("a.wo");
+const UNSUPPORTED_MEDIA_TEXT = localize("a.ie");
+const NOT_FOUND_TEXT = localize("a.nf");
 
 /**
  * MediaScanner is a module responsible for handling various media scanning tasks,
  * including managing settings, adding necessary styles to the page, and interacting with modals.
  */
 export class MediaScanner implements Module {
-    svgSettings = SETTINGS_ICON_SVG;
-    svgExpand = EXPAND_ICON_SVG;
-    private readonly logo = "Instantgram";
-    private readonly postExampleUrl = "https://www.instagram.com/p/CIGrv1VMBkS/";
-    private readonly expandButtonClass = "instg-modal-action";
-    private readonly settingsChangedEvent = "instg:settings-change";
-    private readonly expandTransitionStartEvent = "instg:media-expand-transition-start";
-    private readonly expandTransitionEndEvent = "instg:media-expand-transition-end";
-    private readonly modalBodyStyleReset = "padding:0!important";
-    private readonly utilityBodyStyle = "text-align:center;padding:20px";
-    private readonly externalRel = "noopener noreferrer";
-    private readonly saveFilenameButtonId = "g4b";
-
-    private getStyleId(program: Program, suffix: string): string {
-        return `${program.DOM_PREFIX}-${suffix}`;
-    }
-
     private syncProgramSetting(program: Program, settingKey: string, value: string | boolean): void {
         const programKey = SETTINGS_PROGRAM_KEYS[settingKey as keyof typeof SETTINGS_PROGRAM_KEYS];
         if (!programKey) {
@@ -91,86 +83,10 @@ export class MediaScanner implements Module {
         program.settings[programKey] = Boolean(value);
     }
 
-    private emitSettingsChanged(settingKey: string, value: string | boolean): void {
-        document.dispatchEvent(new CustomEvent(this.settingsChangedEvent, {
-            detail: { settingKey, value }
-        }));
-    }
-
-    private openModal(config: {
-        heading: string;
-        body: string | HTMLElement;
-        bodyStyle?: string | null;
-        buttonList?: ModalButton[];
-        closeOnOverlayClick?: boolean;
-        callback?: Modal["callback"];
-        onClose?: Modal["onClose"];
-    }): Modal {
-        const modal = new Modal({
-            heading: [config.heading],
-            body: [config.body],
-            bodyStyle: config.bodyStyle ?? null,
-            buttonList: config.buttonList || [],
-            closeOnOverlayClick: config.closeOnOverlayClick,
-            callback: config.callback,
-            onClose: config.onClose,
-        });
+    private openModal(config: ConstructorParameters<typeof Modal>[0]): Modal {
+        const modal = new Modal(config);
         void modal.open();
         return modal;
-    }
-
-    private refreshLiveDownloadLinks(modalElement: HTMLElement, program: Program): void {
-        modalElement.querySelectorAll<HTMLAnchorElement>(`a.${uiClasses.modalDb}`).forEach((anchor) => {
-            const directUrl = anchor.dataset.directUrl;
-            if (!directUrl) {
-                return;
-            }
-
-            const staticFilename = anchor.dataset.staticFilename;
-            let filename = staticFilename;
-
-            if (!filename) {
-                const placeholders = {
-                    Username: anchor.dataset.username || "",
-                    Year: anchor.dataset.year || "",
-                    Month: anchor.dataset.month || "",
-                    Day: anchor.dataset.day || "",
-                    Hour: anchor.dataset.hour || "",
-                    Minute: anchor.dataset.minute || "",
-                };
-                const extension = anchor.dataset.extension || "jpg";
-                const index = Number(anchor.dataset.index || "0");
-                const formattedBase = userFilenameFormatter(program.settings.formattedFilenameInput, placeholders);
-                filename = `${formattedBase}_${index + 1}.${extension}`;
-            }
-
-            const encodedUrl = buildProxyDownloadUrl(directUrl, filename);
-            anchor.href = program.settings.openInNewTab ? directUrl : encodedUrl;
-            if (program.settings.openInNewTab) {
-                anchor.target = "_blank";
-                anchor.rel = this.externalRel;
-            } else {
-                anchor.removeAttribute("target");
-                anchor.removeAttribute("rel");
-            }
-        });
-    }
-
-    private applyLiveVideoSettings(modalElement: HTMLElement, program: Program): void {
-        modalElement.querySelectorAll<HTMLVideoElement>("video").forEach((video) => {
-            this.applyVideoMuteState(video, program);
-        });
-    }
-
-    private applyVideoMuteState(video: HTMLVideoElement, program: Program): void {
-        const shouldMute = resolveShouldMuteVideos(program);
-        video.defaultMuted = shouldMute;
-        video.muted = shouldMute;
-        if (shouldMute) {
-            video.setAttribute("muted", "");
-        } else {
-            video.removeAttribute("muted");
-        }
     }
 
     /**
@@ -184,102 +100,16 @@ export class MediaScanner implements Module {
     constructor() { }
 
     /**
-     * Initializes listeners for the modal settings.
-     * This method adds event listeners for tab switching, checkbox updates, and text input handling.
-     * @param el The modal element that contains the settings.
-     * @param program The program object that contains the configuration and context.
-     */
-    private initModalSettingsListeners(el: HTMLElement, program: Program) {
-        const myTabs = el.querySelectorAll("div.st>button.tb");
-        const panes = el.querySelectorAll(".tp");
-
-        // Handle tab switching functionality
-        const handleClick = (e: MouseEvent): void => {
-            e.preventDefault(); // Prevent default tab behavior
-
-            // Reset active states for all tabs and panes
-            myTabs.forEach(t => t.classList.remove("active"));
-            panes.forEach(p => p.classList.remove("show", "active"));
-
-            const target = e.currentTarget as HTMLElement;
-            target.classList.add("active");
-
-            const activePaneID = target.getAttribute("data-t");
-            if (activePaneID) {
-                const activePane = el.querySelector(activePaneID) as HTMLElement;
-                if (activePane) {
-                    activePane.classList.add("show", "active");
-                }
-            }
-        };
-
-        // Attach the click event handler to each tab
-        myTabs.forEach(tab => {
-            tab.addEventListener("click", handleClick as EventListener);
-        });
-
-        // Handle checkbox interactions for settings
-        Array.from(el.querySelectorAll<HTMLInputElement>('label.slideon input[type="checkbox"]')).forEach((checkbox) => {
-            const checkboxKey = `${program.STORAGE_NAME}_${checkbox.id}`;
-            checkbox.checked = localStorage.getItem(checkboxKey) === "true";
-            checkbox.addEventListener("change", () => {
-                localStorage.setItem(checkboxKey, String(checkbox.checked)); // Save state to localStorage
-                const settingKey = checkbox.id;
-                this.syncProgramSetting(program, settingKey, checkbox.checked);
-                this.emitSettingsChanged(settingKey, checkbox.checked);
-            });
-        });
-
-        // Handle input text and button interaction for filename format
-        const filenameSetting = SETTINGS_CONFIG.find(setting => setting.id === "g4");
-        const inputFileFormat = filenameSetting
-            ? el.querySelector<HTMLInputElement>(`#${filenameSetting.id}`)
-            : null;
-        if (inputFileFormat) {
-            const inputKey = `${program.STORAGE_NAME}_${filenameSetting.id}`;
-            inputFileFormat.value = localStorage.getItem(inputKey) || "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}";
-
-            const saveFilenameFormatBtn = el.querySelector<HTMLElement>(`#${this.saveFilenameButtonId}`);
-            saveFilenameFormatBtn.addEventListener("click", (event: Event) => {
-                event.preventDefault();
-                localStorage.setItem(inputKey, inputFileFormat.value); // Save input value to localStorage
-                this.syncProgramSetting(program, filenameSetting.id, inputFileFormat.value);
-                this.emitSettingsChanged(filenameSetting.id, inputFileFormat.value);
-                this.updateInputButtonStyle(saveFilenameFormatBtn, "sd", uiClasses.btnPrimary, uiClasses.btnSuccess);
-                setTimeout(() => {
-                    this.updateInputButtonStyle(saveFilenameFormatBtn, "s", uiClasses.btnSuccess, uiClasses.btnPrimary);
-                }, 1000);
-            });
-        }
-    }
-
-    /**
      * Initializes the necessary styles by appending them to the document.
      * It removes any previously added styles to avoid duplicates.
      * @param program The program object that contains the configuration and context.
      */
     private initializeStyles(program: Program): void {
-        this.removeStyleTagsWithIDs([
-            this.getStyleId(program, "cssGeneral"),
-            this.getStyleId(program, "cssSlideOn"),
-            this.getStyleId(program, "cssCarouselSlider")
-        ]);
-
-        // Add the required styles to the DOM
-        this.appendStyles(this.getStyleId(program, "cssGeneral"), cssGeneral);
-        this.appendStyles(this.getStyleId(program, "cssSlideOn"), cssSlideOn);
-        this.appendStyles(this.getStyleId(program, "cssCarouselSlider"), cssCarouselSlider);
-    }
-
-    /**
-     * Appends CSS styles to the document body.
-     * @param styleId The ID for the style element.
-     * @param cssContent The CSS content to be inserted.
-     */
-    private appendStyles(styleId: string, cssContent: string): void {
+        const styleId = `${program.DOM_PREFIX}-css`;
+        document.getElementById(styleId)?.remove();
         const styleElement = document.createElement("style");
         styleElement.id = styleId;
-        styleElement.innerHTML = cssContent;
+        styleElement.textContent = cssGeneral + cssSlideOn + cssCarouselSlider;
         document.body.appendChild(styleElement);
     }
 
@@ -291,24 +121,14 @@ export class MediaScanner implements Module {
      * @param buttonList The list of buttons to include in the modal.
      * @param callback The callback function to execute after the modal is opened.
      */
-    private displayModal(result: MediaScanResult, heading: string, bodyStyle: string, buttonList: ModalButton[], callback) {
-        this.openModal({
-            heading,
-            body: result.modalBody,
-            bodyStyle,
-            buttonList,
-            callback,
-        });
-    }
-
     private createLoadingModal(program: Program): Modal {
         return new Modal({
-            heading: [buildModalHeader(this.logo, formatVersionLabel(program.VERSION))],
-            body: [`<div class="${uiClasses.loading}">
-                <div class="${uiClasses.loadingSpinner}" aria-hidden="true"></div>
-                <div class="${uiClasses.loadingText}">${localize("l")}</div>
-            </div>`],
-            bodyStyle: this.modalBodyStyleReset,
+            heading: h(UtilityModalHeading, {
+                version: program.VERSION,
+                settingsButton: undefined
+            }),
+            body: h(LoadingBody, {}),
+            bodyStyle: "padding:0!important",
             buttonList: [],
             closeOnOverlayClick: false,
         });
@@ -322,32 +142,16 @@ export class MediaScanner implements Module {
      * its data failed (e.g. an Instagram API error) -- showing the same
      * "wrong page" hint there is misleading, so use a distinct message.
      */
-    private buildNotFoundBody(errorMessage?: string): string {
+    private buildNotFoundBody(errorMessage?: string): ModalContent {
         if (errorMessage && errorMessage !== NO_TARGET_FOUND) {
             console.info(`[${this.getName()}] Instagram returned an error:`, errorMessage);
-            return localize("a.ie");
+            return UNSUPPORTED_MEDIA_TEXT;
         }
-        return `${localize("a.nf")}<br/><div style="text-align:center"><a style="color:black" href="${this.postExampleUrl}" target="_blank" rel="${this.externalRel}">${this.postExampleUrl}</a></div>`;
-    }
-
-    private buildSettingsAction(): string {
-        return `<button class="${uiClasses.settings}">${this.svgSettings}</button>`;
-    }
-
-    private buildUtilityHeading(program: Program): string {
-        return buildModalHeader(this.logo, `${formatVersionLabel(program.VERSION)}${this.buildSettingsAction()}`);
-    }
-
-    private buildMediaHeading(userLink: string, userName: string): string {
-        return buildModalHeader(
-            this.logo,
-            `<button class="${this.expandButtonClass}" type="button" aria-pressed="false">${this.svgExpand}</button>${this.buildSettingsAction()}`,
-            `<a href="${userLink}">@${userName}</a>`
-        );
-    }
-
-    private buildSettingsHeading(program: Program): string {
-        return buildModalHeader(this.logo, `<span style="margin-right:0">${formatVersionLabel(program.VERSION)}</span>`, localize("ms.t"));
+        return h(NotFoundBody, {
+            message: NOT_FOUND_TEXT,
+            exampleUrl: "https://www.instagram.com/p/CIGrv1VMBkS/",
+            linkRel: "noopener noreferrer"
+        });
     }
 
     private resolveScannerClass(program: Program): ScannerClass | null {
@@ -360,675 +164,52 @@ export class MediaScanner implements Module {
                             null;
     }
 
-    private initSlider(modalElement: HTMLElement, selectedSliderIndex: number, program: Program): void {
-        const slider = modalElement.querySelector(".slider") as HTMLElement | null;
-        const sliderContainer = modalElement.querySelector(".slider-container") as HTMLElement | null;
-        const slides = Array.from(modalElement.querySelectorAll(".slide")) as HTMLElement[];
-        const sliderControls = modalElement.querySelector(".slider-controls") as HTMLElement | null;
-        const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
-        let sliderIndex = selectedSliderIndex;
-        let slideTimer: ReturnType<typeof setTimeout> | undefined;
-        let progressAnimationFrame: number | undefined;
-        let isAdvancing = false;
-        let realignTimeout: ReturnType<typeof setTimeout> | undefined;
-        let playbackSession = 0;
-        let isExpandTransitioning = false;
-        let activeVideo: HTMLVideoElement | null = null;
-
-        if (!slider || !sliderContainer || !sliderControls || !modalWindow || slides.length === 0) {
-            return;
-        }
-
-        slides.forEach((_slide, i) => {
-            const button = document.createElement("button");
-            button.textContent = String(i + 1);
-            button.dataset.index = String(i);
-            button.classList.toggle("active", slides.length === 1);
-            if (slides.length > 1) {
-                button.addEventListener("click", () => {
-                    sliderIndex = i;
-                    updateSliderPosition(true);
-                });
-            }
-            sliderControls.appendChild(button);
-        });
-
-        const queueMediaRetry = (element: HTMLImageElement | HTMLVideoElement) => {
-            const retries = Number(element.dataset.mediaRetries || "0");
-            if (retries >= 2) {
-                return;
-            }
-            element.dataset.mediaRetries = String(retries + 1);
-            const mediaSrc = element.dataset.mediaSrc;
-            if (!mediaSrc) {
-                return;
-            }
-            window.setTimeout(() => {
-                if (element instanceof HTMLVideoElement) {
-                    this.applyVideoMuteState(element, program);
-                    element.removeAttribute("src");
-                    element.load();
-                    element.src = mediaSrc;
-                    element.load();
-                    return;
-                }
-                element.removeAttribute("src");
-                element.src = mediaSrc;
-            }, (retries + 1) * 800);
-        };
-
-        const ensureMediaElementLoaded = (element: HTMLImageElement | HTMLVideoElement | null) => {
-            if (!element || element.dataset.mediaLoaded === "true") {
-                return;
-            }
-            const mediaSrc = element.dataset.mediaSrc;
-            if (!mediaSrc) {
-                element.dataset.mediaLoaded = "true";
-                return;
-            }
-
-            element.dataset.mediaLoaded = "true";
-            element.dataset.mediaRetries = "0";
-
-            if (element instanceof HTMLVideoElement) {
-                element.preload = "metadata";
-                this.applyVideoMuteState(element, program);
-                element.onerror = () => queueMediaRetry(element);
-                element.src = mediaSrc;
-                element.load();
-                return;
-            }
-
-            element.onerror = () => queueMediaRetry(element);
-            element.src = mediaSrc;
-        };
-
-        const ensureSlideMediaLoaded = (index: number) => {
-            const slide = slides[index];
-            if (!slide) {
-                return;
-            }
-            const media = slide.querySelector("img,video") as HTMLImageElement | HTMLVideoElement | null;
-            ensureMediaElementLoaded(media);
-        };
-
-        const primeNearbySlides = () => {
-            ensureSlideMediaLoaded(sliderIndex);
-            if (slides.length <= 1) {
-                return;
-            }
-            ensureSlideMediaLoaded((sliderIndex + 1) % slides.length);
-        };
-
-        const clearVideoState = (video: HTMLVideoElement | null, reset = false) => {
-            if (!video) {
-                return;
-            }
-            video.onended = null;
-            video.ontimeupdate = null;
-            video.onseeking = null;
-            video.onseeked = null;
-            video.pause();
-            if (reset) {
-                video.currentTime = 0;
-            }
-            if (activeVideo === video) {
-                activeVideo = null;
-            }
-        };
-
-        const stopActivePlayback = (reset: boolean) => {
-            playbackSession += 1;
-            clearTimeout(slideTimer);
-            slideTimer = undefined;
-            if (progressAnimationFrame) {
-                cancelAnimationFrame(progressAnimationFrame);
-                progressAnimationFrame = undefined;
-            }
-            clearVideoState(activeVideo, reset);
-        };
-
-        const advanceSlide = () => {
-            if (isAdvancing) {
-                return;
-            }
-            isAdvancing = true;
-            sliderIndex = (sliderIndex + 1) % slides.length;
-            updateSliderPosition(false);
-            isAdvancing = false;
-        };
-
-        const restartSlideTimer = (currentSession = playbackSession) => {
-            const durationMs = 5000;
-            const startedAt = performance.now();
-            const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
-            currentButton?.style.setProperty("--progress", "0");
-
-            const updateTimerProgress = (timestamp: number) => {
-                if (currentSession !== playbackSession) {
-                    return;
-                }
-                const progress = Math.max(0, Math.min(100, ((timestamp - startedAt) / durationMs) * 100));
-                currentButton?.style.setProperty("--progress", progress.toFixed(2));
-                if (progress < 100) {
-                    progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
-                }
-            };
-
-            if (progressAnimationFrame) {
-                cancelAnimationFrame(progressAnimationFrame);
-            }
-            progressAnimationFrame = requestAnimationFrame(updateTimerProgress);
-            slideTimer = setTimeout(() => {
-                if (currentSession === playbackSession) {
-                    advanceSlide();
-                }
-            }, durationMs);
-        };
-
-        const checkAndPlayVideoOrStartTimer = () => {
-            playbackSession += 1;
-            const currentSession = playbackSession;
-            const currentSlide = slides[sliderIndex];
-            primeNearbySlides();
-            const currentButton = sliderControls.children[sliderIndex] as HTMLElement | undefined;
-            const video = currentSlide.querySelector("video") as HTMLVideoElement | null;
-            const isCurrentSlide = () => currentSession === playbackSession && slides[sliderIndex] === currentSlide;
-            if (slides.length <= 1) {
-                currentButton?.style.setProperty("--progress", "0");
-                if (video) {
-                    activeVideo = video;
-                    video.onended = null;
-                    video.ontimeupdate = null;
-                    video.onseeking = null;
-                    video.onseeked = null;
-                    void video.play().catch(() => undefined);
-                }
-                return;
-            }
-            if (video) {
-                activeVideo = video;
-                this.applyVideoMuteState(video, program);
-                const syncVideoProgress = () => {
-                    if (!isCurrentSlide()) {
-                        return;
-                    }
-                    const duration = video.duration;
-                    const progress = duration && Number.isFinite(duration)
-                        ? Math.max(0, Math.min(100, (video.currentTime / duration) * 100))
-                        : 0;
-                    currentButton?.style.setProperty("--progress", progress.toFixed(2));
-                };
-                const updateVideoProgress = () => {
-                    if (!isCurrentSlide()) {
-                        return;
-                    }
-                    syncVideoProgress();
-                    if (!video.paused && !video.ended) {
-                        progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
-                    }
-                };
-                video.onended = () => {
-                    if (isCurrentSlide()) {
-                        advanceSlide();
-                    }
-                };
-                video.ontimeupdate = syncVideoProgress;
-                video.onseeking = syncVideoProgress;
-                video.onseeked = syncVideoProgress;
-                currentButton?.style.setProperty("--progress", "0");
-                void video.play().catch(() => restartSlideTimer());
-                progressAnimationFrame = requestAnimationFrame(updateVideoProgress);
-                return;
-            }
-            restartSlideTimer(currentSession);
-        };
-
-        const playCurrentVideoWithoutAdvance = () => {
-            const currentSlide = slides[sliderIndex];
-            primeNearbySlides();
-            const video = currentSlide?.querySelector("video") as HTMLVideoElement | null;
-            if (!video) {
-                return;
-            }
-            activeVideo = video;
-            this.applyVideoMuteState(video, program);
-            video.onended = null;
-            video.ontimeupdate = null;
-            video.onseeking = null;
-            video.onseeked = null;
-            void video.play().catch(() => undefined);
-        };
-
-        const updateSliderPosition = (resetTimer: boolean, immediate = false) => {
-            if (document.fullscreenElement) {
-                return;
-            }
-            stopActivePlayback(false);
-            const slideWidth = sliderContainer.clientWidth || slides[0].clientWidth;
-            const previousTransition = slider.style.transition;
-            if (immediate) {
-                slider.style.transition = "none";
-            }
-            slider.style.transform = `translateX(${-slideWidth * sliderIndex}px)`;
-            if (immediate) {
-                requestAnimationFrame(() => {
-                    slider.style.transition = previousTransition;
-                });
-            }
-            Array.from(sliderControls.children).forEach((button, index) => {
-                button.classList.toggle("active", index === sliderIndex);
-                (button as HTMLElement).style.setProperty("--progress", "0");
-            });
-
-            if (resetTimer) {
-                clearTimeout(slideTimer);
-                slideTimer = undefined;
-            }
-            primeNearbySlides();
-            const shouldRunProgress = localStorage.getItem(`${program.STORAGE_NAME}_g3`) === "true";
-            if (shouldRunProgress) {
-                checkAndPlayVideoOrStartTimer();
-            } else {
-                playCurrentVideoWithoutAdvance();
-            }
-        };
-
-        const queueSliderRealign = () => {
-            if (isExpandTransitioning) {
-                return;
-            }
-            if (realignTimeout) {
-                clearTimeout(realignTimeout);
-            }
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    updateSliderPosition(false, true);
-                });
-            });
-            realignTimeout = setTimeout(() => {
-                updateSliderPosition(false, true);
-            }, 320);
-        };
-
-        const handleFullscreenChange = () => {
-            if (document.fullscreenElement) {
-                clearTimeout(slideTimer);
-            }
-        };
-
-        const handleExpandTransitionStart = () => {
-            isExpandTransitioning = true;
-            stopActivePlayback(false);
-        };
-
-        const handleExpandTransitionEnd = () => {
-            isExpandTransitioning = false;
-            queueSliderRealign();
-        };
-
-        const handleSettingsChanged = (event: Event) => {
-            const customEvent = event as CustomEvent<{ settingKey: string; value: string | boolean; }>;
-            const settingKey = customEvent.detail?.settingKey;
-            if (!settingKey) {
-                return;
-            }
-
-            this.refreshLiveDownloadLinks(modalElement, program);
-            this.applyLiveVideoSettings(modalElement, program);
-
-            if (settingKey === "g3") {
-                if (program.settings.autoSlideshow) {
-                    checkAndPlayVideoOrStartTimer();
-                } else {
-                    stopActivePlayback(false);
-                    Array.from(sliderControls.children).forEach((button) => {
-                        (button as HTMLElement).style.setProperty("--progress", "0");
-                    });
-                    playCurrentVideoWithoutAdvance();
-                }
-            }
-        };
-
-        const resizeObserver = new ResizeObserver(() => {
-            queueSliderRealign();
-        });
-
-        const cleanup = () => {
-            clearTimeout(slideTimer);
-            clearTimeout(realignTimeout);
-            stopActivePlayback(true);
-            document.removeEventListener("fullscreenchange", handleFullscreenChange);
-            document.removeEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-            modalElement.removeEventListener(this.expandTransitionStartEvent, handleExpandTransitionStart as EventListener);
-            modalElement.removeEventListener(this.expandTransitionEndEvent, handleExpandTransitionEnd as EventListener);
-            resizeObserver.disconnect();
-            observer.disconnect();
-        };
-
-        const observer = new MutationObserver(() => {
-            if (!document.body.contains(modalElement)) {
-                cleanup();
-            }
-        });
-
-        updateSliderPosition(false);
-        document.addEventListener("fullscreenchange", handleFullscreenChange);
-        document.addEventListener(this.settingsChangedEvent, handleSettingsChanged as EventListener);
-        modalElement.addEventListener(this.expandTransitionStartEvent, handleExpandTransitionStart as EventListener);
-        modalElement.addEventListener(this.expandTransitionEndEvent, handleExpandTransitionEnd as EventListener);
-        resizeObserver.observe(sliderContainer);
-        observer.observe(document.body, { childList: true, subtree: true });
-    }
-
-    private initMediaModal(modalElement: HTMLElement, scannerResult: MediaScanResult, program: Program): void {
-        this.initMediaModalActions(modalElement, program);
-        this.refreshLiveDownloadLinks(modalElement, program);
-        this.applyLiveVideoSettings(modalElement, program);
-        if (modalElement.querySelector(".slider")) {
-            this.initSlider(modalElement, scannerResult.selectedSliderIndex, program);
-        }
-    }
-
     private showScannerResult(scannerResult: MediaScanResult, program: Program): void {
-        this.displayModal(
-            scannerResult,
-            this.buildMediaHeading(scannerResult.userLink, scannerResult.userName),
-            `${this.modalBodyStyleReset};text-align:center`,
-            [{ active: true, text: localize("c") }],
-            (_modal, el) => {
-                this.initMediaModal(el as HTMLElement, scannerResult, program);
-            }
-        );
-    }
-
-    private openUtilityModal(program: Program, body: string): void {
+        const viewerStore = createMediaViewerStore(scannerResult.selectedSliderIndex);
         this.openModal({
-            heading: this.buildUtilityHeading(program),
-            body,
-            bodyStyle: this.utilityBodyStyle,
-            buttonList: [{ active: true, text: "Ok" }],
-            callback: (_modal, el) => {
-                el.querySelector(`.${uiClasses.settings}`).addEventListener("click", () => {
-                    this.handleSettingsButtonClick(program);
-                });
-            }
-        });
-    }
-
-    private initMediaModalActions(modalElement: HTMLElement, program: Program): void {
-        const settingsButton = modalElement.querySelector(`.${uiClasses.settings}`) as HTMLElement | null;
-        settingsButton?.addEventListener("click", () => {
-            this.handleSettingsButtonClick(program, modalElement);
-        });
-
-        const expandButton = modalElement.querySelector(`.${this.expandButtonClass}`) as HTMLButtonElement | null;
-        const modalWindow = modalElement.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
-        let expandAnimations: Animation[] = [];
-        let autoExpandTimeout: ReturnType<typeof setTimeout> | undefined;
-        if (!expandButton || !modalWindow) {
-            return;
-        }
-
-        const playFlipAnimation = (
-            element: HTMLElement | null,
-            firstRect: DOMRect | undefined,
-            lastRect: DOMRect | undefined
-        ): Animation | null => {
-            if (!element || !firstRect || !lastRect || !lastRect.width || !lastRect.height) {
-                return null;
-            }
-
-            const scaleX = firstRect.width / lastRect.width;
-            const scaleY = firstRect.height / lastRect.height;
-            const translateX = firstRect.left - lastRect.left;
-            const translateY = firstRect.top - lastRect.top;
-            const noVisualChange = Math.abs(scaleX - 1) < 0.001
-                && Math.abs(scaleY - 1) < 0.001
-                && Math.abs(translateX) < 0.5
-                && Math.abs(translateY) < 0.5;
-
-            if (noVisualChange) {
-                return null;
-            }
-
-            return element.animate([
-                {
-                    transformOrigin: "top center",
-                    transform: `translate(${translateX}px,${translateY}px) scale(${scaleX},${scaleY})`
+            body: h(ReactiveMediaModalBody, {
+                onSettingChange: (settingKey: string, value: string | boolean) => {
+                    this.syncProgramSetting(program, settingKey, value);
                 },
-                {
-                    transformOrigin: "top center",
-                    transform: "translate(0,0) scale(1,1)"
-                }
-            ], {
-                duration: 280,
-                easing: "cubic-bezier(.22,.61,.36,1)",
-                fill: "both"
-            });
-        };
-
-        const applyExpandState = (expanded: boolean) => {
-            modalWindow.classList.toggle("instg-media-expanded", expanded);
-            expandButton.classList.toggle("active", expanded);
-            expandButton.setAttribute("aria-pressed", String(expanded));
-        };
-
-        const animateExpandState = (expanded: boolean) => {
-            expandAnimations.forEach((animation) => animation.cancel());
-            expandAnimations = [];
-
-            const sliderContainer = modalWindow.querySelector(".slider-container") as HTMLElement | null;
-            const sliderTrack = modalWindow.querySelector(".slider") as HTMLElement | null;
-            const slides = Array.from(modalWindow.querySelectorAll<HTMLElement>(".slide"));
-            const activeSlideIndex = Number((modalElement.querySelector(".slider-controls button.active") as HTMLElement | null)?.dataset.index || "0");
-            const activeSlide = slides[activeSlideIndex] || slides[0] || null;
-            const activeMedia = activeSlide?.querySelector<HTMLElement>("img,video") || null;
-
-            const firstModalRect = modalWindow.getBoundingClientRect();
-
-            const previousModalTransition = modalWindow.style.transition;
-            const previousContainerTransition = sliderContainer?.style.transition ?? "";
-            const previousTrackTransition = sliderTrack?.style.transition ?? "";
-            const previousMediaTransition = activeMedia?.style.transition ?? "";
-
-            modalWindow.style.transition = "none";
-            if (sliderContainer) {
-                sliderContainer.style.transition = "none";
-            }
-            if (sliderTrack) {
-                sliderTrack.style.transition = "none";
-            }
-            if (activeMedia) {
-                activeMedia.style.transition = "none";
-            }
-
-            modalElement.dispatchEvent(new CustomEvent(this.expandTransitionStartEvent, {
-                detail: { expanded }
-            }));
-            applyExpandState(expanded);
-
-            const lastModalRect = modalWindow.getBoundingClientRect();
-
-            const restoreTransitions = () => {
-                modalWindow.style.transition = previousModalTransition;
-                if (sliderContainer) {
-                    sliderContainer.style.transition = previousContainerTransition;
-                }
-                if (sliderTrack) {
-                    sliderTrack.style.transition = previousTrackTransition;
-                }
-                if (activeMedia) {
-                    activeMedia.style.transition = previousMediaTransition;
-                }
-            };
-
-            const finish = () => {
-                restoreTransitions();
-                modalElement.dispatchEvent(new CustomEvent(this.expandTransitionEndEvent, {
-                    detail: { expanded }
-                }));
-            };
-
-            const animations = [
-                playFlipAnimation(modalWindow, firstModalRect, lastModalRect),
-            ].filter((animation): animation is Animation => Boolean(animation));
-
-            if (animations.length === 0) {
-                finish();
-                return;
-            }
-
-            expandAnimations = animations;
-            let settledAnimations = 0;
-            let finalized = false;
-            const settle = () => {
-                settledAnimations += 1;
-                if (!finalized && settledAnimations >= animations.length) {
-                    finalized = true;
-                    expandAnimations = [];
-                    finish();
-                }
-            };
-
-            animations.forEach((animation) => {
-                animation.addEventListener("finish", settle, { once: true });
-                animation.addEventListener("cancel", settle, { once: true });
-            });
-        };
-
-        applyExpandState(false);
-        expandButton.addEventListener("click", () => {
-            animateExpandState(!modalWindow.classList.contains("instg-media-expanded"));
+                program,
+                settings: SETTINGS_CONFIG,
+                slides: scannerResult.slides || [],
+                store: viewerStore
+            }),
+            heading: h(ReactiveMediaModalHeading, {
+                expandIcon: EXPAND_ICON_HTML,
+                settingsIcon: SETTINGS_ICON_HTML,
+                settingsTitle: SETTINGS_TITLE,
+                store: viewerStore,
+                userLink: scannerResult.userLink,
+                userName: scannerResult.userName,
+                version: program.VERSION
+            }),
+            bodyStyle: "padding:0!important;text-align:center",
+            buttonList: [{ active: true, text: CLOSE_TEXT }]
         });
-
-        if (program.settings.autoExpand) {
-            autoExpandTimeout = setTimeout(() => {
-                if (document.body.contains(modalElement) && !modalWindow.classList.contains("instg-media-expanded")) {
-                    animateExpandState(true);
-                }
-            }, 500);
-
-            const overlay = modalElement.querySelector(`.${uiClasses.modalOverlay}`) as HTMLElement | null;
-            overlay?.addEventListener("click", () => {
-                if (autoExpandTimeout) {
-                    clearTimeout(autoExpandTimeout);
-                    autoExpandTimeout = undefined;
-                }
-            }, { once: true });
-        }
     }
 
-    /**
-     * Handles the click event for the settings button.
-     * It constructs the settings modal dynamically and opens it.
-     * @param program The program object that contains the configuration and context.
-     */
-    public handleSettingsButtonClick(program: Program, sourceModalElement?: HTMLElement): void {
-        // Utility function to create elements
-        const createElement = (tag, className = '', attributes = {}, str = '') => {
-            const el = document.createElement(tag);
-            if (className) el.className = className;
-            Object.keys(attributes).forEach(attr => el.setAttribute(attr, attributes[attr]));
-            if (str) el.innerHTML = str;
-            return el;
-        };
-
-        // Function to create a settings list group item
-        const createListGroupItem = ({ id, title, description, largeInput }: MediaScannerSettingConfig) => {
-            const item = createElement('div', 'si');
-            const row = createElement('div', 'sr');
-            const col = createElement('div', 'sgw');
-            const domId = id;
-            const localizedTitle = localize(title);
-            const localizedDescription = localize(description);
-            col.appendChild(createElement('strong', 'mb-0', {}, localizedTitle));
-            if (localizedDescription) col.appendChild(createElement('p', 'sm mb-0', {}, localizedDescription));
-
-            const colAuto = createElement('div', 'se');
-            const label = createElement('label', 'slideon');
-            const input = createElement('input', '', { type: 'checkbox', id: domId });
-            const span = createElement('span', 'slideon-slider');
-            label.appendChild(input);
-            label.appendChild(span);
-            colAuto.appendChild(label);
-
-            if (largeInput) {
-                // Create and add a paragraph to the new div
-                const div = createElement(
-                    'div',
-                    'sf',
-                    {},
-                    `<strong>${localizedTitle}</strong>
-                     <p class="sm mb-0">${localizedDescription}</p>
-                     <input type="text" class="fi" id="${domId}" placeholder="{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}">
-                     <button type="submit" class="${uiClasses.btn} ${uiClasses.btnPrimary} mt-2" id="${this.saveFilenameButtonId}">${localize("s")}</button>`
-                );
-
-                row.appendChild(div);
-            } else {
-                row.appendChild(col);
-                row.appendChild(colAuto);
-            }
-            item.appendChild(row);
-
-            return item;
-        };
-
-        const container = createElement('div', 'sg');
-        const content = createElement('div', 'sy');
-        const navTabs = createElement('div', 'st');
-
-        // Setting up tab buttons and panes for the modal
-        navTabs.appendChild(createElement('button', 'tb active', {
-            'data-t': '#g', type: 'button'
-        }, `${localize("ms.g")}`));
-        navTabs.appendChild(createElement('button', 'tb', {
-            'data-t': '#s', type: 'button'
-        }, 'Stories'));
-
-        const tabContent = createElement('div', 'tc');
-        const generalPane = createElement('div', 'tp fade active show', { id: 'g' });
-        const storiesPane = createElement('div', 'tp fade', { id: 's' });
-        generalPane.appendChild(createElement('div', 'sw mb-0', {}, localize("ms.a")));
-
-        SETTINGS_CONFIG.forEach((setting) => {
-            const pane = setting.pane === "general" ? generalPane : storiesPane;
-            pane.appendChild(createListGroupItem(setting));
-        });
-
-        // Append all the elements to form the modal content
-        tabContent.appendChild(generalPane);
-        tabContent.appendChild(storiesPane);
-        content.appendChild(navTabs);
-        content.appendChild(tabContent);
-        container.appendChild(content);
-
-        const pausedForSettings = Array.from(sourceModalElement?.querySelectorAll<HTMLVideoElement>("video") || [])
-            .filter((video) => !video.paused && !video.ended && (video.pause(), true));
-
-        // Open the modal with the constructed settings content
+    private openUtilityModal(program: Program, body: ModalContent): void {
+        const utilityStore = createUtilityViewerStore();
         this.openModal({
-            heading: this.buildSettingsHeading(program),
-            body: container,
-            buttonList: [{ active: true, text: localize("c") }],
-            onClose: () => {
-                pausedForSettings.forEach((video) => {
-                    if (
-                        sourceModalElement &&
-                        document.body.contains(sourceModalElement) &&
-                        video.isConnected &&
-                        sourceModalElement.contains(video) &&
-                        !video.ended
-                    ) {
-                        void video.play().catch(() => {});
-                    }
-                });
-            },
-            callback: (_modal, el) => {
-                // Initialize listeners once the modal is open
-                this.initModalSettingsListeners(el as HTMLElement, program);
-            }
+            heading: h(ReactiveUtilityModalHeading, {
+                programVersion: program.VERSION,
+                settingsIcon: SETTINGS_ICON_HTML,
+                settingsTitle: SETTINGS_TITLE,
+                store: utilityStore
+            }),
+            body: h(ReactiveUtilityModalBody, {
+                body: typeof body === "string" ? h(UtilityMessageBody, { body }) : body,
+                onSettingChange: (settingKey: string, value: string | boolean) => {
+                    this.syncProgramSetting(program, settingKey, value);
+                },
+                program,
+                settings: SETTINGS_CONFIG,
+                store: utilityStore
+            }),
+            bodyStyle: "text-align:center;padding:20px",
+            buttonList: [{ active: true, text: "Ok" }]
         });
     }
 
@@ -1039,7 +220,7 @@ export class MediaScanner implements Module {
      */
     private async handleURLPatterns(program: Program): Promise<void> {
         if (!program.hostname.includes("instagram.com")) {
-            this.openUtilityModal(program, localize("a.wo"));
+            this.openUtilityModal(program, WRONG_HOST_TEXT);
             return;
         }
 
@@ -1081,20 +262,6 @@ export class MediaScanner implements Module {
     }
 
     /** 
-     * Removes style tags from the document by their specified IDs.
-     * This method is used to clean up and avoid duplicate style tags that may have been added dynamically.
-     * @param idsToRemove An array of style tag IDs to be removed from the document.
-     */
-    private removeStyleTagsWithIDs(idsToRemove: string[]): void {
-        idsToRemove.forEach(id => {
-            const styleTag = document.getElementById(id);
-            if (styleTag) {
-                styleTag.remove();
-            }
-        });
-    }
-
-    /** 
      * Applies a shaking animation to the modal window to indicate an error or attention.
      * The animation runs for 0.25 seconds and then stops after 1 second.
      * @param modalSelector The CSS selector of the modal element to shake.
@@ -1106,28 +273,6 @@ export class MediaScanner implements Module {
             modal.style.animation = "horizontal-shaking 0.25s linear infinite";
             // Remove the animation after 1 second to reset the modal state
             setTimeout(() => modal.style.animation = null, 1000);
-        }
-    }
-
-    /** 
-     * Updates the style of the input button, changing its text and class based on the current state.
-     * This is typically used to toggle between a "save" and "saved" state for buttons.
-     * @param button The button element to update.
-     * @param text The text to display on the button.
-     * @param oldClass The class name to remove from the button.
-     * @param newClass The class name to add to the button.
-     */
-    private updateInputButtonStyle(button: HTMLElement, text: string, oldClass: string, newClass: string) {
-        // Update the button's text content
-        button.textContent = localize(text);
-
-        // Toggle the button's classes between "saved" and "save" state
-        if (button.classList.contains(newClass)) {
-            button.classList.remove(newClass);
-            button.classList.add(oldClass);
-        } else {
-            button.classList.remove(oldClass);
-            button.classList.add(newClass);
         }
     }
 

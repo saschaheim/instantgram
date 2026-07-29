@@ -17,12 +17,13 @@
     "build:bookmarklet": "node scripts/bookmarkletify.js",
     "build:bookmarklet:dev": "node scripts/bookmarkletify.js --dev",
     "dev": "nodemon --watch src --watch scripts --watch package.json --watch rollup.config.js --watch ../site/src/data --ext ts,js,json --exec \"pnpm run build\"",
-    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "lint": "eslint src/**/*.{ts,tsx} tests/**/*.ts",
     "test": "vitest run --config vitest.config.ts",
     "size": "node scripts/size-bookmarklets.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-replace": "^6.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
     "@swc/core": "^1.15.33",
@@ -43,6 +44,7 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "preact": "^10.29.7",
     "tslib": "2.8.1",
     "util": "^0.12.5"
   }

@@ -1,0 +1,104 @@
+import { h } from "preact";
+import { useEffect, useState } from "preact/hooks";
+import { Program } from "../App";
+import localize from "../helpers/localize";
+import { uiClasses } from "./uiTokens";
+
+type SettingsPane = "general" | "stories";
+
+export type SettingsConfig = {
+  id: string;
+  pane: SettingsPane;
+  title: string;
+  description: string;
+  largeInput?: boolean;
+};
+
+const defaultFormat = "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}";
+const stored = (program: Program, id: string) =>
+  localStorage.getItem(`${program.STORAGE_NAME}_${id}`) ?? (id === "g4" ? defaultFormat : "false");
+
+export function SettingsModalBody({ program, settings, onSettingChange }: {
+  program: Program;
+  settings: SettingsConfig[];
+  onSettingChange: (key: string, value: string | boolean) => void;
+}) {
+  const [pane, setPane] = useState<SettingsPane>("general");
+  const [checks, setChecks] = useState(() => Object.fromEntries(
+    settings.filter(({ largeInput }) => !largeInput).map(({ id }) => [id, stored(program, id) === "true"]),
+  ));
+  const [format, setFormat] = useState(() => stored(program, "g4"));
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (!saved) return undefined;
+    const timer = setTimeout(() => setSaved(false), 1000);
+    return () => clearTimeout(timer);
+  }, [saved]);
+
+  const change = (id: string, value: boolean) => {
+    localStorage.setItem(`${program.STORAGE_NAME}_${id}`, String(value));
+    setChecks((current) => ({ ...current, [id]: value }));
+    onSettingChange(id, value);
+  };
+
+  const save = () => {
+    localStorage.setItem(`${program.STORAGE_NAME}_g4`, format);
+    onSettingChange("g4", format);
+    setSaved(true);
+  };
+
+  const renderSetting = (setting: SettingsConfig) => {
+    const title = localize(setting.title);
+    const description = localize(setting.description);
+    return (
+      <div class="si" key={setting.id}>
+        <div class="sr">
+          {setting.largeInput ? (
+            <div class="sf">
+              <strong>{title}</strong>
+              <p class="sm mb-0">{description}</p>
+              <input class="fi" value={format} placeholder={defaultFormat} onInput={(event) => setFormat(event.currentTarget.value)} />
+              <button class={`${uiClasses.btn} ${saved ? uiClasses.btnSuccess : uiClasses.btnPrimary} mt-2`} onClick={save}>
+                {localize(saved ? "sd" : "s")}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div class="sgw">
+                <strong class="mb-0">{title}</strong>
+                {description && <p class="sm mb-0">{description}</p>}
+              </div>
+              <div class="se">
+                <label class="slideon">
+                  <input type="checkbox" checked={checks[setting.id] || false} onChange={(event) => change(setting.id, event.currentTarget.checked)} />
+                  <span class="slideon-slider" />
+                </label>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div class="sg" style="text-align:left">
+      <div class="sy">
+        <div class="st">
+          {(["general", "stories"] as SettingsPane[]).map((name) => (
+            <button class={`tb${pane === name ? " active" : ""}`} onClick={() => setPane(name)}>
+              {name === "general" ? localize("ms.g") : "Stories"}
+            </button>
+          ))}
+        </div>
+        <div class="tc">
+          <div class="tp fade active show">
+            {pane === "general" && <div class="sw mb-0" dangerouslySetInnerHTML={{ __html: localize("ms.a") }} />}
+            {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

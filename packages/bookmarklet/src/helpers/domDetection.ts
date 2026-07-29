@@ -115,31 +115,3 @@ export const getElementWithHighestWidth = (el: HTMLElement): HTMLElement | null 
         return currentWidth > maxWidth ? currentDiv : maxDiv;
     }, divs[0]);
 };
-
-export const getStoryWrapper = (el: HTMLElement | null | undefined) => {
-    const sections = [...el?.querySelectorAll("section") || []];
-    return sections[sections.length - 1];
-};
-
-export const getAllNodeParent = (el: { parentNode: any; }) => {
-    const parents = [];
-    for (parents.push(el); el.parentNode;) {
-        parents.unshift(el.parentNode);
-        el = el.parentNode;
-    }
-    return parents;
-};
-
-export const isElementInViewport = (el: HTMLElement) => {
-    const { top, right, bottom, left } = el.getBoundingClientRect();
-    return bottom > 0 && right > 0 && left < window.innerWidth && top < window.innerHeight;
-};
-
-export const isProfileImage = (el: HTMLElement) => {
-    const parent = el.parentElement;
-    const elementWidth = el.getBoundingClientRect().width;
-    return el.getAttribute("data-testid") === "user-avatar" ||
-        elementWidth < 48 ||
-        ["span", "a"].includes(parent?.localName) ||
-        getAllNodeParent(el).some(node => node.nodeName === "HEADER");
-};

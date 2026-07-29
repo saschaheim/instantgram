@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
   "exclude": ["node_modules", "dist", "tests", "tools", "vitest.config.ts"]
 }

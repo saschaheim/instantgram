@@ -1,12 +1,5 @@
 import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
 
-// web_profile_info is currently switched off (not removed): it's a
-// known-brittle, per-account-gated endpoint that fails outright for many
-// accounts (see issue #45 and https://github.com/jackwener/opencli/issues/2147).
-// The feed and search fallbacks cover the same ground without it. Flip this
-// back on if Instagram fixes the endpoint upstream.
-export const WEB_PROFILE_INFO_ENABLED = false;
-
 const mediaIdCache: Map<string, string> = new Map();
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const shortcodePattern = new RegExp(`^[${shortcodeAlphabet.replace(/[-_]/g, "\\$&")}]+$`);
@@ -86,41 +79,15 @@ export async function findMediaId(postId: string) {
     postId = normalizePostId(postId) || postId;
     const match = window.location.href.match(/www.instagram.com\/stories\/[^/]+\/(\d+)/);
     if (match) return match[1];
+    if (/^\d+$/.test(postId)) return postId;
 
     if (!mediaIdCache.has(postId)) {
         const shortcodeMediaId = shortcodeToMediaId(postId);
-        if (shortcodeMediaId) {
-            mediaIdCache.set(postId, shortcodeMediaId);
-            return shortcodeMediaId;
-        }
-
-        const mediaIdPattern = /instagram:\/\/media\?id=(\d+)|["' ]media_id["' ]:["' ](\d+)["' ]/;
-        const postUrl = `https://www.instagram.com/p/${postId}/`;
-        const resp = await fetch(postUrl);
-        const text = await resp.text();
-
-        let idMatch = text.match(mediaIdPattern);
-        if (!idMatch) {
-            const resp = await fetch(postUrl + "?__a=1&__d=dis");
-            const text = await resp.text();
-            idMatch = text.match(/"pk":(\d+)/);
-            if (!idMatch) {
-                return null;
-            }
-        }
-
-        let mediaId = null;
-        for (let i = 0; i < idMatch.length; ++i) {
-            if (idMatch[i]) {
-                mediaId = idMatch[i];
-            }
-        }
-
-        if (!mediaId) {
+        if (!shortcodeMediaId) {
             return null;
         }
 
-        mediaIdCache.set(postId, mediaId);
+        mediaIdCache.set(postId, shortcodeMediaId);
     }
 
     return mediaIdCache.get(postId);
@@ -168,10 +135,6 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
             const userId = "userId" in config ? config.userId : null;
             return userId ? `https://i.instagram.com/api/v1/users/${userId}/info/` : null;
         },
-        'getUserInfoFromWebProfile': () => {
-            const userName = "userName" in config ? config.userName : null;
-            return userName ? `https://i.instagram.com/api/v1/users/web_profile_info/?username=${userName}` : null;
-        },
     };
     const url = await urlMap[type]?.();
     if (!url) return null;
@@ -181,7 +144,7 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
 
 export const secureFetch = async (url: string, appId: string) => {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
         const response = await fetch(url, {
@@ -237,11 +200,6 @@ const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> =
  * search still returns them -- use this as a fallback when that lookup
  * fails.
  */
-export const resolveUserIdFromSearch = async (userName: string): Promise<string | null> => {
-    const owner = await fetchSearchOwner(userName);
-    return owner?.id ?? null;
-};
-
 /**
  * Same lookup as resolveUserIdFromSearch, but also returns the matched
  * search-result user object. For private accounts, /users/{id}/info/ comes
@@ -252,11 +210,6 @@ export const resolveUserIdFromSearch = async (userName: string): Promise<string 
  * pictures are public even for private accounts), so it's kept as a
  * last-resort profile-picture source too.
  */
-export const resolveProfileFromSearch = async (userName: string): Promise<{ userId: string | null; owner: SearchOwner | null }> => {
-    const owner = await fetchSearchOwner(userName);
-    return { userId: owner?.id ?? null, owner };
-};
-
 type FeedOwner = {
     pk?: string | number;
     id?: string | number;
@@ -287,12 +240,6 @@ const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
  * as a fallback alongside resolveUserIdFromSearch when web_profile_info
  * fails.
  */
-export const resolveUserIdFromFeed = async (userName: string): Promise<string | null> => {
-    const owner = await fetchFeedOwner(userName);
-    const userId = owner?.pk ?? owner?.id;
-    return userId != null ? String(userId) : null;
-};
-
 /**
  * Same lookup as resolveUserIdFromFeed, but also returns the embedded owner
  * object. Some business/creator accounts get a stripped-down response from
@@ -301,10 +248,12 @@ export const resolveUserIdFromFeed = async (userName: string): Promise<string | 
  * once the id is resolved -- the feed owner's plain profile_pic_url is used
  * as a last-resort fallback source in that case.
  */
-export const resolveProfileFromFeed = async (userName: string): Promise<{ userId: string | null; owner: FeedOwner | null }> => {
-    const owner = await fetchFeedOwner(userName);
-    const userId = owner?.pk ?? owner?.id;
-    return { userId: userId != null ? String(userId) : null, owner };
+export const resolveProfile = async (userName: string) => {
+    const feed = await fetchFeedOwner(userName);
+    const feedId = feed?.pk ?? feed?.id;
+    if (feedId != null) return { userId: String(feedId), owner: feed };
+    const search = await fetchSearchOwner(userName);
+    return { userId: search?.id ?? null, owner: search };
 };
 
 export const getIGUsername = (url: string): string | null => {

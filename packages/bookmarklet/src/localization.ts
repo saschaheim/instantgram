@@ -31,53 +31,52 @@ const enUS = {
     "s": "Save",
     "sd": "Saved",
     "c": "Close",
+    "u.t": "Update available",
     "u.i": "[instantgram] is outdated. Please check https://saschaheim.github.io/instantgram for available updates.",
     "u.v": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
-    "u.t": "Update available",
-    "ad": "Sponsored",
-    "modules.update@update_successful": "[instantgram] Update check successful."
+    "modules.update@update_successful": "[instantgram] Update check successful.",
+    "ad": "Sponsored"
 } as const;
 
 export type LocalizationKey = keyof typeof enUS;
-
 type LocalizationDictionary = Record<LocalizationKey, string>;
 
 const deDE: LocalizationDictionary = {
-    "h.ld": "[instantgram] Sprache: de-DE\nWeitere Informationen zu den verfügbaren Sprachen findest du auf https://saschaheim.github.io/instantgram",
+    "h.ld": "[instantgram] Sprache: de-DE\nWeitere Informationen zu den verfugbaren Sprachen findest du auf https://saschaheim.github.io/instantgram",
     "a.wo": "Funktioniert nur auf instagram.com",
-    "a.nf": "Hast du einen Instagram-Post geöffnet? Zum Beispiel",
-    "a.ie": "Dieses Medium wird noch nicht unterstützt.",
+    "a.nf": "Hast du einen Instagram-Post geoffnet? Zum Beispiel",
+    "a.ie": "Dieses Medium wird noch nicht unterstutzt.",
     "ms.t": "Einstellungen",
-    "ms.a": "<span class=\"sx\">Neu:</span> Einige Änderungen gelten sofort. Andere werden erst beim erneuten Öffnen des Bookmarklets übernommen.",
+    "ms.a": "<span class=\"sx\">Neu:</span> Einige Anderungen gelten sofort. Andere werden erst beim erneuten Offnen des Bookmarklets ubernommen.",
     "ms.g": "Allgemein",
-    "msg.t1": "Monetarisierte Beiträge anzeigen",
-    "msg.d1": "Adblocker müssen deaktiviert sein",
-    "msg.t2": "Download in neuem Tab öffnen",
-    "msg.d2": "Der Download wird in einem neuen Tab geöffnet",
+    "msg.t1": "Monetarisierte Beitrage anzeigen",
+    "msg.d1": "Adblocker mussen deaktiviert sein",
+    "msg.t2": "Download in neuem Tab offnen",
+    "msg.d2": "Der Download wird in einem neuen Tab geoffnet",
     "msg.t3": "Slideshow an/aus",
     "msg.d3": "Aktiviert oder deaktiviert die automatische Slideshow",
-    "msg.t4": "Dateinamenformat für Downloads ändern",
-    "msg.d4": "Hier kannst du das Dateinamenformat für Downloads ändern<br/>Das Standardformat ist<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+    "msg.t4": "Dateinamenformat fur Downloads andern",
+    "msg.d4": "Hier kannst du das Dateinamenformat fur Downloads andern<br/>Das Standardformat ist<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
     "msg.t5": "Videos stummschalten",
-    "msg.d5": "Post-, Feed- und Reel-Videos werden stumm geöffnet",
-    "msg.t6": "Automatisch vergrößern",
-    "msg.d6": "Öffnet das Medien-Modal nach dem Start automatisch vergrößert",
+    "msg.d5": "Post-, Feed- und Reel-Videos werden stumm geoffnet",
+    "msg.t6": "Automatisch vergrosern",
+    "msg.d6": "Offnet das Medien-Modal nach dem Start automatisch vergrossert",
     "mss.t1": "Stories stummschalten",
-    "mss.d1": "Stories werden stumm geöffnet",
-    "mss.t2": "Stories beim Öffnen pausieren",
-    "mss.d2": "Stories werden beim Öffnen pausiert",
+    "mss.d1": "Stories werden stumm geoffnet",
+    "mss.t2": "Stories beim Offnen pausieren",
+    "mss.d2": "Stories werden beim Offnen pausiert",
     "mss.t3": "Stories einzeln anzeigen",
-    "mss.d3": "Stories werden beim Öffnen einzeln angezeigt",
+    "mss.d3": "Stories werden beim Offnen einzeln angezeigt",
     "d": "Download",
     "l": "Suche nach Medien...",
     "s": "Speichern",
     "sd": "Gespeichert",
-    "c": "Schließen",
-    "u.i": "[instantgram] ist veraltet. Bitte prüfe https://saschaheim.github.io/instantgram auf verfügbare Updates.",
+    "c": "Schliessen",
+    "u.t": "Update verfugbar",
+    "u.i": "[instantgram] ist veraltet. Bitte prufe https://saschaheim.github.io/instantgram auf verfugbare Updates.",
     "u.v": "[instantgram] Installierte Version: ${data.version} | Neues Update: ${data.onlineVersion}",
-    "u.t": "Update verfügbar",
-    "ad": "Gesponsert",
-    "modules.update@update_successful": "[instantgram] Update-Prüfung erfolgreich."
+    "modules.update@update_successful": "[instantgram] Update-Prufung erfolgreich.",
+    "ad": "Gesponsert"
 };
 
 const esAR: LocalizationDictionary = {
@@ -111,11 +110,11 @@ const esAR: LocalizationDictionary = {
     "s": "Guardar",
     "sd": "Guardado",
     "c": "Cerrar",
+    "u.t": "Actualizacion disponible",
     "u.i": "[instantgram] esta desactualizado. Revisa https://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
     "u.v": "[instantgram] Version instalada: ${data.version} | Nueva actualizacion: ${data.onlineVersion}",
-    "u.t": "Actualizacion disponible",
-    "ad": "Patrocinado",
-    "modules.update@update_successful": "[instantgram] Comprobacion de actualizacion completada."
+    "modules.update@update_successful": "[instantgram] Comprobacion de actualizacion completada.",
+    "ad": "Patrocinado"
 };
 
 const ptBR: LocalizationDictionary = {
@@ -149,11 +148,11 @@ const ptBR: LocalizationDictionary = {
     "s": "Salvar",
     "sd": "Salvo",
     "c": "Fechar",
+    "u.t": "Atualizacao disponivel",
     "u.i": "[instantgram] esta desatualizado. Verifique https://saschaheim.github.io/instantgram para atualizacoes disponiveis.",
     "u.v": "[instantgram] Versao instalada: ${data.version} | Nova atualizacao: ${data.onlineVersion}",
-    "u.t": "Atualizacao disponivel",
-    "ad": "Patrocinado",
-    "modules.update@update_successful": "[instantgram] Verificacao de atualizacao concluida."
+    "modules.update@update_successful": "[instantgram] Verificacao de atualizacao concluida.",
+    "ad": "Patrocinado"
 };
 
 const localization =

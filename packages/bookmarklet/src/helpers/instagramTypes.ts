@@ -55,14 +55,12 @@ export interface InstagramMediaInfoResponse {
 export type FetchRequestType =
     | "getReelsMediaFromFeed"
     | "getMediaFromInfo"
-    | "getUserFromInfo"
-    | "getUserInfoFromWebProfile";
+    | "getUserFromInfo";
 
 export type FetchDataConfig =
     | { type: "getReelsMediaFromFeed"; articleNode?: HTMLElement; id?: string | null; isHighlight?: boolean }
     | { type: "getMediaFromInfo"; articleNode: HTMLElement }
-    | { type: "getUserFromInfo"; userId: string }
-    | { type: "getUserInfoFromWebProfile"; userName: string };
+    | { type: "getUserFromInfo"; userId: string };
 
 export type DownloadableMedia = string | InstagramMediaItem | { width?: number; height?: number; url?: string };
 

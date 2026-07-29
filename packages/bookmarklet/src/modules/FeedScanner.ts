@@ -60,7 +60,7 @@ export class FeedScanner implements Module {
 
             // If the article is too small or doesn't exist, return an error
             if (!article || article.getBoundingClientRect().height < 40) {
-                return { found: false, errorMessage: 'Article not found or too small, likely an ad' };
+                return { found: false };
             }
 
             // Generate the modal data for the most visible article

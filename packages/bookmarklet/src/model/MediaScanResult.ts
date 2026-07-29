@@ -1,5 +1,12 @@
 import { MediaType } from "./MediaType"; // Importing the MediaType type for media classification
 
+export interface MediaSlide {
+    mediaType: MediaType;
+    mediaUrl: string;
+    downloadLabel: string;
+    downloadAttributes: Record<string, string>;
+}
+
 /**
  * MediaScanResult represents the result of a media scan.
  * It contains information about the scanned media, such as whether it was found,
@@ -19,21 +26,7 @@ export interface MediaScanResult {
      * @see MediaType for possible values.
      * @example "photo"
      */
-    mediaType?: MediaType;
-
-    /**
-     * Additional media information (e.g., metadata, dimensions, video duration).
-     * This can be an object or null if there is no additional information.
-     * @example { duration: "30s", dimensions: { width: 1920, height: 1080 } }
-     */
-    mediaInfo?: unknown;
-
-    /**
-     * The body content for the modal that is displayed to the user.
-     * This typically contains HTML or text content that provides information about the media.
-     * @example "<p>Media information here...</p>"
-     */
-    modalBody?: string;
+    slides?: MediaSlide[];
 
     /**
      * The index of the selected slide in a media carousel or slideshow.

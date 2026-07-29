@@ -1,0 +1,113 @@
+/* eslint-disable */
+import { ComponentChildren, render } from "preact";
+import { program } from "..";
+import { cssModal } from "./modalStyles";
+import { uiClasses } from "./uiTokens";
+import { sleep } from "../helpers/common";
+
+export interface ModalButton {
+  text: string;
+  active?: boolean;
+  callback?(): void;
+}
+
+export type ModalContent = ComponentChildren | string;
+
+export interface ModalOptions {
+  heading?: ModalContent;
+  body?: ModalContent;
+  bodyStyle?: string;
+  buttonList?: ModalButton[];
+  modalClassName?: string;
+  closeOnOverlayClick?: boolean;
+}
+
+export class Modal {
+  private options: ModalOptions;
+  private modal: HTMLDivElement | null = null;
+  private modalHost: HTMLDivElement | null = null;
+  private openTimerId = 0;
+
+  public constructor(modalOptions: ModalOptions) {
+    this.options = modalOptions;
+    const styleId = program.DOM_PREFIX + "-modal";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = cssModal;
+      document.head.appendChild(style);
+    }
+  }
+
+  private renderModal(): void {
+    if (!this.modalHost) return;
+    const { heading = "", body = "", bodyStyle, buttonList = [], modalClassName } = this.options;
+
+    render(
+      <div class={`${uiClasses.modal}${modalClassName ? ` ${modalClassName}` : ""}`}>
+        <div class={uiClasses.modalContent}>
+          <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
+          <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>
+          {!!buttonList.length && (
+            <div class={uiClasses.modalFooter}>
+              {buttonList.map((button) => (
+                <button class={button.active ? "active" : undefined} onClick={() => {
+                  button.callback?.();
+                  void this.close();
+                }}>{button.text}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>,
+      this.modalHost,
+    );
+  }
+
+  private createModal(): HTMLDivElement {
+    const modalElement = document.createElement("div");
+    modalElement.classList.add(uiClasses.modalOverlay);
+    modalElement.addEventListener("click", (event: MouseEvent) => {
+      if (this.options.closeOnOverlayClick !== false && event.target === modalElement) {
+        void this.close();
+      }
+    });
+
+    const modalHost = document.createElement("div");
+    this.modalHost = modalHost;
+    modalElement.appendChild(modalHost);
+    this.renderModal();
+
+    const modalWindow = modalHost.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
+    if (modalWindow && !this.options.buttonList?.length) {
+      const modalContent = modalWindow.querySelector(`.${uiClasses.modalContent}`) as HTMLElement | null;
+      if (modalContent) {
+        modalContent.style.paddingBottom = "4px";
+      }
+    }
+
+    return modalElement;
+  }
+
+  public async open(): Promise<void> {
+    if (this.modal) await this.close();
+
+    const modal = this.createModal();
+    this.modal = modal;
+    document.body.appendChild(modal);
+    modal.classList.add(uiClasses.modalVisible);
+    this.openTimerId = window.setTimeout(() => modal.classList.add(uiClasses.modalShow));
+  }
+
+  public async close(): Promise<void> {
+    if (!this.modal) return;
+
+    const modal = this.modal;
+    clearTimeout(this.openTimerId);
+    modal.classList.remove(uiClasses.modalShow);
+    await sleep(100);
+    render(null, this.modalHost!);
+    modal.remove();
+    this.modalHost = this.modal = null;
+  }
+}
