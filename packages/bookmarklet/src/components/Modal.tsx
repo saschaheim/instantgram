@@ -21,7 +21,7 @@ function ModalView({ onClose, options }: { onClose: () => void; options: ModalOp
 
   return (
     <div class={`${uiClasses.modal}${modalClassName ? ` ${modalClassName}` : ""}`}>
-      <div class={uiClasses.modalContent}>
+      <div class={uiClasses.modalContent} style={!buttonList.length ? "padding-bottom:4px" : undefined}>
         <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
         <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>
         {!!buttonList.length && (
@@ -86,14 +86,6 @@ export class Modal {
     modalElement.appendChild(modalHost);
     this.renderModal();
 
-    const modalWindow = modalHost.querySelector(`.${uiClasses.modal}`) as HTMLElement | null;
-    if (modalWindow && !this.options.buttonList?.length) {
-      const modalContent = modalWindow.querySelector(`.${uiClasses.modalContent}`) as HTMLElement | null;
-      if (modalContent) {
-        modalContent.style.paddingBottom = "4px";
-      }
-    }
-
     return modalElement;
   }
 
@@ -105,6 +97,11 @@ export class Modal {
     document.body.appendChild(modal);
     modal.classList.add(uiClasses.modalVisible);
     this.openTimerId = window.setTimeout(() => modal.classList.add(uiClasses.modalShow));
+  }
+
+  public update(modalOptions: ModalOptions): void {
+    this.options = modalOptions;
+    this.renderModal();
   }
 
   public async close(): Promise<void> {

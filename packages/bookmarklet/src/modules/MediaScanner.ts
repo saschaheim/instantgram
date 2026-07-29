@@ -159,12 +159,12 @@ export class MediaScanner implements Module {
                             null;
     }
 
-    private showScannerResult(scannerResult: MediaScanResult, program: Program): void {
+    private showScannerResult(scannerResult: MediaScanResult, program: Program, modal?: Modal): void {
         const viewerStore = createMediaViewerStore(
             scannerResult.selectedSliderIndex,
             program.settings.autoExpand
         );
-        this.openModal({
+        const options: ConstructorParameters<typeof Modal>[0] = {
             body: h(ReactiveMediaModalBody, {
                 onSettingChange: (settingKey: string, value: string | boolean) => {
                     this.syncProgramSetting(program, settingKey, value);
@@ -186,12 +186,13 @@ export class MediaScanner implements Module {
             }),
             bodyStyle: "padding:0!important;text-align:center",
             buttonList: [{ active: true, text: "", localizationKey: "c" }]
-        });
+        };
+        modal ? modal.update(options) : this.openModal(options);
     }
 
-    private openUtilityModal(program: Program, body: ModalContent): void {
+    private openUtilityModal(program: Program, body: ModalContent, modal?: Modal): void {
         const utilityStore = createUtilityViewerStore();
-        this.openModal({
+        const options: ConstructorParameters<typeof Modal>[0] = {
             heading: h(ReactiveUtilityModalHeading, {
                 programVersion: program.VERSION,
                 settingsIcon: SETTINGS_ICON_HTML,
@@ -209,7 +210,8 @@ export class MediaScanner implements Module {
             }),
             bodyStyle: "text-align:center;padding:40px 20px",
             buttonList: [{ active: true, text: "Ok" }]
-        });
+        };
+        modal ? modal.update(options) : this.openModal(options);
     }
 
     /**
@@ -237,12 +239,11 @@ export class MediaScanner implements Module {
                 console.log(`${this.getName()}()`, `Execute module ${scanner.getName()}`);
             }
             const scannerResult = await scanner.execute(program);
-            await loadingModal.close();
 
             if (scannerResult?.found) {
-                this.showScannerResult(scannerResult, program);
+                this.showScannerResult(scannerResult, program, loadingModal);
             } else {
-                this.openUtilityModal(program, this.buildNotFoundBody(scannerResult?.errorMessage));
+                this.openUtilityModal(program, this.buildNotFoundBody(scannerResult?.errorMessage), loadingModal);
             }
         } catch (error) {
             await loadingModal.close();
