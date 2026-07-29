@@ -14,6 +14,7 @@ const isDevBookmarklet = process.argv.includes('--dev');
 const isRelease = process.argv.includes('--release');
 const bookmarkletsJsonFile = path.join(__dirname, '..', 'dist', 'bookmarklets.json');
 const siteBookmarkletsJsonFile = path.join(__dirname, '..', '..', '..', 'apps', 'site', 'src', 'generated', 'bookmarklets.json');
+const firefoxBookmarkletsJsonFile = path.join(__dirname, '..', '..', '..', 'apps', 'site', 'src', 'generated', 'firefox-bookmarklets.json');
 const siteVersionJsonFile = path.join(__dirname, '..', '..', '..', 'apps', 'site', 'src', 'generated', 'version.json');
 
 signale.pending('Bookmarklet generating...');
@@ -78,6 +79,7 @@ const button = (bookmarklet) => `<a href="${escapeHtmlAttr(bookmarklet)}" class=
 (async () => {
   try {
     const bookmarklets = {};
+    const firefoxBookmarklets = {};
 
     fs.mkdirSync(path.dirname(bookmarkletsJsonFile), { recursive: true });
     fs.mkdirSync(path.dirname(siteBookmarkletsJsonFile), { recursive: true });
@@ -95,12 +97,24 @@ const button = (bookmarklet) => `<a href="${escapeHtmlAttr(bookmarklet)}" class=
       const instantgram = await readFileAsync(bundlePath, 'utf8');
       const bookmarklet = bookmarkletify(instantgram);
       bookmarklets[lang] = button(bookmarklet);
+      if (isRelease) {
+        const firefoxBundle = await readFileAsync(path.join(__dirname, '..', 'dist', 'main.firefox.js'), 'utf8');
+        firefoxBookmarklets[lang] = button(bookmarkletify(firefoxBundle)).replace('[instantgram ', '[instantgram Firefox ');
+      }
     }
 
     const serializedBookmarklets = JSON.stringify(bookmarklets, null, isDevBookmarklet ? 2 : 0);
     await writeFileAsync(bookmarkletsJsonFile, serializedBookmarklets + '\n');
     await writeFileAsync(siteBookmarkletsJsonFile, serializedBookmarklets + '\n');
+    if (isRelease) {
+      await writeFileAsync(firefoxBookmarkletsJsonFile, JSON.stringify(firefoxBookmarklets) + '\n');
+    }
     await writeFileAsync(siteVersionJsonFile, JSON.stringify({ version: pkg.version }, null, 2) + '\n');
+
+    if (isRelease) {
+      fs.rmSync(path.join(__dirname, '..', 'dist', 'main.js'), { force: true });
+      fs.rmSync(path.join(__dirname, '..', 'dist', 'main.firefox.js'), { force: true });
+    }
 
     signale.success('Bookmarklets generated');
   } catch (err) {

@@ -3,8 +3,9 @@
   "private": true,
   "packageManager": "pnpm@10.28.2",
   "scripts": {
-    "build": "pnpm --filter @instantgram/bookmarklet build && pnpm --filter @instantgram/site build",
-    "build:release": "pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/site build",
+    "build": "pnpm run build:all",
+    "build:all": "pnpm --filter @instantgram/bookmarklet build:bundles && pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/bookmarklet size && pnpm --filter @instantgram/site build",
+    "build:release": "pnpm run build:all",
     "build:bookmarklet": "pnpm --filter @instantgram/bookmarklet build",
     "build:site": "pnpm --filter @instantgram/site build",
     "dev": "turbo run dev --parallel",

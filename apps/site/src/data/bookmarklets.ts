@@ -1,4 +1,5 @@
 import bookmarklets from "../generated/bookmarklets.json";
+import firefoxBookmarklets from "../generated/firefox-bookmarklets.json";
 
 export type BookmarkletMap = Record<string, string>;
 export interface BookmarkletVariant {
@@ -10,6 +11,10 @@ export interface BookmarkletVariant {
 
 export function readBookmarklets(): BookmarkletMap {
   return bookmarklets as BookmarkletMap;
+}
+
+export function readFirefoxBookmarklets(): BookmarkletMap {
+  return firefoxBookmarklets as BookmarkletMap;
 }
 
 function decodeBookmarkletHref(bookmarkletHtml: string): string {

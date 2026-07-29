@@ -15,6 +15,7 @@ interface Props {
   projectButtonHelper: string;
   projectDescription: string;
   bookmarkletHtml: string;
+  firefoxBookmarkletHtml: string;
   version: string;
   languageLinks: LanguageLink[];
   assetBase: string;
@@ -29,6 +30,7 @@ const {
   projectButtonHelper,
   projectDescription,
   bookmarkletHtml,
+  firefoxBookmarkletHtml,
   version,
   languageLinks,
   assetBase,
@@ -142,6 +144,7 @@ const stylesheetHref = `${joinAsset("stylesheets/stylesheet.css")}?v=${version}`
       <h1 class="project-name">Instantgram</h1>
       <h2 class="project-tagline">{projectLead}</h2>
       <Fragment set:html={bookmarkletHtml} />
+      <Fragment set:html={firefoxBookmarkletHtml} />
       <br />
       <small>{projectButtonHelper}</small>
     </section>
@@ -171,7 +174,7 @@ const stylesheetHref = `${joinAsset("stylesheets/stylesheet.css")}?v=${version}`
       </footer>
     </section>
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-64893820-4"></script>
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=UA-64893820-4"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag() {

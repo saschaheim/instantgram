@@ -10,6 +10,7 @@ const development = process.env.ROLLUP_WATCH === 'true'; // Determine if the env
 const buildLocale = process.env.BUILD_LOCALE || 'en-US';
 const outputFile = process.env.BUILD_OUT_FILE || 'dist/main.js';
 const embedLocales = process.env.EMBED_LOCALES !== 'false';
+const firefoxLite = process.env.FIREFOX_LITE === 'true';
 const detailedAnalysis = process.env.ROLLUP_ANALYZE_VERBOSE === 'true';
 module.exports = {
     input: 'src/index.ts', // Entry file for the Rollup build (TypeScript file)
@@ -25,6 +26,7 @@ module.exports = {
             'process.env.VERSION': JSON.stringify(require('./package.json').version), // Replace 'process.env.VERSION' with the project version from package.json
             'process.env.LOCALE': JSON.stringify(buildLocale),
             'process.env.EMBED_LOCALES': JSON.stringify(embedLocales),
+            'process.env.FIREFOX_LITE': JSON.stringify(firefoxLite),
             preventAssignment: true, // Prevent variable assignment warnings
         }),
         typescript({

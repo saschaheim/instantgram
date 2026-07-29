@@ -11,6 +11,7 @@ const DOM_PREFIX = "instg"; // Prefix for generated DOM IDs and CSS classes
 const DEVELOPMENT = process.env.DEV as unknown as boolean ?? false; // Boolean flag indicating if the app is running in development mode
 const VERSION = process.env.VERSION as string; // Get the version from environment variables
 const STORAGE_NAME = APP_NAME.toLowerCase().replace(/-/g, "_"); // Storage key used in localStorage (converted to lowercase)
+const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
 
 // Define the program object that holds all the app's configuration and state
 export const program: Program = {
@@ -61,7 +62,7 @@ const runApp = async () => {
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner
     await scanner.execute(program); // Execute the MediaScanner with the program configuration
 
-    if (!DEVELOPMENT && isInstagramHost()) {
+    if (!FIREFOX_LITE && !DEVELOPMENT && isInstagramHost()) {
         const updater = new VersionUpdater(program); // Create an instance of VersionUpdater
         await updater.check(VERSION); // Check for version updates
     }

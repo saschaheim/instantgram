@@ -17,17 +17,15 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-for (const entry of fs.readdirSync(distDir)) {
-  if (/^main(?:\..+)?\.js$/.test(entry)) {
-    fs.rmSync(path.join(distDir, entry), { force: true });
-  }
-}
-
 const builds = release
-  ? [{ lang: 'en-US', file: 'main.js' }]
-  : langs.map(({ lang }) => ({ lang, file: `main.${lang.toLowerCase()}.js` }));
+  ? [
+      { lang: 'en-US', file: 'main.js', firefoxLite: false },
+      { lang: 'en-US', file: 'main.firefox.js', firefoxLite: true },
+    ]
+  : langs.map(({ lang }) => ({ lang, file: `main.${lang.toLowerCase()}.js`, firefoxLite: false }));
 
-for (const { lang, file } of builds) {
+for (const { lang, file, firefoxLite } of builds) {
+  fs.rmSync(path.join(distDir, file), { force: true });
   signale.await(`Building ${release ? 'runtime' : lang} bundle...`);
   execFileSync(process.execPath, [rollupBin, '-c'], {
     cwd: repoRoot,
@@ -37,6 +35,7 @@ for (const { lang, file } of builds) {
       BUILD_LOCALE: lang,
       BUILD_OUT_FILE: path.join('dist', file),
       EMBED_LOCALES: String(!release),
+      FIREFOX_LITE: String(firefoxLite),
     },
   });
 }
