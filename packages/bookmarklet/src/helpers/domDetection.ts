@@ -82,9 +82,9 @@ export const resolveCurrentStoryIndex = (el: HTMLElement): number => {
 
 export const findAD = (el: HTMLElement): boolean => {
     if (el.querySelector('a[href*="https://www.facebook.com/ads/"]')) return true;
-    const label = localize("ad").trim().toLocaleLowerCase();
-    return Boolean(label && Array.from(el.querySelectorAll<HTMLElement>("span,div"))
-        .some(node => node.children.length === 0 && node.textContent?.trim().toLocaleLowerCase() === label));
+    const labels = new Set([localize("ad").trim().toLocaleLowerCase(), "anzeige"]);
+    return Array.from(el.querySelectorAll<HTMLElement>("span,div"))
+        .some(node => node.children.length === 0 && labels.has(node.textContent?.trim().toLocaleLowerCase() || ""));
 };
 
 export const getElementWithHighestWidth = (el: HTMLElement): HTMLElement | null => {
