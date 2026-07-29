@@ -1,14 +1,43 @@
 /* eslint-disable */
 import { ComponentChildren, render } from "preact";
+import { useEffect, useState } from "preact/hooks";
 import { program } from "..";
+import localize, { subscribeLocale } from "../helpers/localize";
+import { LocalizationKey } from "../localization";
 import { cssModal } from "./modalStyles";
 import { uiClasses } from "./uiTokens";
 import { sleep } from "../helpers/common";
 
 export interface ModalButton {
   text: string;
+  localizationKey?: LocalizationKey;
   active?: boolean;
   callback?(): void;
+}
+
+function ModalView({ onClose, options }: { onClose: () => void; options: ModalOptions }) {
+  const [, setLocaleVersion] = useState(0);
+  useEffect(() => subscribeLocale(() => setLocaleVersion((version) => version + 1)), []);
+  const { heading = "", body = "", bodyStyle, buttonList = [], modalClassName } = options;
+
+  return (
+    <div class={`${uiClasses.modal}${modalClassName ? ` ${modalClassName}` : ""}`}>
+      <div class={uiClasses.modalContent}>
+        <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
+        <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>
+        {!!buttonList.length && (
+          <div class={uiClasses.modalFooter}>
+            {buttonList.map((button) => (
+              <button class={button.active ? "active" : undefined} onClick={() => {
+                button.callback?.();
+                onClose();
+              }}>{button.localizationKey ? localize(button.localizationKey) : button.text}</button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export type ModalContent = ComponentChildren | string;
@@ -41,27 +70,7 @@ export class Modal {
 
   private renderModal(): void {
     if (!this.modalHost) return;
-    const { heading = "", body = "", bodyStyle, buttonList = [], modalClassName } = this.options;
-
-    render(
-      <div class={`${uiClasses.modal}${modalClassName ? ` ${modalClassName}` : ""}`}>
-        <div class={uiClasses.modalContent}>
-          <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
-          <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>
-          {!!buttonList.length && (
-            <div class={uiClasses.modalFooter}>
-              {buttonList.map((button) => (
-                <button class={button.active ? "active" : undefined} onClick={() => {
-                  button.callback?.();
-                  void this.close();
-                }}>{button.text}</button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>,
-      this.modalHost,
-    );
+    render(<ModalView options={this.options} onClose={() => void this.close()} />, this.modalHost);
   }
 
   private createModal(): HTMLDivElement {

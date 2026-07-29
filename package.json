@@ -4,6 +4,7 @@
   "packageManager": "pnpm@10.28.2",
   "scripts": {
     "build": "pnpm --filter @instantgram/bookmarklet build && pnpm --filter @instantgram/site build",
+    "build:release": "pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/site build",
     "build:bookmarklet": "pnpm --filter @instantgram/bookmarklet build",
     "build:site": "pnpm --filter @instantgram/site build",
     "dev": "turbo run dev --parallel",

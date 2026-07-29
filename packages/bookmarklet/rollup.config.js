@@ -9,6 +9,7 @@ const { swc } = require('rollup-plugin-swc3'); // Import SWC (Speedy Web Compile
 const development = process.env.ROLLUP_WATCH === 'true'; // Determine if the environment is in development mode (based on ROLLUP_WATCH)
 const buildLocale = process.env.BUILD_LOCALE || 'en-US';
 const outputFile = process.env.BUILD_OUT_FILE || 'dist/main.js';
+const embedLocales = process.env.EMBED_LOCALES !== 'false';
 const detailedAnalysis = process.env.ROLLUP_ANALYZE_VERBOSE === 'true';
 module.exports = {
     input: 'src/index.ts', // Entry file for the Rollup build (TypeScript file)
@@ -23,6 +24,7 @@ module.exports = {
             'process.env.DEV': JSON.stringify(development), // Replace 'process.env.DEV' with the value of the development variable
             'process.env.VERSION': JSON.stringify(require('./package.json').version), // Replace 'process.env.VERSION' with the project version from package.json
             'process.env.LOCALE': JSON.stringify(buildLocale),
+            'process.env.EMBED_LOCALES': JSON.stringify(embedLocales),
             preventAssignment: true, // Prevent variable assignment warnings
         }),
         typescript({

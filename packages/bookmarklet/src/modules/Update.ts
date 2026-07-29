@@ -100,7 +100,7 @@ export class VersionUpdater {
             body: h(UpdateModalBody, { localVersion, onlineVersion, text: changelogText }),
             bodyStyle: "padding:0!important",
             modalClassName: "ium",
-            buttonList: [{ active: true, text: localize("c") }],
+            buttonList: [{ active: true, text: "", localizationKey: "c" }],
         }).open();
     }
 }

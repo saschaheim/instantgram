@@ -1,6 +1,7 @@
 import { Program } from "./App";
 import { getBrowserInfo } from "./helpers/common";
-import localize from "./helpers/localize";
+import { embeddedLocales } from "./localization";
+import localize, { getLocale, isInstagramHost, loadLocale } from "./helpers/localize";
 import { MediaScanner } from "./modules/MediaScanner";
 import VersionUpdater from "./modules/Update";
 
@@ -32,7 +33,6 @@ export const program: Program = {
 
     // User settings, fetched from localStorage to persist across sessions
     settings: {
-        showAds: localStorage.getItem(`${STORAGE_NAME}_g1`) === "true", // User preference for showing ads
         openInNewTab: localStorage.getItem(`${STORAGE_NAME}_g2`) === "true", // Open links in new tab setting
         autoSlideshow: localStorage.getItem(`${STORAGE_NAME}_g3`) === "true", // Auto slideshow setting
         videosMuted: localStorage.getItem(`${STORAGE_NAME}_g5`) === "true", // Mute regular videos by default
@@ -43,21 +43,25 @@ export const program: Program = {
     }
 };
 
-console.info(localize("h.ld"));
-console.info(["Developer Mode Caution!", program]);
-console.info(["Browser Name", program.browser.name]);
-console.info(["Browser Version", program.browser.version]);
-console.info(["Browser OS", navigator.platform]);
-
 /**
  * The main function to run the application.
  * It initializes the MediaScanner and performs media scanning.
  */
 const runApp = async () => {
+    await loadLocale(getLocale());
+    console.info(localize("h.ld"));
+    console.info(["Developer Mode Caution!", program]);
+    console.info(["Browser Name", program.browser.name]);
+    console.info(["Browser Version", program.browser.version]);
+    console.info(["Browser OS", navigator.platform]);
+    if (!embeddedLocales && !isInstagramHost()) {
+        console.info("[instantgram] Additional languages and update checks are only available on instagram.com");
+    }
+
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner
     await scanner.execute(program); // Execute the MediaScanner with the program configuration
 
-    if (!DEVELOPMENT) {
+    if (!DEVELOPMENT && isInstagramHost()) {
         const updater = new VersionUpdater(program); // Create an instance of VersionUpdater
         await updater.check(VERSION); // Check for version updates
     }

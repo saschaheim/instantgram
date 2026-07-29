@@ -11,6 +11,7 @@ const langs = require('../src/_langs/langs.json');
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const isDevBookmarklet = process.argv.includes('--dev');
+const isRelease = process.argv.includes('--release');
 const bookmarkletsJsonFile = path.join(__dirname, '..', 'dist', 'bookmarklets.json');
 const siteBookmarkletsJsonFile = path.join(__dirname, '..', '..', '..', 'apps', 'site', 'src', 'generated', 'bookmarklets.json');
 const siteVersionJsonFile = path.join(__dirname, '..', '..', '..', 'apps', 'site', 'src', 'generated', 'version.json');
@@ -74,8 +75,6 @@ const hash = () => {
 
 const button = (bookmarklet) => `<a href="${escapeHtmlAttr(bookmarklet)}" class="btn" style="cursor: move;">[instantgram ${hash()}]</a>`;
 
-const bundlePathForLang = (lang) => path.join(__dirname, '..', 'dist', `main.${lang.toLowerCase()}.js`);
-
 (async () => {
   try {
     const bookmarklets = {};
@@ -84,12 +83,18 @@ const bundlePathForLang = (lang) => path.join(__dirname, '..', 'dist', `main.${l
     fs.mkdirSync(path.dirname(siteBookmarkletsJsonFile), { recursive: true });
 
     for (const { lang } of langs) {
-      const bundlePath = bundlePathForLang(lang);
+      const bundlePath = path.join(
+        __dirname,
+        '..',
+        'dist',
+        isRelease ? 'main.js' : `main.${lang.toLowerCase()}.js`,
+      );
       if (!fs.existsSync(bundlePath)) {
-        throw new Error(`Missing localized bundle for ${lang}: ${bundlePath}`);
+        throw new Error(`Missing locale bundle: ${bundlePath}`);
       }
       const instantgram = await readFileAsync(bundlePath, 'utf8');
-      bookmarklets[lang] = button(bookmarkletify(instantgram));
+      const bookmarklet = bookmarkletify(instantgram);
+      bookmarklets[lang] = button(bookmarklet);
     }
 
     const serializedBookmarklets = JSON.stringify(bookmarklets, null, isDevBookmarklet ? 2 : 0);

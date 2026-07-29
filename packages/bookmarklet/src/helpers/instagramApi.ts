@@ -21,13 +21,13 @@ const normalizePostId = (postId: string | null): string | null => {
 };
 
 export const findAppId = (): string | null => {
-    const appIdPattern = /"X-IG-App-ID":"([\d]+)"/;
-    const scripts = Array.from(document.querySelectorAll("body > script")) as HTMLScriptElement[];
+    const appIdPattern = /["']?X-IG-App-ID["']?\s*:\s*["']?(\d+)/i;
+    const scripts = Array.from(document.scripts);
 
     const script = scripts
         .map(s => s.textContent?.match(appIdPattern))
         .find(Boolean);
-    return script ? script[1] : null;
+    return script?.[1] || "936619743392459";
 };
 
 export const findPostId = (articleNode: HTMLElement) => {

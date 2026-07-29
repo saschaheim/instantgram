@@ -3,7 +3,8 @@ import { ComponentChildren } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { Program } from "../App";
 import { formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
-import localize from "../helpers/localize";
+import localize, { canUseLocale, getLocale, loadLocale, setLocale, SupportedLocale, supportedLocales } from "../helpers/localize";
+import { LocalizationKey } from "../localization";
 import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
 import { MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
@@ -122,22 +123,22 @@ export function LoadingBody() {
   );
 }
 
-export function UtilityMessageBody({ body }: { body: string }) {
-  return <div dangerouslySetInnerHTML={{ __html: body }} />;
+export function UtilityMessageBody({ body, localizationKey }: { body?: string; localizationKey?: LocalizationKey }) {
+  return <div dangerouslySetInnerHTML={{ __html: localizationKey ? localize(localizationKey) : body || "" }} />;
 }
 
 export function NotFoundBody({
-  message,
+  messageKey,
   exampleUrl,
   linkRel,
 }: {
-  message: string;
+  messageKey: LocalizationKey;
   exampleUrl: string;
   linkRel: string;
 }) {
   return (
     <>
-      <div>{message}</div>
+      <div>{localize(messageKey)}</div>
       <div style="text-align:center">
         <a style="color:black" href={exampleUrl} target="_blank" rel={linkRel}>
           {exampleUrl}
@@ -271,9 +272,29 @@ const playFlipAnimation = (
   });
 };
 
-const buildSettingsRight = (version: string, closeSettings: () => void) => (
+const buildSettingsRight = (version: string, closeSettings: () => void, onLocaleChange: () => void) => (
   <>
     <span>{version}</span>
+    <select
+      id="instantgram-language"
+      name="instantgram-language"
+      class="il"
+      aria-label="Language"
+      value={getLocale()}
+      onChange={async (event) => {
+        const locale = event.currentTarget.value as SupportedLocale;
+        if (!await loadLocale(locale)) return;
+        setLocale(locale);
+        console.info(localize("h.ld"));
+        onLocaleChange();
+      }}
+    >
+      {supportedLocales.map((locale) => (
+        <option key={locale} value={locale} disabled={!canUseLocale(locale)}>
+          {locale.slice(0, 2).toUpperCase()}
+        </option>
+      ))}
+    </select>
     <HeaderIconButton className="ima ib" innerHtml="<i>&#8592;</i>" onClick={closeSettings} />
   </>
 );
@@ -293,7 +314,7 @@ export function ReactiveMediaModalHeading(props: {
 }) {
   const state = useStoreState(props.store);
   return state.mode === "settings"
-    ? <BaseHeading middle={props.settingsTitle} right={buildSettingsRight(props.version, () => props.store.closeSettings())} />
+    ? <BaseHeading middle={localize("ms.t")} right={buildSettingsRight(props.version, () => props.store.closeSettings(), () => props.store.bumpSettingsVersion())} />
     : (
       <BaseHeading
         middle={<a href={props.userLink}>@{props.userName}</a>}
@@ -562,7 +583,7 @@ export function ReactiveUtilityModalHeading(props: {
 }) {
   const state = useStoreState(props.store);
   return state.mode === "settings"
-    ? <BaseHeading middle={props.settingsTitle} right={buildSettingsRight(props.programVersion, () => props.store.closeSettings())} />
+    ? <BaseHeading middle={localize("ms.t")} right={buildSettingsRight(props.programVersion, () => props.store.closeSettings(), () => props.store.bumpSettingsVersion())} />
     : <BaseHeading right={<><span>{props.programVersion}</span>{buildSettingsToggle(props.settingsIcon, () => props.store.openSettings())}</>} />;
 }
 
