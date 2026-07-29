@@ -1,0 +1,171 @@
+---
+import { buildFirefoxBookmarkletVariants } from "../data/bookmarklets";
+import siteVersion from "../generated/version.json";
+
+const variants = buildFirefoxBookmarkletVariants("en-US");
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instantgram Firefox Bookmarklet Test</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #07111a;
+        --panel: #0e1b28;
+        --panel-2: #132537;
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f4f8fb;
+        --muted: #a8bfd1;
+        --accent: #6ea8c8;
+        --accent-2: #376d90;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top, rgba(110, 168, 200, 0.22), transparent 35%),
+          linear-gradient(180deg, #08121b 0%, #050b11 100%);
+      }
+
+      main {
+        width: min(980px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: clamp(32px, 5vw, 52px);
+        line-height: 0.95;
+      }
+
+      p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(19, 37, 55, 0.94), rgba(11, 23, 35, 0.94));
+        box-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+      }
+
+      .version {
+        display: inline-flex;
+        margin-bottom: 16px;
+        padding: 8px 12px;
+        border: 1px solid rgba(110, 168, 200, 0.35);
+        border-radius: 999px;
+        color: #d7e9f4;
+        background: rgba(110, 168, 200, 0.12);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(19, 37, 55, 0.92), rgba(10, 18, 28, 0.94));
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .meta {
+        color: #d7e9f4;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .meta.bad {
+        color: #ffb6b6;
+      }
+
+      .bookmarklet {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 18px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 999px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent) 0%, #4b8db5 55%, var(--accent-2) 100%);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      code {
+        display: block;
+        overflow: auto;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.04);
+        color: #b8d7e8;
+        font-size: 12px;
+        line-height: 1.5;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <div class="version">Instantgram {siteVersion.version}</div>
+        <h1>Firefox Drag Test</h1>
+        <p>Zieh jede Variante in die Firefox-Lesezeichenleiste. So sehen wir sofort, welche minimale Encodierung Firefox wirklich braucht.</p>
+      </section>
+
+      <section class="grid">
+        {
+          variants.map((variant) => (
+            <article class="card">
+              <h2>{variant.label}</h2>
+              <div class={variant.payloadChars <= 65536 ? "meta" : "meta bad"}>{variant.payloadChars} chars</div>
+              <a class="bookmarklet" data-bookmarklet-href={variant.href} href="#">
+                [instantgram {variant.label}]
+              </a>
+              <code>{variant.href.slice(0, 140)}...</code>
+            </article>
+          ))
+        }
+      </section>
+    </main>
+    <script is:inline>
+      for (const link of document.querySelectorAll("[data-bookmarklet-href]")) {
+        const href = link.getAttribute("data-bookmarklet-href");
+        if (href) {
+          link.setAttribute("href", href);
+        }
+      }
+    </script>
+  </body>
+</html>
