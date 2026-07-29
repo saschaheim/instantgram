@@ -1,6 +1,7 @@
 node_modules
 .vscode
 .history
+.turbo
 
 # tools/instagram-fixtures: local-only credentials, cached session, and captured output.
 tools/instagram-fixtures/credentials.json

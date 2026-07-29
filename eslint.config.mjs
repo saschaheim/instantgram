@@ -10,6 +10,7 @@ export default [
     // separately (e.g. `npx eslint tools/instagram-fixtures/*.ts`) if needed.
     ignores: ["tools/**", "packages/bookmarklet/tools/**", "apps/site/dist/**", "packages/bookmarklet/dist/**"],
   },
+  pluginJs.configs.recommended,  // Apply the recommended JavaScript rules before language-specific overrides
   {
     files: ["**/*.ts", "**/*.tsx"],  // Apply this configuration to TypeScript files (.ts and .tsx)
     languageOptions: {
@@ -18,7 +19,6 @@ export default [
       parserOptions: {
         ecmaVersion: 2020,  // Set the ECMAScript version to 2020
         sourceType: "module",  // Set the module type for the code
-        project: ["./packages/bookmarklet/tsconfig.json"],  // Reference the package TypeScript configuration file
       },
     },
     plugins: {
@@ -26,6 +26,7 @@ export default [
     },
     rules: {
       "no-unused-vars": "off",  // Let the TypeScript-aware rule set handle unused values
+      "no-undef": "off",  // TypeScript resolves type-only globals such as DOM collection types
       "no-useless-escape": "off",  // Disable the 'no-useless-escape' rule which can cause incorrect warnings
       "@typescript-eslint/no-explicit-any": "off",  // Disable the rule that disallows the use of 'any' type
     },
@@ -39,5 +40,4 @@ export default [
       // Additional rules for JavaScript files, if needed, can be added here
     },
   },
-  pluginJs.configs.recommended,  // Apply the recommended ESLint configuration for JavaScript files
 ];

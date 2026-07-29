@@ -3,3 +3,8 @@ packages:
   - "packages/*"
 
 nodeLinker: hoisted
+
+onlyBuiltDependencies:
+  - "@swc/core"
+  - esbuild
+  - sharp
