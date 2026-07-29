@@ -1,4 +1,4 @@
-import localization from "../localization";
+import localize from "./localize";
 
 export const getElementInViewPercentage = (el: HTMLElement): number => {
     if (!el?.getBoundingClientRect) return 0;
@@ -80,29 +80,11 @@ export const resolveCurrentStoryIndex = (el: HTMLElement): number => {
     return 0;
 };
 
-export const findAD = (el: HTMLElement, isStory?: boolean): boolean => {
-    const isADPathPresent = (): boolean => {
-        return Boolean(Array.from(el.querySelectorAll<SVGPathElement>("path"))
-            .find(p => p.getAttribute("d") === "M21 17.502a.997.997 0 0 1-.707-.293L12 8.913l-8.293 8.296a1 1 0 1 1-1.414-1.414l9-9.004a1.03 1.03 0 0 1 1.414 0l9 9.004A1 1 0 0 1 21 17.502Z"));
-    };
-
-    const getAdText = (): string | undefined => {
-        try {
-            return el.children[0]?.children[0]?.children[0]?.children[0]?.children[0]?.children[1]?.children[0]?.children[0]?.children[1]?.children[1]?.children[0]?.textContent;
-        } catch {
-            return undefined;
-        }
-    };
-
-    if (isStory) {
-        const adText = getAdText();
-        if (adText) {
-            return localization.ad === adText;
-        }
-        return false;
-    }
-
-    return isADPathPresent();
+export const findAD = (el: HTMLElement): boolean => {
+    if (el.querySelector('a[href*="https://www.facebook.com/ads/"]')) return true;
+    const label = localize("ad").trim().toLocaleLowerCase();
+    return Boolean(label && Array.from(el.querySelectorAll<HTMLElement>("span,div"))
+        .some(node => node.children.length === 0 && node.textContent?.trim().toLocaleLowerCase() === label));
 };
 
 export const getElementWithHighestWidth = (el: HTMLElement): HTMLElement | null => {

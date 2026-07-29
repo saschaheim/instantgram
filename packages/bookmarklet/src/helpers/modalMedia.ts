@@ -4,7 +4,6 @@ import { MediaScanResult, MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
 import { fetchDataFromApi, findPostId, getIGUsername, resolveProfile } from "./instagramApi";
 import { findAD, resolveCurrentStoryIndex } from "./domDetection";
-import { findMediaUrl } from "./reactMedia";
 import {
     DownloadableMedia,
     InstagramMediaInfoResponse,
@@ -72,21 +71,11 @@ const buildResult = (
     userLink,
 });
 
-const createAdSlide = (resolvedAdUrl: string, userName: string, program: Program): MediaSlide => {
-    const { formattedFilename, url } = getFormattedFilenameAndUrl(resolvedAdUrl, userName, program.settings.formattedFilenameInput, 0);
-    return {
-        mediaType: MediaType.Video,
-        mediaUrl: url,
-        downloadLabel: localize("d"),
-        downloadAttributes: {
-            "data-direct-url": url,
-            "data-static-filename": formattedFilename,
-        },
-    };
-};
-
 export const generateModalBody = async (el: HTMLElement, program: Program): Promise<MediaScanResult> => {
     const isPathMatch = (path: string) => window.location.pathname.startsWith(path);
+    if (findAD(el)) {
+        return { found: false, errorMessage: "Advertisement is not supported." };
+    }
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);
     const userId = isPathMatch("/stories/") ? (await resolveProfile(userName)).userId : null;
@@ -105,20 +94,6 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
     }
 
     const userLink = resolveUserLink('https://www.instagram.com', window.location.pathname, userName);
-
-    if (findAD(el, isPathMatch("/stories/"))) {
-        if (!program.settings.showAds) {
-            return { found: false };
-        }
-        const targetNode = el.querySelector("video[playsinline]") || el.querySelector('img[draggable]');
-        if (!targetNode) return { found: false };
-        const mediaUrl = findMediaUrl(el, 'post');
-        const resolvedAdUrl = mediaUrl.mostFrequentUrl || mediaUrl.mediaUrlElements[0]?.url;
-        if (!resolvedAdUrl) {
-            return { found: false };
-        }
-        return buildResult([createAdSlide(resolvedAdUrl, userName, program)], userName, userLink, 0);
-    }
 
     return (await generateModalBodyHelper(el, mediaInfo, userName, userLink, program))
         || { found: false };

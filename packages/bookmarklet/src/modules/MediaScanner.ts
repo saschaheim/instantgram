@@ -34,7 +34,6 @@ type ScannerClass =
     | typeof ReelsScanner;
 
 const SETTINGS_CONFIG: SettingsConfig[] = [
-    { id: "g1", pane: "general", title: "msg.t1", description: "msg.d1" },
     { id: "g2", pane: "general", title: "msg.t2", description: "msg.d2" },
     { id: "g3", pane: "general", title: "msg.t3", description: "msg.d3" },
     { id: "g5", pane: "general", title: "msg.t5", description: "msg.d5" },
@@ -46,7 +45,6 @@ const SETTINGS_CONFIG: SettingsConfig[] = [
 ];
 
 const SETTINGS_PROGRAM_KEYS = {
-    g1: "showAds",
     g2: "openInNewTab",
     g3: "autoSlideshow",
     g4: "formattedFilenameInput",
@@ -58,11 +56,7 @@ const SETTINGS_PROGRAM_KEYS = {
 
 const SETTINGS_ICON_HTML = "&#9881;";
 const EXPAND_ICON_HTML = "&#9974;";
-const CLOSE_TEXT = localize("c");
 const SETTINGS_TITLE = localize("ms.t");
-const WRONG_HOST_TEXT = localize("a.wo");
-const UNSUPPORTED_MEDIA_TEXT = localize("a.ie");
-const NOT_FOUND_TEXT = localize("a.nf");
 
 /**
  * MediaScanner is a module responsible for handling various media scanning tasks,
@@ -145,10 +139,10 @@ export class MediaScanner implements Module {
     private buildNotFoundBody(errorMessage?: string): ModalContent {
         if (errorMessage && errorMessage !== NO_TARGET_FOUND) {
             console.info(`[${this.getName()}] Instagram returned an error:`, errorMessage);
-            return UNSUPPORTED_MEDIA_TEXT;
+            return h(UtilityMessageBody, { localizationKey: "a.ie" });
         }
         return h(NotFoundBody, {
-            message: NOT_FOUND_TEXT,
+            messageKey: "a.nf",
             exampleUrl: "https://www.instagram.com/p/CIGrv1VMBkS/",
             linkRel: "noopener noreferrer"
         });
@@ -186,7 +180,7 @@ export class MediaScanner implements Module {
                 version: program.VERSION
             }),
             bodyStyle: "padding:0!important;text-align:center",
-            buttonList: [{ active: true, text: CLOSE_TEXT }]
+            buttonList: [{ active: true, text: "", localizationKey: "c" }]
         });
     }
 
@@ -208,7 +202,7 @@ export class MediaScanner implements Module {
                 settings: SETTINGS_CONFIG,
                 store: utilityStore
             }),
-            bodyStyle: "text-align:center;padding:20px",
+            bodyStyle: "text-align:center;padding:40px 20px",
             buttonList: [{ active: true, text: "Ok" }]
         });
     }
@@ -220,7 +214,7 @@ export class MediaScanner implements Module {
      */
     private async handleURLPatterns(program: Program): Promise<void> {
         if (!program.hostname.includes("instagram.com")) {
-            this.openUtilityModal(program, WRONG_HOST_TEXT);
+            this.openUtilityModal(program, h(UtilityMessageBody, { localizationKey: "a.wo" }));
             return;
         }
 

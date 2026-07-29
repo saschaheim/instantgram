@@ -96,12 +96,6 @@ export type Program = {
    */
   settings: {
     /**
-     * Flag to determine if advertisements should be shown in the app.
-     * When set to `false`, ads will not be displayed.
-     */
-    showAds: boolean;
-
-    /**
      * Flag to determine whether links should open in a new tab.
      * When set to `true`, links will open in a new browser tab.
      */
