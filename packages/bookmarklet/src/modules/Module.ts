@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Program } from "../App";
 import { MediaScanResult } from "../model/MediaScanResult";
 

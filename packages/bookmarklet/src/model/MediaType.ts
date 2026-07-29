@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 /**
  * MediaType enum is used to categorize different types of media that the application can encounter.
  * This helps to easily classify and handle media based on its type (e.g., image, video, ad).

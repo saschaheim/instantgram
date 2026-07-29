@@ -6,7 +6,7 @@ const inline = (text: string) => text
   .replace(/&/g, "&amp;")
   .replace(/</g, "&lt;")
   .replace(/>/g, "&gt;")
-  .replace(/`([^`]+)`/g, "<code style=\"font-family:Consolas,Monaco,monospace;font-size:.95em;background:#f3f6f9;color:#234;padding:2px 6px;border-radius:6px\">$1</code>")
+  .replace(/`([^`]+)`/g, "<code style=\"font-size:.95em;background:#f3f6f9;color:#234;padding:2px 6px;border-radius:6px\">$1</code>")
   .replace(/\*\*([^*]+)\*\*/g, "<strong style=\"font-weight:700;color:#111\">$1</strong>");
 
 function Changelog({ text }: { text: string }) {

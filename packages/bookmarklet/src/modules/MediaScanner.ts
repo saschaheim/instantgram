@@ -56,6 +56,7 @@ const SETTINGS_PROGRAM_KEYS = {
 
 const SETTINGS_ICON_HTML = "&#9881;";
 const EXPAND_ICON_HTML = "&#9974;";
+const COLLAPSE_ICON_HTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l6 6M9 4v5H4M21 3l-6 6m0-5v5h5M3 21l6-6M4 15h5v5M21 21l-6-6m0 5v-5h5"/></svg>';
 const SETTINGS_TITLE = localize("ms.t");
 
 /**
@@ -154,12 +155,15 @@ export class MediaScanner implements Module {
             program.regexProfilePath.test(pathname) ? ProfileScanner :
                 program.regexRootPath.test(pathname) ? FeedScanner :
                     (program.regexPostPath.test(pathname) || program.regexReelURI.test(pathname)) ? PostAndReelScanner :
-                        program.regexReelsURI.test(pathname) ? ReelsScanner :
+                program.regexReelsURI.test(pathname) ? ReelsScanner :
                             null;
     }
 
     private showScannerResult(scannerResult: MediaScanResult, program: Program): void {
-        const viewerStore = createMediaViewerStore(scannerResult.selectedSliderIndex);
+        const viewerStore = createMediaViewerStore(
+            scannerResult.selectedSliderIndex,
+            program.settings.autoExpand
+        );
         this.openModal({
             body: h(ReactiveMediaModalBody, {
                 onSettingChange: (settingKey: string, value: string | boolean) => {
@@ -171,6 +175,7 @@ export class MediaScanner implements Module {
                 store: viewerStore
             }),
             heading: h(ReactiveMediaModalHeading, {
+                collapseIcon: COLLAPSE_ICON_HTML,
                 expandIcon: EXPAND_ICON_HTML,
                 settingsIcon: SETTINGS_ICON_HTML,
                 settingsTitle: SETTINGS_TITLE,

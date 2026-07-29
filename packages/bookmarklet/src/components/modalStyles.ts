@@ -16,9 +16,12 @@ const {
   modalVisible,
 } = sharedUiClasses;
 const { loadingSpin } = sharedUiAnimations;
+const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
 
 const modalCssRules = [
-  `.${modalFooter} button,.${modalHeader} h5{font-family:"Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif!important;font-size:16px!important}`,
+  `.${modal},.${modal} *{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important}`,
+  `.${modal}{font-size:14px!important;line-height:1.5!important}`,
+  `.${modalFooter} button,.${modalHeader} h5{font-size:16px!important}`,
   `.${modalOverlay}{display:none!important;opacity:0!important;transition:.1s!important;position:fixed!important;inset:0!important;z-index:1000!important;background:rgba(0,0,0,.65)!important;justify-content:center!important;align-items:center!important}`,
   `.${modal}{transition:width .28s cubic-bezier(.22,.61,.36,1),transform .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s cubic-bezier(.22,.61,.36,1)!important;display:inline-block!important;width:400px!important;padding:1.6px!important;z-index:1001!important;transform:translateY(0);box-shadow:none}`,
   `@media (min-width:736px){.${modal}{width:640px!important}}`,
@@ -41,19 +44,23 @@ const modalCssRules = [
   `.${modalHeader} h5{color:#fff!important;margin:revert!important;display:flex;justify-content:space-between;align-items:center;height:15px}`,
   `.hl{flex:1;text-align:left}`,
   `.hr{flex:1;text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:10px}`,
-  `.il{height:40px;padding:0 7px;color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;font:700 12px "Open Sans",sans-serif;outline:0}`,
-  `.il option{color:#163042;background:#fff}`,
+  `.il{appearance:none;width:40px;height:40px;padding:0;color:#fff;color-scheme:light;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;outline:0;cursor:pointer;text-align:center;text-align-last:center}`,
+  `.il:hover{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}`,
+  `.il option{text-align:center}`,
+  `@supports not (-moz-appearance:none){.il option{color:#163042}}`,
   `.hm{flex:1;text-align:center}`,
   `.hm a{color:#fff!important}`,
   `.${settings},.ima{cursor:pointer;box-sizing:border-box;padding:0!important;color:rgba(255,255,255,.7);background-color:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;transition:color .2s,background-color .2s,border-color .2s,transform .24s ease;width:40px;height:40px;font-size:20px;font-weight:700;line-height:1}`,
   `.${settings}:hover,.ima:hover{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}`,
   `.ima.active{background-color:rgba(255,255,255,.28);border-color:rgba(255,255,255,.38);color:#fff}`,
+  `.ima svg{display:block;width:20px;height:20px;margin:auto}`,
   `.ib i{position:relative;top:-3px}`,
   `.${loading}{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:180px;padding:28px 20px;text-align:center}`,
   `.${loadingSpinner}{width:44px;height:44px;border-radius:50%;border:4px solid rgba(75,141,181,.22);border-top-color:#4b8db5;animation:${loadingSpin} 1s linear infinite}`,
   `@keyframes ${loadingSpin}{to{transform:rotate(360deg)}}`,
   `.${loadingText}{font-size:14px;font-weight:600;line-height:1.35;letter-spacing:.01em;color:#495057}`,
 
+  ...(!FIREFOX_LITE ? [
   `.${modal}.ium,.ium .${modalContent}{border-radius:18px!important;overflow:hidden!important}`,
   `.${modal}.ium{width:min(92vw,540px)!important;padding:0!important;box-shadow:0 18px 44px rgba(0,0,0,.2)!important}`,
   `.ium .${modalContent}{background:#fff!important;border:0!important}`,
@@ -69,6 +76,7 @@ const modalCssRules = [
   `.ium .${modalFooter} button:hover{background:#edf3f7!important;border-color:#cfdee9!important;transform:none!important}`,
   `.ium .${modalFooter} button.active{color:#163042!important}`,
   `@media (max-width:560px){.ium{width:min(94vw,540px)!important}.ium .${modalHeader}{padding:16px 18px 10px!important}.ium .${modalFooter}{padding:12px 16px 16px!important}}`,
+  ] : []),
 ];
 
 export const cssModal = modalCssRules.join("");

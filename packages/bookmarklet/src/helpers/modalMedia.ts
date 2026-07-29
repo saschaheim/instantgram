@@ -145,7 +145,6 @@ export const getMediaInfo = async (
 
 export const processMediaInfo = (
     mediaInfo: InstagramMediaInfoResponse,
-    // eslint-disable-next-line no-unused-vars
     callback: (...args: [InstagramMediaItem, number, number]) => void
 ): number => {
     let count = 0;

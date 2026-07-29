@@ -2,6 +2,7 @@ import { buildLocale, embeddedLocales, localizations, LocalizationKey } from "..
 import { findAppId, secureFetch, shortcodeToMediaId } from "./instagramApi";
 
 export const localeStorageKey = "instantgram_locale";
+export const localeUnavailableMessage = "[instantgram] Additional languages are only available on instagram.com";
 export const supportedLocales = ["en-US", "de-DE", "es-AR", "pt-BR"] as const;
 export type SupportedLocale = typeof supportedLocales[number];
 export const isInstagramHost = (): boolean => location.hostname.includes("instagram.com");
@@ -50,7 +51,7 @@ export const subscribeLocale = (listener: () => void): (() => void) => {
 export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
     if (getDictionary(locale)) return true;
     if (!isInstagramHost()) {
-        console.info("[instantgram] Additional languages are only available on instagram.com");
+        console.info(localeUnavailableMessage);
         return false;
     }
     const shortcode = remoteLocalePosts[locale];
@@ -79,9 +80,6 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
         return false;
     }
 };
-
-export const canUseLocale = (locale: SupportedLocale): boolean =>
-    locale === "en-US" || embeddedLocales || isInstagramHost();
 
 function localize(str: string): string {
     return (getDictionary(getLocale()) || localizations["en-US"])?.[str as LocalizationKey] || "";

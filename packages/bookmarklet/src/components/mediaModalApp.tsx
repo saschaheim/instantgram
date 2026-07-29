@@ -3,7 +3,7 @@ import { ComponentChildren } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { Program } from "../App";
 import { formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
-import localize, { canUseLocale, getLocale, loadLocale, setLocale, SupportedLocale, supportedLocales } from "../helpers/localize";
+import localize, { getLocale, loadLocale, localeUnavailableMessage, setLocale, SupportedLocale, supportedLocales } from "../helpers/localize";
 import { LocalizationKey } from "../localization";
 import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
 import { MediaSlide } from "../model/MediaScanResult";
@@ -71,9 +71,9 @@ const createStore = <TState,>(state: TState) => {
   };
 };
 
-export const createMediaViewerStore = (selectedIndex = 0): MediaViewerStore => {
+export const createMediaViewerStore = (selectedIndex = 0, expanded = false): MediaViewerStore => {
   const store = createStore<MediaViewerState>({
-    expanded: false,
+    expanded,
     mode: "media",
     selectedIndex,
     settingsVersion: 0,
@@ -282,15 +282,20 @@ const buildSettingsRight = (version: string, closeSettings: () => void, onLocale
       aria-label="Language"
       value={getLocale()}
       onChange={async (event) => {
-        const locale = event.currentTarget.value as SupportedLocale;
-        if (!await loadLocale(locale)) return;
+        const select = event.currentTarget;
+        const locale = select.value as SupportedLocale;
+        if (!await loadLocale(locale)) {
+          alert(localeUnavailableMessage);
+          select.value = getLocale();
+          return;
+        }
         setLocale(locale);
         console.info(localize("h.ld"));
         onLocaleChange();
       }}
     >
       {supportedLocales.map((locale) => (
-        <option key={locale} value={locale} disabled={!canUseLocale(locale)}>
+        <option key={locale} value={locale}>
           {locale.slice(0, 2).toUpperCase()}
         </option>
       ))}
@@ -304,6 +309,7 @@ const buildSettingsToggle = (settingsIcon: string, openSettings: () => void) => 
 );
 
 export function ReactiveMediaModalHeading(props: {
+  collapseIcon: string;
   expandIcon: string;
   settingsIcon: string;
   settingsTitle: string;
@@ -320,7 +326,12 @@ export function ReactiveMediaModalHeading(props: {
         middle={<a href={props.userLink}>@{props.userName}</a>}
         right={
           <>
-            <HeaderIconButton className="ima" innerHtml={props.expandIcon} pressed={state.expanded} onClick={() => props.store.toggleExpanded()} />
+            <HeaderIconButton
+              className="ima"
+              innerHtml={state.expanded ? props.collapseIcon : props.expandIcon}
+              pressed={state.expanded}
+              onClick={() => props.store.toggleExpanded()}
+            />
             {buildSettingsToggle(props.settingsIcon, () => props.store.openSettings())}
           </>
         }
@@ -343,9 +354,22 @@ export function ReactiveMediaModalBody({
 }) {
   const state = useStoreState(store);
   const rootRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const [progressValues, setProgressValues] = useState(() => slides.map(() => 0));
   const previousExpandedRef = useRef<boolean | null>(null);
+  const selectSlide = (index: number) => {
+    const slider = sliderRef.current;
+    if (slider && Math.abs(state.selectedIndex - index) > 1) {
+      slider.style.transition = "none";
+      store.setSelectedIndex(index);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        slider.style.transition = "";
+      }));
+      return;
+    }
+    store.setSelectedIndex(index);
+  };
 
   useLayoutEffect(() => {
     if (state.mode !== "media") {
@@ -457,7 +481,7 @@ export function ReactiveMediaModalBody({
     const progress = (value: number) => {
       setProgressValues(slides.map((_, index) => (index === state.selectedIndex ? value : 0)));
     };
-    const next = () => store.setSelectedIndex((state.selectedIndex + 1) % slides.length);
+    const next = () => selectSlide((state.selectedIndex + 1) % slides.length);
     const timedProgress = () => {
       const started = performance.now();
       const tick = (now: number) => {
@@ -497,27 +521,26 @@ export function ReactiveMediaModalBody({
     };
   }, [program, slides, state.mode, state.selectedIndex, state.settingsVersion, store]);
 
-  if (state.mode === "settings") {
-    return (
-      <SettingsModalBody
-        program={program}
-        settings={settings}
-        onSettingChange={(settingKey, value) => {
-          onSettingChange(settingKey, value);
-          store.bumpSettingsVersion();
-        }}
-      />
-    );
-  }
-
   const shouldMute = resolveShouldMuteVideos(program);
   const activeSlide = slides[state.selectedIndex];
   const downloadProps = getDownloadProps(activeSlide, program);
 
   return (
-    <div class="slider-container" ref={rootRef}>
+    <>
+      {state.mode === "settings" && (
+        <SettingsModalBody
+          program={program}
+          settings={settings}
+          onSettingChange={(settingKey, value) => {
+            onSettingChange(settingKey, value);
+            store.bumpSettingsVersion();
+          }}
+        />
+      )}
+    <div class="slider-container" ref={rootRef} style={{ display: state.mode === "settings" ? "none" : undefined }}>
       <div
         class="slider"
+        ref={sliderRef}
         style={{ transform: `translateX(-${state.selectedIndex * 100}%)` }}
       >
         {slides.map((slide, index) => {
@@ -565,13 +588,14 @@ export function ReactiveMediaModalBody({
             type="button"
             class={index === state.selectedIndex ? "active" : undefined}
             style={{ "--progress": String(progressValues[index] || 0) }}
-            onClick={() => store.setSelectedIndex(index)}
+            onClick={() => selectSlide(index)}
           >
             {index + 1}
           </button>
         ))}
       </div>
     </div>
+    </>
   );
 }
 
