@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
-import { fetchDataFromApi, findPostId, getIGUsername, resolveProfileFromFeed, resolveProfileFromSearch, resolveUserIdFromFeed, resolveUserIdFromSearch, shortcodeToMediaId } from "../../src/helpers/instagramApi";
+import { fetchDataFromApi, findPostId, getIGUsername, resolveProfile, shortcodeToMediaId } from "../../src/helpers/instagramApi";
 import { setLocation } from "../utils/location";
 
 describe("getIGUsername", () => {
@@ -145,7 +145,7 @@ describe("fetchDataFromApi > getReelsMediaFromFeed", () => {
     });
 });
 
-describe("resolveUserIdFromSearch", () => {
+describe("resolveProfile", () => {
     beforeEach(() => {
         document.body.innerHTML = "";
         const script = document.createElement("script");
@@ -159,220 +159,86 @@ describe("resolveUserIdFromSearch", () => {
         vi.restoreAllMocks();
     });
 
-    // Fallback for https://github.com/saschaheim/instantgram/issues/45: some
-    // accounts break web_profile_info (a real, confirmed Instagram-side
-    // schema error) but are still resolvable through search.
-    it("returns the matching user's id, matching the username case-insensitively", async () => {
+    it("returns the id and owner from the username feed", async () => {
         vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => ({
-                users: [
-                    { user: { username: "someone_else", id: "111" } },
-                    { user: { username: "Lascanaofficial", id: "999888777" } },
-                ],
-            }),
+            json: async () => ({ items: [{ user: {
+                pk: "999888777",
+                profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg",
+            } }] }),
         }));
 
-        const userId = await resolveUserIdFromSearch("lascanaofficial");
-
-        expect(userId).toBe("999888777");
-        const [calledUrl] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(calledUrl).toContain("topsearch");
-        expect(calledUrl).toContain("lascanaofficial");
-    });
-
-    it("returns null when no user in the results matches the username", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ users: [{ user: { username: "someone_else", id: "111" } }] }),
-        }));
-
-        expect(await resolveUserIdFromSearch("lascanaofficial")).toBeNull();
-    });
-
-    it("returns null when the search request itself fails", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 429 }));
-
-        expect(await resolveUserIdFromSearch("lascanaofficial")).toBeNull();
-    });
-
-    it("returns null without fetching when no Instagram app id can be found on the page", async () => {
-        document.body.innerHTML = "";
-        vi.stubGlobal("fetch", vi.fn());
-
-        expect(await resolveUserIdFromSearch("lascanaofficial")).toBeNull();
-        expect(fetch).not.toHaveBeenCalled();
-    });
-});
-
-describe("resolveProfileFromSearch", () => {
-    beforeEach(() => {
-        document.body.innerHTML = "";
-        const script = document.createElement("script");
-        script.type = "application/json";
-        script.textContent = '"X-IG-App-ID":"123456789"';
-        document.body.appendChild(script);
-    });
-
-    afterEach(() => {
-        vi.unstubAllGlobals();
-        vi.restoreAllMocks();
-    });
-
-    // For private accounts, /users/{id}/info/ comes back completely empty
-    // ({"user":{},"status":"ok"}, confirmed via a real captured response)
-    // and the feed fallback is also empty (a private account's feed is
-    // empty for a non-follower) -- but search still returns profile_pic_url,
-    // since profile pictures are public even for private accounts.
-    it("returns both the matched user's id and the raw owner object", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({
-                users: [{ user: { username: "lascanaofficial", id: "999888777", profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg" } }],
-            }),
-        }));
-
-        const result = await resolveProfileFromSearch("lascanaofficial");
+        const result = await resolveProfile("lascanaofficial");
 
         expect(result.userId).toBe("999888777");
-        expect(result.owner?.profile_pic_url).toBe("https://scontent.cdninstagram.com/v/pic.jpg");
-    });
-
-    it("returns null userId and null owner when no user in the results matches the username", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ users: [{ user: { username: "someone_else", id: "111" } }] }),
-        }));
-
-        const result = await resolveProfileFromSearch("lascanaofficial");
-
-        expect(result.userId).toBeNull();
-        expect(result.owner).toBeNull();
-    });
-
-    it("returns null userId and null owner without fetching when no Instagram app id can be found", async () => {
-        document.body.innerHTML = "";
-        vi.stubGlobal("fetch", vi.fn());
-
-        const result = await resolveProfileFromSearch("lascanaofficial");
-
-        expect(result.userId).toBeNull();
-        expect(result.owner).toBeNull();
-        expect(fetch).not.toHaveBeenCalled();
-    });
-});
-
-describe("resolveUserIdFromFeed", () => {
-    beforeEach(() => {
-        document.body.innerHTML = "";
-        const script = document.createElement("script");
-        script.type = "application/json";
-        script.textContent = '"X-IG-App-ID":"123456789"';
-        document.body.appendChild(script);
-    });
-
-    afterEach(() => {
-        vi.unstubAllGlobals();
-        vi.restoreAllMocks();
-    });
-
-    // Fallback for https://github.com/saschaheim/instantgram/issues/45,
-    // confirmed by an independent project hitting the same web_profile_info
-    // gating: https://github.com/jackwener/opencli/issues/2147. The
-    // username-scoped feed endpoint needs no separate id-resolution step and
-    // isn't gated the same way.
-    it("returns the owner id from the first feed item", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ items: [{ user: { pk: "999888777" } }] }),
-        }));
-
-        const userId = await resolveUserIdFromFeed("lascanaofficial");
-
-        expect(userId).toBe("999888777");
+        expect(result.owner?.profile_pic_url).toContain("pic.jpg");
         const [calledUrl] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
         expect(calledUrl).toContain("feed/user/");
         expect(calledUrl).toContain("lascanaofficial");
     });
 
-    it("falls back to the item's id field when pk is absent", async () => {
+    it("uses the feed owner's id when pk is absent", async () => {
         vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
             ok: true,
-            json: async () => ({ items: [{ user: { id: "555444333" } }] }),
+            json: async () => ({ items: [{ user: { id: 555444333 } }] }),
         }));
 
-        expect(await resolveUserIdFromFeed("lascanaofficial")).toBe("555444333");
+        expect((await resolveProfile("lascanaofficial")).userId).toBe("555444333");
     });
 
-    it("returns null when the feed has no items", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [] }) }));
+    it("falls back to search and matches the username case-insensitively", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    users: [
+                        { user: { username: "someone_else", id: "111" } },
+                        { user: {
+                            username: "Lascanaofficial",
+                            id: "999888777",
+                            profile_pic_url: "https://scontent.cdninstagram.com/v/search.jpg",
+                        } },
+                    ],
+                }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
 
-        expect(await resolveUserIdFromFeed("lascanaofficial")).toBeNull();
-    });
-
-    it("returns null when the feed request itself fails", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 400 }));
-
-        expect(await resolveUserIdFromFeed("lascanaofficial")).toBeNull();
-    });
-
-    it("returns null without fetching when no Instagram app id can be found on the page", async () => {
-        document.body.innerHTML = "";
-        vi.stubGlobal("fetch", vi.fn());
-
-        expect(await resolveUserIdFromFeed("lascanaofficial")).toBeNull();
-        expect(fetch).not.toHaveBeenCalled();
-    });
-});
-
-describe("resolveProfileFromFeed", () => {
-    beforeEach(() => {
-        document.body.innerHTML = "";
-        const script = document.createElement("script");
-        script.type = "application/json";
-        script.textContent = '"X-IG-App-ID":"123456789"';
-        document.body.appendChild(script);
-    });
-
-    afterEach(() => {
-        vi.unstubAllGlobals();
-        vi.restoreAllMocks();
-    });
-
-    // Some business/creator accounts get a stripped-down response from the
-    // web-style /users/{id}/info/ endpoint (no profile_pic_url* field at
-    // all, confirmed via a real captured response), even once the id is
-    // resolved. Callers that need a profile-picture fallback source use
-    // this instead of resolveUserIdFromFeed to also get the owner object.
-    it("returns both the owner id and the raw owner object", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ items: [{ user: { pk: "999888777", profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg" } }] }),
-        }));
-
-        const result = await resolveProfileFromFeed("lascanaofficial");
+        const result = await resolveProfile("lascanaofficial");
 
         expect(result.userId).toBe("999888777");
-        expect(result.owner?.profile_pic_url).toBe("https://scontent.cdninstagram.com/v/pic.jpg");
+        expect(result.owner?.profile_pic_url).toContain("search.jpg");
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][0]).toContain("topsearch");
     });
 
-    it("returns null userId and null owner when the feed has no items", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [] }) }));
+    it("falls back to search when the feed request fails", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: false, status: 429 })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    users: [{ user: { username: "lascanaofficial", id: "999888777" } }],
+                }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
 
-        const result = await resolveProfileFromFeed("lascanaofficial");
+        expect((await resolveProfile("lascanaofficial")).userId).toBe("999888777");
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("returns null values when neither feed nor search finds the profile", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ users: [{ user: { username: "someone_else", id: "111" } }] }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const result = await resolveProfile("lascanaofficial");
 
         expect(result.userId).toBeNull();
         expect(result.owner).toBeNull();
-    });
-
-    it("returns null userId and null owner without fetching when no Instagram app id can be found", async () => {
-        document.body.innerHTML = "";
-        vi.stubGlobal("fetch", vi.fn());
-
-        const result = await resolveProfileFromFeed("lascanaofficial");
-
-        expect(result.userId).toBeNull();
-        expect(result.owner).toBeNull();
-        expect(fetch).not.toHaveBeenCalled();
     });
 });

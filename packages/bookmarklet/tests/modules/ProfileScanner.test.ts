@@ -55,7 +55,7 @@ describe("ProfileScanner", () => {
         const result = await new ProfileScanner().execute(program);
 
         expect(result?.found).toBe(true);
-        expect((result?.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result?.slides).toHaveLength(1);
     });
 
     it("falls back to profile_pic_url_hd when hd_profile_pic_url_info is missing", async () => {
@@ -70,19 +70,23 @@ describe("ProfileScanner", () => {
         const result = await new ProfileScanner().execute(program);
 
         expect(result?.found).toBe(true);
-        expect((result?.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result?.slides).toHaveLength(1);
     });
 
     it("reports found: false when both the feed fallback and the search fallback find no user id", async () => {
         setLocation("https://www.instagram.com/ghost_user/");
-        // No script tag with an app id -> findAppId() returns null for both
-        // fallbacks, so they bail out without making a request.
-        document.body.innerHTML = "";
+        stubAppId();
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ users: [] }) });
+        vi.stubGlobal("fetch", fetchMock);
 
         const result = await new ProfileScanner().execute(program);
 
         expect(result?.found).toBe(false);
-        expect(result?.errorMessage).toMatch(/userID/i);
+        expect(result?.errorMessage).toBeUndefined();
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchDataFromApi).not.toHaveBeenCalled();
     });
 
     // The actual fix for https://github.com/saschaheim/instantgram/issues/45,
@@ -140,7 +144,7 @@ describe("ProfileScanner", () => {
 
         expect(result?.found).toBe(true);
         expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "777666555" });
-        expect(result?.modalBody).toContain("feed_owner_pic.jpg");
+        expect(result?.slides?.[0].mediaUrl).toContain("feed_owner_pic.jpg");
     });
 
     // Real bug report: for a private account, the feed fallback returns no
@@ -173,6 +177,6 @@ describe("ProfileScanner", () => {
 
         expect(result?.found).toBe(true);
         expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "31857140226" });
-        expect(result?.modalBody).toContain("search_owner_pic.jpg");
+        expect(result?.slides?.[0].mediaUrl).toContain("search_owner_pic.jpg");
     });
 });

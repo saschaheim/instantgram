@@ -33,7 +33,8 @@ describe("FeedScanner", () => {
 
         const result = await new FeedScanner().execute(program);
         expect(result?.found).toBe(false);
-        expect(result?.errorMessage).toMatch(/too small/i);
+        expect(result?.errorMessage).toBeUndefined();
+        expect(generateModalBody).not.toHaveBeenCalled();
     });
 
     it("delegates to generateModalBody with a properly sized article", async () => {
@@ -42,7 +43,7 @@ describe("FeedScanner", () => {
         article.getBoundingClientRect = () => ({
             top: 0, bottom: 500, left: 0, right: 0, width: 0, height: 500, x: 0, y: 0, toJSON() { return {}; },
         });
-        generateModalBody.mockResolvedValue({ found: true, modalBody: "<div class=\"slide\"></div>" });
+        generateModalBody.mockResolvedValue({ found: true, slides: [] });
 
         const result = await new FeedScanner().execute(program);
 

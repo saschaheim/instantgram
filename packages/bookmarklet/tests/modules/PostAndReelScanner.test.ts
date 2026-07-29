@@ -26,7 +26,7 @@ describe("PostAndReelScanner", () => {
 
     it("delegates to generateModalBody with the dialog's article element", async () => {
         document.body.innerHTML = '<div role="dialog"><article><a href="/p/ABC123abcde/">post</a></article></div>';
-        generateModalBody.mockResolvedValue({ found: true, modalBody: "<div class=\"slide\"></div>" });
+        generateModalBody.mockResolvedValue({ found: true, slides: [] });
 
         const result = await new PostAndReelScanner().execute(program);
 

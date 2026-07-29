@@ -28,14 +28,14 @@ describe("StoriesScanner", () => {
 
     it("reports found: false when the current path is not a stories path", async () => {
         setLocation("https://www.instagram.com/p/ABC123abcde/");
-        document.body.innerHTML = '<div id="mount_0"></div>';
+        document.body.innerHTML = '<div id="mount_0"><img src="story.jpg"></div>';
         const result = await new StoriesScanner().execute(program);
         expect(result?.found).toBe(false);
     });
 
     it("surfaces a found: false result end-to-end when the story has no items (issue #45)", async () => {
         setLocation("https://www.instagram.com/stories/expired_story_user/123456789/");
-        document.body.innerHTML = '<div id="mount_0"></div>';
+        document.body.innerHTML = '<div id="mount_0"><img src="story.jpg"></div>';
         generateModalBody.mockResolvedValue({ found: false, errorMessage: "No story items returned by Instagram." });
 
         const result = await new StoriesScanner().execute(program);
@@ -46,8 +46,8 @@ describe("StoriesScanner", () => {
 
     it("returns the found: true result from generateModalBody for a normal feed story", async () => {
         setLocation("https://www.instagram.com/stories/story_user/123456789/");
-        document.body.innerHTML = '<div id="mount_0"></div>';
-        generateModalBody.mockResolvedValue({ found: true, modalBody: "<div class=\"slide\"></div>" });
+        document.body.innerHTML = '<div id="mount_0"><img src="story.jpg"></div>';
+        generateModalBody.mockResolvedValue({ found: true, slides: [] });
 
         const result = await new StoriesScanner().execute(program);
 
@@ -56,8 +56,8 @@ describe("StoriesScanner", () => {
 
     it("routes highlight URLs through the highlights handler", async () => {
         setLocation("https://www.instagram.com/stories/highlights/998877/");
-        document.body.innerHTML = '<div id="mount_0"></div>';
-        generateModalBody.mockResolvedValue({ found: true, modalBody: "<div class=\"slide\"></div>" });
+        document.body.innerHTML = '<div id="mount_0"><img src="story.jpg"></div>';
+        generateModalBody.mockResolvedValue({ found: true, slides: [] });
 
         const result = await new StoriesScanner().execute(program);
 

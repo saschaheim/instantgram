@@ -161,7 +161,7 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(article, program);
 
         expect(result.found).toBe(true);
-        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result.slides).toHaveLength(1);
     });
 
     it("reports found: true with three slides for a carousel post", async () => {
@@ -175,7 +175,7 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(article, program);
 
         expect(result.found).toBe(true);
-        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(3);
+        expect(result.slides).toHaveLength(3);
     });
 
     it("reports found: false (not a broken empty slider) when a story's reel has zero items", async () => {
@@ -191,9 +191,9 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(container, program);
 
         // This is the exact regression from issue #45: previously this returned
-        // found: true with an empty modalBody, rendering an empty slider shell.
+        // found: true with an empty slide list, rendering an empty slider shell.
         expect(result.found).toBe(false);
-        expect(result.modalBody).toBeUndefined();
+        expect(result.slides).toBeUndefined();
     });
 
     it("reports found: true with one slide for a single-item story", async () => {
@@ -207,7 +207,7 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(container, program);
 
         expect(result.found).toBe(true);
-        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result.slides).toHaveLength(1);
     });
 
     // Regression coverage for https://github.com/saschaheim/instantgram/issues/45.
@@ -263,7 +263,7 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(container, program);
 
         expect(result.found).toBe(true);
-        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result.slides).toHaveLength(1);
         expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(fetchMock.mock.calls[0][0]).toContain("feed/user/");
         expect(fetchMock.mock.calls[1][0]).toContain("reel_ids=999888777");
@@ -287,7 +287,7 @@ describe("generateModalBody", () => {
         const result = await generateModalBody(container, program);
 
         expect(result.found).toBe(true);
-        expect((result.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result.slides).toHaveLength(1);
         expect(fetchMock).toHaveBeenCalledTimes(3);
         expect(fetchMock.mock.calls[2][0]).toContain("reel_ids=999888777");
     });
@@ -307,7 +307,7 @@ describe("generateModalBodyHelper", () => {
         );
 
         expect(result?.found).toBe(true);
-        expect((result?.modalBody?.match(/class="slide"/g) || []).length).toBe(1);
+        expect(result?.slides).toHaveLength(1);
     });
 
     it("reports found: false when given a media response with no usable items", async () => {

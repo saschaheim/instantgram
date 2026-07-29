@@ -50,7 +50,7 @@ describe("ReelsScanner", () => {
         container.appendChild(document.createElement("span"));
         wrapper.appendChild(container);
         container.getBoundingClientRect = () => rect(0, 500);
-        generateModalBody.mockResolvedValue({ found: true, modalBody: "<div class=\"slide\"></div>" });
+        generateModalBody.mockResolvedValue({ found: true, slides: [] });
 
         const result = await new ReelsScanner().execute(program);
 
