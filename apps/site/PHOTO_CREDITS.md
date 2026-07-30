@@ -1,0 +1,6 @@
+# Photo credits
+
+- `public/img/preview-post.jpg`: "Fall color in the countryside of Eastern Washington" (`XFmznQhx9lM`) by [Timothy Eberly](https://unsplash.com/@timothyeberly). Unsplash ranked it as its [most-viewed image](https://unsplash.com/blog/one-trillion-views/) with 2,978,746,918 views in May 2023. Used under the [Unsplash License](https://unsplash.com/license); the original photo page has since been removed.
+- `public/img/preview-fashion-black.jpg`: ["A woman in a black outfit standing on a sidewalk"](https://unsplash.com/photos/UTUso1wff9o) by [Dynamic Wang](https://unsplash.com/@dynamicwang), used under the [Unsplash License](https://unsplash.com/license).
+- `public/img/preview-fashion-red.jpg`: ["Woman crossing the street in a red blazer"](https://unsplash.com/photos/TnqNc7Eqgb4) by Sofia Mvila, used under the [Unsplash License](https://unsplash.com/license).
+- `public/img/preview-city.mp4`: ["Traveling Through the City"](https://www.pexels.com/video/traveling-through-the-city-5129229/) by [Joseph Eulo](https://www.pexels.com/@joseph-eulo-2952880/), used under the [Pexels License](https://www.pexels.com/license/). Locally cropped, muted, shortened, and compressed for web delivery.
