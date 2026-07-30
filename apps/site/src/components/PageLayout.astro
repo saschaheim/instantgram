@@ -191,6 +191,7 @@ const copy = {
 } as const;
 
 const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
+const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
 ---
 
 <!doctype html>
@@ -201,8 +202,8 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
     <meta name="theme-color" content="#101820" />
     <meta name="description" content={projectLead} />
     <title>{pageTitle}</title>
-    <link rel="icon" href={`${assetBase}img/favicon.png`} />
-    <link rel="apple-touch-icon" href={`${assetBase}img/apple-touch-icon-180x180.png`} sizes="180x180" />
+    <link rel="icon" href={asset("img/favicon.png")} />
+    <link rel="apple-touch-icon" href={asset("img/apple-touch-icon-180x180.png")} sizes="180x180" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -221,7 +222,7 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
       <label class="language-picker">
         <span class="sr-only">Language</span>
         <select id="page-language" name="page-language" aria-label="Language">
-          {languageLinks.map((link) => <option value={link.href} selected={link.lang === locale}>{link.lang.slice(0, 2).toUpperCase()}</option>)}
+          {languageLinks.map((link) => <option value={link.href} data-locale={link.lang} selected={link.lang === locale}>{link.lang.slice(0, 2).toUpperCase()}</option>)}
         </select>
       </label>
     </header>
@@ -236,16 +237,27 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
 
           <div class="actions">
             <article class="action-card action-primary">
-              <div>
-                <strong>{text.standard}</strong>
-                <p>{text.standardText}</p>
+              <div class="instantgram-info">
+                <div class="browser-stack" aria-label="Chrome, Edge, Firefox and Safari">
+                  <span><img src={asset("img/browsers/chrome.svg")} alt="Chrome" /></span>
+                  <span><img src={asset("img/browsers/edge.svg")} alt="Edge" /></span>
+                  <span><img src={asset("img/browsers/firefox.svg")} alt="Firefox" /></span>
+                  <span><img src={asset("img/browsers/safari.svg")} alt="Safari" /></span>
+                </div>
+                <div>
+                  <strong>{text.standard}</strong>
+                  <p>{text.standardText}</p>
+                </div>
               </div>
               <Fragment set:html={bookmarkletHtml} />
             </article>
             <article class="action-card">
-              <div>
-                <strong>{text.firefox}</strong>
-                <p>{text.firefoxText}</p>
+              <div class="firefox-info">
+                <img class="firefox-logo" src={asset("img/browsers/firefox.svg")} alt="" />
+                <div>
+                  <strong>{text.firefox}</strong>
+                  <p>{text.firefoxText}</p>
+                </div>
               </div>
               <Fragment set:html={firefoxBookmarkletHtml} />
             </article>
@@ -270,7 +282,7 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
               <span class="dots">•••</span>
             </div>
             <div class="media-frame">
-              <img src={`${assetBase}img/demo.gif`} alt="Instantgram demo" />
+              <img src={asset("img/demo.gif")} alt="Instantgram demo" />
               <span class="media-badge">{text.media}</span>
             </div>
             <div class="app-action">
@@ -337,7 +349,10 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
     <script is:inline define:vars={{ locale }}>
       const language = document.querySelector("#page-language");
       language?.addEventListener("change", (event) => {
-        const href = event.target.value;
+        const select = event.target;
+        const option = select.options[select.selectedIndex];
+        const href = option.value;
+        localStorage.setItem("instantgram-locale", option.dataset.locale);
         location.href = location.protocol === "file:" ? `${href}?force=true` : href;
       });
 
@@ -346,7 +361,7 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
         const browserLocale = (navigator.language || "").toLowerCase();
         const preferred = saved || (browserLocale.startsWith("de") ? "de-DE" : browserLocale.startsWith("es") ? "es-AR" : browserLocale.startsWith("pt") ? "pt-BR" : "en-US");
         if (preferred !== locale) {
-          const target = [...language.options].find((option) => option.text === preferred.slice(0, 2).toUpperCase());
+          const target = [...language.options].find((option) => option.dataset.locale === preferred);
           if (target) location.replace(target.value);
         }
       }
@@ -477,6 +492,9 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
   }
   .action-primary { border-color: rgba(54,125,163,.35); background: var(--white); box-shadow: 0 18px 50px rgba(36,69,87,.1); }
   .action-card strong { font: 700 16px/1.2 var(--display); }
+  .instantgram-info { display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center; }
+  .firefox-info { display: grid; grid-template-columns: 50px 1fr; gap: 12px; align-items: center; }
+  .firefox-logo { width: 50px; height: 50px; grid-row: 1 / span 2; }
   .action-card p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
   .action-card .btn, .cta-button .btn {
     display: inline-flex;
@@ -498,6 +516,25 @@ const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
   .trust-list li::before { margin-right: 7px; color: var(--blue-dark); content: "✓"; }
 
   .hero-visual { position: relative; display: grid; min-height: 560px; place-items: center; }
+  .browser-stack {
+    display: flex;
+    width: 90px;
+    padding-left: 10px;
+  }
+  .browser-stack span {
+    display: grid;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    margin-left: -10px;
+    place-items: center;
+    border: 2px solid var(--white);
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 5px 12px rgba(23,57,75,.14);
+  }
+  .browser-stack img { width: 23px; height: 23px; }
+  .browser-stack span:last-child img { border-radius: 50%; }
   .orbit { position: absolute; border: 1px solid rgba(54,125,163,.18); border-radius: 50%; }
   .orbit-one { width: 510px; height: 510px; }
   .orbit-two { width: 390px; height: 390px; border-style: dashed; animation: spin 34s linear infinite; }
