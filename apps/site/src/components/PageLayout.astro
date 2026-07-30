@@ -1,10 +1,8 @@
 ---
 interface LanguageLink {
   lang: string;
-  langIso: string;
   name: string;
   href: string;
-  alternateHref?: string;
 }
 
 interface Props {
@@ -34,195 +32,593 @@ const {
   version,
   languageLinks,
   assetBase,
-  homeHref,
+  homeHref
 } = Astro.props;
-const joinAsset = (relativePath: string) => `${assetBase}/${relativePath}`.replace(/^\.\/+/, "").replace(/\/{2,}/g, "/");
-const stylesheetHref = `${joinAsset("stylesheets/stylesheet.css")}?v=${version}`;
+
+const copy = {
+  "de-DE": {
+    navHow: "So funktioniert's",
+    navFeatures: "Features",
+    eyebrow: "Instagram-Medien. Direkt gespeichert.",
+    titleStart: "Dein Download-Tool",
+    titleAccent: "ohne Umwege.",
+    intro: "Kein Login. Keine Installation. Ein kleines Bookmarklet, das direkt in deinem Browser arbeitet.",
+    standard: "Instantgram",
+    standardText: "Die vollständige Version mit Updates, Sprachen und allen Einstellungen.",
+    firefox: "Firefox Lite",
+    firefoxText: "Für Firefox optimiert, ohne automatische Update-Prüfung.",
+    drag: "In deine Lesezeichenleiste ziehen",
+    private: "Lokal im Browser",
+    open: "Open Source",
+    free: "Kostenlos",
+    preview: "Bereit zum Speichern",
+    media: "Instagram-Medium erkannt",
+    download: "Download",
+    sectionEyebrow: "In drei Schritten",
+    sectionTitle: "So einfach, wie es sein sollte.",
+    steps: [
+      ["01", "Bookmarklet ablegen", "Ziehe Instantgram oben direkt in deine Lesezeichenleiste."],
+      ["02", "Instagram öffnen", "Öffne einen Post, ein Reel, eine Story oder ein Profil."],
+      ["03", "Medien speichern", "Klicke auf Instantgram und wähle das gewünschte Medium."]
+    ],
+    featureEyebrow: "Warum Instantgram",
+    featureTitle: "Klein im Browser. Groß im Alltag.",
+    features: [
+      ["Posts & Reels", "Bilder, Videos und Carousels direkt aus der geöffneten Instagram-Ansicht."],
+      ["Stories & Profile", "Unterstützt auch Story-Medien und Profilbilder in ihrer verfügbaren Qualität."],
+      ["Privat gedacht", "Keine Anmeldung bei einem fremden Dienst und kein Upload deiner Links."],
+      ["Mehrsprachig", "Eine Oberfläche in mehreren Sprachen, direkt im laufenden Bookmarklet wechselbar."]
+    ],
+    ctaTitle: "Bereit für den kürzesten Weg zum Download?",
+    ctaText: "Ziehe Instantgram in deine Lesezeichenleiste. Das war's.",
+    source: "Quellcode auf GitHub",
+    made: "Open Source, gebaut für das echte Web."
+  },
+  "es-AR": {
+    navHow: "Cómo funciona",
+    navFeatures: "Funciones",
+    eyebrow: "Contenido de Instagram. Guardado al instante.",
+    titleStart: "Tu herramienta de descarga",
+    titleAccent: "sin rodeos.",
+    intro: "Sin inicio de sesión ni instalación. Un bookmarklet pequeño que funciona directamente en tu navegador.",
+    standard: "Instantgram",
+    standardText: "La versión completa con actualizaciones, idiomas y todas las opciones.",
+    firefox: "Firefox Lite",
+    firefoxText: "Optimizado para Firefox, sin comprobación automática de actualizaciones.",
+    drag: "Arrastra a tu barra de marcadores",
+    private: "Local en tu navegador",
+    open: "Código abierto",
+    free: "Gratis",
+    preview: "Listo para guardar",
+    media: "Contenido de Instagram detectado",
+    download: "Descargar",
+    sectionEyebrow: "Tres pasos",
+    sectionTitle: "Tan simple como debería ser.",
+    steps: [
+      ["01", "Guarda el bookmarklet", "Arrastra Instantgram a tu barra de marcadores."],
+      ["02", "Abre Instagram", "Abre una publicación, reel, historia o perfil."],
+      ["03", "Guarda el contenido", "Pulsa Instantgram y elige el contenido que quieras."]
+    ],
+    featureEyebrow: "Por qué Instantgram",
+    featureTitle: "Pequeño en el navegador. Grande en utilidad.",
+    features: [
+      ["Posts y reels", "Imágenes, videos y carruseles desde la vista abierta de Instagram."],
+      ["Historias y perfiles", "También admite historias y fotos de perfil en la calidad disponible."],
+      ["Privacidad primero", "Sin cuentas de terceros y sin subir tus enlaces a otro servicio."],
+      ["Multilingüe", "Cambia el idioma directamente desde el bookmarklet abierto."]
+    ],
+    ctaTitle: "¿Listo para la ruta más corta a tu descarga?",
+    ctaText: "Arrastra Instantgram a tus marcadores. Eso es todo.",
+    source: "Código fuente en GitHub",
+    made: "Código abierto, creado para la web real."
+  },
+  "pt-BR": {
+    navHow: "Como funciona",
+    navFeatures: "Recursos",
+    eyebrow: "Mídia do Instagram. Salva na hora.",
+    titleStart: "Sua ferramenta de download",
+    titleAccent: "sem complicação.",
+    intro: "Sem login e sem instalação. Um pequeno bookmarklet que funciona diretamente no navegador.",
+    standard: "Instantgram",
+    standardText: "A versão completa com atualizações, idiomas e todas as configurações.",
+    firefox: "Firefox Lite",
+    firefoxText: "Otimizado para Firefox, sem verificação automática de atualizações.",
+    drag: "Arraste para a barra de favoritos",
+    private: "Local no navegador",
+    open: "Código aberto",
+    free: "Grátis",
+    preview: "Pronto para salvar",
+    media: "Mídia do Instagram detectada",
+    download: "Download",
+    sectionEyebrow: "Em três passos",
+    sectionTitle: "Tão simples quanto deveria ser.",
+    steps: [
+      ["01", "Salve o bookmarklet", "Arraste o Instantgram para sua barra de favoritos."],
+      ["02", "Abra o Instagram", "Abra uma publicação, reel, story ou perfil."],
+      ["03", "Salve a mídia", "Clique no Instantgram e escolha a mídia desejada."]
+    ],
+    featureEyebrow: "Por que Instantgram",
+    featureTitle: "Pequeno no navegador. Grande no dia a dia.",
+    features: [
+      ["Posts e reels", "Imagens, vídeos e carrosséis direto da tela aberta do Instagram."],
+      ["Stories e perfis", "Também oferece stories e fotos de perfil na qualidade disponível."],
+      ["Privacidade primeiro", "Sem conta em serviços externos e sem enviar seus links para terceiros."],
+      ["Multilíngue", "Troque o idioma diretamente no bookmarklet em execução."]
+    ],
+    ctaTitle: "Pronto para o caminho mais curto até o download?",
+    ctaText: "Arraste o Instantgram para seus favoritos. Só isso.",
+    source: "Código-fonte no GitHub",
+    made: "Código aberto, feito para a web real."
+  },
+  "en-US": {
+    navHow: "How it works",
+    navFeatures: "Features",
+    eyebrow: "Instagram media. Saved instantly.",
+    titleStart: "Your download tool",
+    titleAccent: "without the detour.",
+    intro: "No login. No installation. One small bookmarklet that works directly in your browser.",
+    standard: "Instantgram",
+    standardText: "The complete version with updates, languages, and every setting.",
+    firefox: "Firefox Lite",
+    firefoxText: "Optimized for Firefox, without automatic update checks.",
+    drag: "Drag to your bookmarks bar",
+    private: "Local in your browser",
+    open: "Open source",
+    free: "Free",
+    preview: "Ready to save",
+    media: "Instagram media detected",
+    download: "Download",
+    sectionEyebrow: "Three simple steps",
+    sectionTitle: "As easy as it should be.",
+    steps: [
+      ["01", "Save the bookmarklet", "Drag Instantgram above straight into your bookmarks bar."],
+      ["02", "Open Instagram", "Open a post, reel, story, or profile."],
+      ["03", "Save your media", "Click Instantgram and choose the media you want."]
+    ],
+    featureEyebrow: "Why Instantgram",
+    featureTitle: "Small in your browser. Big in daily use.",
+    features: [
+      ["Posts & reels", "Images, videos, and carousels straight from the open Instagram view."],
+      ["Stories & profiles", "Story media and profile pictures in their available quality."],
+      ["Privacy-minded", "No third-party account and no uploading your links to another service."],
+      ["Multilingual", "Switch languages directly inside the running bookmarklet."]
+    ],
+    ctaTitle: "Ready for the shortest route to your download?",
+    ctaText: "Drag Instantgram to your bookmarks bar. That's it.",
+    source: "Source code on GitHub",
+    made: "Open source, built for the real web."
+  }
+} as const;
+
+const text = copy[locale as keyof typeof copy] ?? copy["en-US"];
 ---
-<!DOCTYPE html>
-<html lang={locale}>
+
+<!doctype html>
+<html lang={localeIso}>
   <head>
-    <meta charset="UTF-8" />
-    {languageLinks.map((entry) => <link rel="alternate" href={entry.alternateHref ?? entry.href} hreflang={entry.langIso} />)}
-    <link rel="alternate" href={languageLinks[0]?.alternateHref ?? languageLinks[0]?.href} hreflang="x-default" />
-    <title>[instantgram] - {pageTitle}</title>
-    <meta name="description" content={pageTitle} />
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="google-site-verification" content="BbRUNLVG70a_9r_nJTAUNwYff6-MSky-lkjCTc2gwII" />
-    <link rel="stylesheet" type="text/css" href={joinAsset("stylesheets/normalize.css")} media="screen" />
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" type="text/css" href={stylesheetHref} media="screen" />
-    <link rel="stylesheet" type="text/css" href={joinAsset("stylesheets/github-light.css")} media="screen" />
-    <link rel="apple-touch-icon" sizes="152x152" href={joinAsset("img/apple-touch-icon-152x152-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="144x144" href={joinAsset("img/apple-touch-icon-144x144-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="120x120" href={joinAsset("img/apple-touch-icon-120x120-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="114x114" href={joinAsset("img/apple-touch-icon-114x114-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="76x76" href={joinAsset("img/apple-touch-icon-76x76-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="72x72" href={joinAsset("img/apple-touch-icon-72x72-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="60x60" href={joinAsset("img/apple-touch-icon-60x60-precomposed.png")} />
-    <link rel="apple-touch-icon" sizes="57x57" href={joinAsset("img/apple-touch-icon-57x57-precomposed.png")} />
-    <link rel="shortcut icon" href={joinAsset("img/favicon.ico")} />
-    <style>
-      .github-corner:hover .octo-arm {
-        animation: octocat-wave 560ms ease-in-out;
-      }
-
-      @keyframes octocat-wave {
-        0%,
-        100% {
-          transform: rotate(0);
-        }
-
-        20%,
-        60% {
-          transform: rotate(-25deg);
-        }
-
-        40%,
-        80% {
-          transform: rotate(10deg);
-        }
-      }
-
-      .language-bar {
-        position: absolute;
-        top: 0;
-        left: 25px;
-        text-align: center;
-        font-size: 12px;
-        font-size: 0.9vmax;
-      }
-
-      .language-bar a {
-        color: #fff;
-      }
-
-      @media (max-width: 500px) {
-        .github-corner:hover .octo-arm {
-          animation: none;
-        }
-
-        .github-corner .octo-arm {
-          animation: octocat-wave 560ms ease-in-out;
-        }
-      }
-    </style>
+    <meta name="theme-color" content="#101820" />
+    <meta name="description" content={projectLead} />
+    <title>{pageTitle}</title>
+    <link rel="icon" href={`${assetBase}img/favicon.png`} />
+    <link rel="apple-touch-icon" href={`${assetBase}img/apple-touch-icon-180x180.png`} sizes="180x180" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <a href="https://github.com/saschaheim/instantgram" class="github-corner">
-      <svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513;color:#fff;position:absolute;top:0;border:0;right:0;">
-        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
-        <path
-          d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
-          fill="currentColor"
-          style="transform-origin:130px 106px"
-          class="octo-arm"
-        ></path>
-        <path
-          d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
-          fill="currentColor"
-          class="octo-body"
-        ></path>
-      </svg>
-    </a>
+    <header class="site-header">
+      <a class="brand" href={homeHref} aria-label="Instantgram home">
+        <span class="brand-mark">i</span>
+        <span>instantgram</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#how">{text.navHow}</a>
+        <a href="#features">{text.navFeatures}</a>
+        <a href="https://github.com/sascha-heim/instantgram">GitHub</a>
+      </nav>
+      <label class="language-picker">
+        <span class="sr-only">Language</span>
+        <select id="page-language" name="page-language" aria-label="Language">
+          {languageLinks.map((link) => <option value={link.href} selected={link.lang === locale}>{link.lang.slice(0, 2).toUpperCase()}</option>)}
+        </select>
+      </label>
+    </header>
 
-    <section class="page-header">
-      <div class="language-bar">
-        <p>
-          {
-            languageLinks.map((entry, index) => (
-              <>
-                <a data-lang={entry.lang} href={`${entry.href}?force=true`}>
-                  <span style={entry.lang === locale ? "text-decoration:underline" : undefined}>{entry.name}</span>
-                </a>
-                {index < languageLinks.length - 1 ? " |" : null}
-              </>
-            ))
-          }
-        </p>
-      </div>
-      <h1 class="project-name">Instantgram</h1>
-      <h2 class="project-tagline">{projectLead}</h2>
-      <Fragment set:html={bookmarkletHtml} />
-      <Fragment set:html={firefoxBookmarkletHtml} />
-      <br />
-      <small>{projectButtonHelper}</small>
-    </section>
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">{text.eyebrow}</p>
+          <h1>{text.titleStart}<br /><span>{text.titleAccent}</span></h1>
+          <p class="hero-lead">{projectLead}</p>
+          <p class="hero-intro">{text.intro}</p>
 
-    <section class="main-content">
-      <h1>
-        <a id="instantgram" class="anchor" href="#instantgram" aria-hidden="true">
-          <span class="octicon octicon-link"></span>
-        </a>
-        <a href={homeHref}>[instantgram]</a>
-      </h1>
-      <p>
-        <img src={`https://img.shields.io/badge/version-${version}-green.svg?style=flat-square`} alt="version" />
-        <img src="https://img.shields.io/badge/for-instagram-yellow.svg?style=flat-square" alt="badge" />
-      </p>
-      <p>{projectDescription}</p>
-      <img src={joinAsset("img/demo.gif")} style="width:auto;max-width:95%;display:block;margin:0 auto;" />
-      <footer class="site-footer">
-        <span class="site-footer-owner">
-          <a href="https://github.com/saschaheim/instantgram">instantgram</a> is maintained by
-          <a href="https://github.com/saschaheim"> Sascha Heim</a>.
-        </span>
-        <span class="site-footer-credits">
-          This page is generated with <a href="https://astro.build">Astro</a> and published on
-          <a href="https://pages.github.com"> GitHub Pages</a>.
-        </span>
-      </footer>
-    </section>
+          <div class="actions">
+            <article class="action-card action-primary">
+              <div>
+                <strong>{text.standard}</strong>
+                <p>{text.standardText}</p>
+              </div>
+              <Fragment set:html={bookmarkletHtml} />
+            </article>
+            <article class="action-card">
+              <div>
+                <strong>{text.firefox}</strong>
+                <p>{text.firefoxText}</p>
+              </div>
+              <Fragment set:html={firefoxBookmarkletHtml} />
+            </article>
+          </div>
+          <p class="drag-hint"><span>↗</span> {text.drag}. {projectButtonHelper}</p>
+          <ul class="trust-list">
+            <li>{text.private}</li>
+            <li>{text.open}</li>
+            <li>{text.free}</li>
+          </ul>
+        </div>
 
+        <div class="hero-visual" aria-label="Instantgram preview">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="app-window">
+            <div class="app-bar">
+              <div class="app-user">
+                <span class="avatar"></span>
+                <div><strong>instantgram</strong><small>v{version}</small></div>
+              </div>
+              <span class="dots">•••</span>
+            </div>
+            <div class="media-frame">
+              <img src={`${assetBase}img/demo.gif`} alt="Instantgram demo" />
+              <span class="media-badge">{text.media}</span>
+            </div>
+            <div class="app-action">
+              <div><small>{text.preview}</small><strong>1080 × 1350</strong></div>
+              <button type="button" tabindex="-1">{text.download} <span>↓</span></button>
+            </div>
+          </div>
+          <span class="float-chip chip-one">MP4</span>
+          <span class="float-chip chip-two">JPG</span>
+          <span class="float-chip chip-three">4K</span>
+        </div>
+      </section>
+
+      <section class="statement">
+        <p>{projectDescription}</p>
+      </section>
+
+      <section id="how" class="content-section steps-section">
+        <p class="section-eyebrow">{text.sectionEyebrow}</p>
+        <h2>{text.sectionTitle}</h2>
+        <div class="step-grid">
+          {text.steps.map(([number, title, description]) => (
+            <article class="step-card">
+              <span>{number}</span>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" class="content-section feature-section">
+        <div class="feature-heading">
+          <p class="section-eyebrow">{text.featureEyebrow}</p>
+          <h2>{text.featureTitle}</h2>
+        </div>
+        <div class="feature-grid">
+          {text.features.map(([title, description], index) => (
+            <article class="feature-card">
+              <span class={`feature-icon icon-${index + 1}`}></span>
+              <h3>{title}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <div>
+          <p class="section-eyebrow">Instantgram v{version}</p>
+          <h2>{text.ctaTitle}</h2>
+          <p>{text.ctaText}</p>
+        </div>
+        <div class="cta-button"><Fragment set:html={bookmarkletHtml} /></div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand footer-brand" href={homeHref}><span class="brand-mark">i</span><span>instantgram</span></a>
+      <p>{text.made}</p>
+      <a href="https://github.com/sascha-heim/instantgram">{text.source} ↗</a>
+    </footer>
+
+    <script is:inline define:vars={{ locale }}>
+      const language = document.querySelector("#page-language");
+      language?.addEventListener("change", (event) => {
+        const href = event.target.value;
+        location.href = location.protocol === "file:" ? `${href}?force=true` : href;
+      });
+
+      if (location.protocol !== "file:" && !new URLSearchParams(location.search).has("force")) {
+        const saved = localStorage.getItem("instantgram-locale");
+        const browserLocale = (navigator.language || "").toLowerCase();
+        const preferred = saved || (browserLocale.startsWith("de") ? "de-DE" : browserLocale.startsWith("es") ? "es-AR" : browserLocale.startsWith("pt") ? "pt-BR" : "en-US");
+        if (preferred !== locale) {
+          const target = [...language.options].find((option) => option.text === preferred.slice(0, 2).toUpperCase());
+          if (target) location.replace(target.value);
+        }
+      }
+    </script>
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=UA-64893820-4"></script>
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        window.dataLayer.push(arguments);
-      }
+      function gtag(){dataLayer.push(arguments);}
       gtag("js", new Date());
       gtag("config", "UA-64893820-4");
     </script>
-    <script is:inline define:vars={{ locale, localeIso }}>
-      function getQueryStringParam(key) {
-        return new URLSearchParams(window.location.search).get(key);
-      }
-
-      function hostedHref(lang) {
-        switch (lang) {
-          case "de-DE":
-            return "/instantgram/lang/de-de/";
-          case "pt-BR":
-            return "/instantgram/lang/pt-br/";
-          case "es-AR":
-            return "/instantgram/lang/es-ar/";
-          default:
-            return "/instantgram/";
-        }
-      }
-
-      const language = (navigator.languages && navigator.languages[0]) || navigator.language || navigator.userLanguage;
-      if (window.location.protocol !== "file:" && !getQueryStringParam("force") && typeof language !== "undefined") {
-        const localePrefix = localeIso.toLowerCase();
-        const pathname = window.location.pathname.toLowerCase();
-        const isCurrentLocale = localePrefix === "en" ? pathname === "/instantgram/" || pathname === "/instantgram/index.html" : pathname.includes(`/lang/${localePrefix}`);
-
-        if (!isCurrentLocale) {
-          switch (language.substring(0, 2)) {
-            case "de":
-              window.location.href = hostedHref("de-DE");
-              break;
-            case "pt":
-              window.location.href = hostedHref("pt-BR");
-              break;
-            case "es":
-              window.location.href = hostedHref("es-AR");
-              break;
-            default:
-              window.location.href = hostedHref("en-US") + "?force=true";
-          }
-        }
-      }
-    </script>
   </body>
 </html>
+
+<style is:global>
+  :root {
+    --ink: #101820;
+    --muted: #58636d;
+    --paper: #f7f4ef;
+    --white: #fff;
+    --blue: #65b8dc;
+    --blue-dark: #367da3;
+    --peach: #efded3;
+    --line: rgba(16, 24, 32, .13);
+    --display: "Space Grotesk", sans-serif;
+    --body: "DM Sans", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--paper);
+    font-family: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button, select { font: inherit; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
+
+  .site-header {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 28px 32px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; width: max-content; font: 700 20px/1 var(--display); }
+  .brand-mark {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    place-items: center;
+    color: var(--white);
+    background: var(--ink);
+    border-radius: 9px 9px 9px 3px;
+    font-size: 18px;
+  }
+  nav { display: flex; gap: 34px; color: #39444e; font-size: 14px; font-weight: 600; }
+  nav a { transition: color .2s; }
+  nav a:hover { color: var(--blue-dark); }
+  .language-picker { justify-self: end; }
+  .language-picker select {
+    appearance: none;
+    min-width: 58px;
+    padding: 10px 28px 10px 13px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%23101820' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 11px center;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.03fr) minmax(430px, .97fr);
+    gap: 72px;
+    max-width: 1240px;
+    min-height: 680px;
+    margin: 0 auto;
+    padding: 72px 32px 96px;
+    align-items: center;
+  }
+  .hero::before {
+    position: absolute;
+    z-index: -1;
+    top: -120px;
+    right: -12vw;
+    width: 680px;
+    height: 680px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(101,184,220,.23), rgba(101,184,220,0) 68%);
+    content: "";
+  }
+  .eyebrow, .section-eyebrow {
+    margin: 0 0 18px;
+    color: var(--blue-dark);
+    font: 700 12px/1 var(--display);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  h1, h2, h3, p { margin-top: 0; }
+  h1 {
+    max-width: 720px;
+    margin-bottom: 24px;
+    font: 700 clamp(54px, 6vw, 84px)/.94 var(--display);
+    letter-spacing: -.065em;
+  }
+  h1 span { color: var(--blue-dark); }
+  .hero-lead { max-width: 620px; margin-bottom: 10px; font: 600 20px/1.45 var(--display); }
+  .hero-intro { max-width: 590px; margin-bottom: 30px; color: var(--muted); font-size: 16px; line-height: 1.65; }
+  .actions { display: grid; gap: 10px; max-width: 630px; }
+  .action-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 22px;
+    align-items: center;
+    padding: 16px 17px 16px 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255,255,255,.72);
+  }
+  .action-primary { border-color: rgba(54,125,163,.35); background: var(--white); box-shadow: 0 18px 50px rgba(36,69,87,.1); }
+  .action-card strong { font: 700 16px/1.2 var(--display); }
+  .action-card p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+  .action-card .btn, .cta-button .btn {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    border-radius: 12px;
+    color: var(--white);
+    background: var(--ink);
+    font: 700 13px/1 var(--display);
+    white-space: nowrap;
+    transition: transform .2s, background .2s;
+  }
+  .action-card .btn:hover, .cta-button .btn:hover { background: var(--blue-dark); transform: translateY(-2px); }
+  .drag-hint { margin: 14px 0 22px; color: var(--muted); font-size: 12px; }
+  .drag-hint span { display: inline-block; margin-right: 5px; color: var(--blue-dark); transform: rotate(-45deg); }
+  .trust-list { display: flex; gap: 22px; padding: 0; margin: 0; list-style: none; color: #3f4a54; font-size: 12px; font-weight: 600; }
+  .trust-list li::before { margin-right: 7px; color: var(--blue-dark); content: "✓"; }
+
+  .hero-visual { position: relative; display: grid; min-height: 560px; place-items: center; }
+  .orbit { position: absolute; border: 1px solid rgba(54,125,163,.18); border-radius: 50%; }
+  .orbit-one { width: 510px; height: 510px; }
+  .orbit-two { width: 390px; height: 390px; border-style: dashed; animation: spin 34s linear infinite; }
+  .app-window {
+    position: relative;
+    z-index: 2;
+    width: min(390px, 84%);
+    overflow: hidden;
+    border: 1px solid rgba(16,24,32,.1);
+    border-radius: 28px;
+    background: var(--white);
+    box-shadow: 0 35px 90px rgba(23,57,75,.2);
+    transform: rotate(2deg);
+    animation: arrive .8s cubic-bezier(.2,.75,.25,1) both;
+  }
+  .app-bar, .app-action { display: flex; align-items: center; justify-content: space-between; padding: 17px 19px; }
+  .app-user { display: flex; align-items: center; gap: 10px; }
+  .app-user div { display: grid; }
+  .app-user strong { font: 700 13px/1.2 var(--display); }
+  .app-user small, .app-action small { color: var(--muted); font-size: 10px; }
+  .avatar { width: 34px; height: 34px; border: 3px solid var(--white); border-radius: 50%; background: linear-gradient(135deg, var(--peach), var(--blue)); box-shadow: 0 0 0 2px var(--blue); }
+  .dots { letter-spacing: 2px; }
+  .media-frame { position: relative; aspect-ratio: 4/4.6; overflow: hidden; background: #d7e6ec; }
+  .media-frame img { width: 100%; height: 100%; object-fit: cover; }
+  .media-badge { position: absolute; left: 14px; bottom: 14px; padding: 8px 11px; border-radius: 999px; color: var(--white); background: rgba(16,24,32,.82); font-size: 10px; font-weight: 700; backdrop-filter: blur(8px); }
+  .app-action div { display: grid; gap: 3px; }
+  .app-action strong { font: 700 13px/1 var(--display); }
+  .app-action button { padding: 11px 14px; border: 0; border-radius: 10px; color: var(--white); background: var(--blue-dark); font-weight: 700; }
+  .float-chip { position: absolute; z-index: 3; display: grid; width: 58px; height: 58px; place-items: center; border: 1px solid rgba(16,24,32,.08); border-radius: 18px; background: var(--white); box-shadow: 0 15px 35px rgba(23,57,75,.15); font: 700 12px/1 var(--display); }
+  .chip-one { top: 90px; left: 3%; transform: rotate(-9deg); }
+  .chip-two { right: 0; bottom: 115px; transform: rotate(8deg); }
+  .chip-three { right: 7%; top: 40px; color: var(--blue-dark); background: var(--peach); transform: rotate(5deg); }
+
+  .statement { padding: 42px 32px; color: var(--white); background: var(--ink); }
+  .statement p { max-width: 960px; margin: 0 auto; text-align: center; font: 500 clamp(20px, 2.2vw, 30px)/1.45 var(--display); }
+  .content-section { max-width: 1240px; margin: 0 auto; padding: 112px 32px; }
+  .content-section h2, .final-cta h2 { max-width: 720px; margin-bottom: 50px; font: 700 clamp(38px, 4.5vw, 60px)/1.02 var(--display); letter-spacing: -.045em; }
+  .step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .step-card { min-height: 260px; padding: 28px; border: 1px solid var(--line); border-radius: 22px; background: var(--white); }
+  .step-card > span { display: inline-block; margin-bottom: 72px; color: var(--blue-dark); font: 700 13px/1 var(--display); }
+  .step-card h3, .feature-card h3 { margin-bottom: 10px; font: 700 21px/1.2 var(--display); }
+  .step-card p, .feature-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .feature-section { display: grid; grid-template-columns: .85fr 1.15fr; gap: 80px; border-top: 1px solid var(--line); }
+  .feature-heading { position: sticky; top: 40px; align-self: start; }
+  .feature-heading h2 { margin-bottom: 0; }
+  .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .feature-card { min-height: 235px; padding: 25px; border-radius: 20px; background: #e8edf0; }
+  .feature-card:nth-child(2), .feature-card:nth-child(3) { background: var(--peach); }
+  .feature-icon { display: block; position: relative; width: 42px; height: 42px; margin-bottom: 48px; border: 2px solid var(--ink); border-radius: 13px; }
+  .feature-icon::after { position: absolute; inset: 9px; border-radius: 50%; background: var(--blue-dark); content: ""; }
+  .icon-2::after { inset: 8px 17px; border-radius: 3px; }
+  .icon-3 { border-radius: 50%; }
+  .icon-3::after { inset: 11px; background: var(--ink); }
+  .icon-4::after { inset: 10px 7px; border-radius: 3px; }
+
+  .final-cta {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 60px;
+    align-items: end;
+    max-width: 1180px;
+    margin: 0 auto 100px;
+    padding: 64px;
+    border-radius: 30px;
+    background: linear-gradient(120deg, var(--peach), #c8e4ef);
+  }
+  .final-cta h2 { margin-bottom: 18px; }
+  .final-cta > div > p:last-child { margin: 0; color: var(--muted); }
+  .cta-button .btn { min-height: 58px; padding: 0 28px; }
+  footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 30px; padding: 32px max(32px, calc((100vw - 1176px)/2)); border-top: 1px solid var(--line); font-size: 13px; }
+  footer p { margin: 0; color: var(--muted); text-align: center; }
+  footer > a:last-child { justify-self: end; font-weight: 700; }
+  .footer-brand { font-size: 16px; }
+  .footer-brand .brand-mark { width: 26px; height: 26px; font-size: 15px; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes arrive { from { opacity: 0; transform: translateY(30px) rotate(2deg); } }
+
+  @media (max-width: 940px) {
+    .site-header { grid-template-columns: 1fr auto; }
+    nav { display: none; }
+    .hero { grid-template-columns: 1fr; padding-top: 50px; }
+    .hero-copy { text-align: center; }
+    .hero-lead, .hero-intro, .actions { margin-right: auto; margin-left: auto; }
+    .trust-list { justify-content: center; }
+    .hero-visual { min-height: 520px; }
+    .feature-section { grid-template-columns: 1fr; gap: 50px; }
+    .feature-heading { position: static; }
+    .final-cta { margin-right: 24px; margin-left: 24px; }
+  }
+
+  @media (max-width: 650px) {
+    .site-header { padding: 20px; }
+    .brand { font-size: 18px; }
+    .hero { display: block; min-height: auto; padding: 48px 20px 70px; }
+    h1 { font-size: clamp(46px, 14vw, 66px); }
+    .hero-lead { font-size: 18px; }
+    .action-card { grid-template-columns: 1fr; }
+    .action-card .btn { width: 100%; }
+    .trust-list { flex-wrap: wrap; gap: 8px 16px; }
+    .hero-visual { min-height: 470px; margin-top: 44px; }
+    .orbit-one { width: 390px; height: 390px; }
+    .orbit-two { width: 300px; height: 300px; }
+    .app-window { width: min(340px, 86%); }
+    .float-chip { width: 50px; height: 50px; }
+    .chip-one { left: 0; }
+    .chip-two { right: 0; }
+    .statement { padding: 34px 20px; }
+    .content-section { padding: 80px 20px; }
+    .step-grid, .feature-grid { grid-template-columns: 1fr; }
+    .step-card { min-height: auto; }
+    .step-card > span, .feature-icon { margin-bottom: 40px; }
+    .final-cta { grid-template-columns: 1fr; gap: 32px; margin-bottom: 60px; padding: 38px 26px; }
+    .final-cta h2 { margin-bottom: 16px; }
+    .cta-button .btn { width: 100%; }
+    footer { grid-template-columns: 1fr; justify-items: center; padding: 35px 20px; }
+    footer > a:last-child { justify-self: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .orbit-two, .app-window { animation: none; }
+  }
+</style>
