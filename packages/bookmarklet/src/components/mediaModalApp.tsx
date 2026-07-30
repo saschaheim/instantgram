@@ -171,7 +171,7 @@ export function HeaderIconButton({
 }
 
 function BaseHeading({
-  left = "Instantgram",
+  left = <span class="igb"><b>i</b><span>instantgram</span></span>,
   middle,
   right,
 }: {
@@ -611,18 +611,22 @@ export function ReactiveMediaModalBody({
       >
         {activeSlide.downloadLabel}
       </a>
-      <div class={`slider-controls${program.settings.autoSlideshow && slides.length > 1 ? " autoplay" : ""}`}>
-        {slides.map((_slide, index) => (
-          <button
-            key={index}
-            type="button"
-            class={index === state.selectedIndex ? "active" : undefined}
-            style={{ "--progress": String(progressValues[index] || 0) }}
-            onClick={() => selectSlide(index)}
-          >
-            {index + 1}
-          </button>
-        ))}
+      <div class="slider-controls">
+        {slides.map((_slide, index) => {
+          const isActive = index === state.selectedIndex;
+          const isProgressing = isActive && (progressValues[index] || 0) > 0;
+          return (
+            <button
+              key={index}
+              type="button"
+              class={[isActive ? "active" : undefined, isProgressing ? "progressing" : undefined].filter(Boolean).join(" ") || undefined}
+              style={{ "--progress": String(progressValues[index] || 0) }}
+              onClick={() => selectSlide(index)}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
       </div>
     </div>
     </>

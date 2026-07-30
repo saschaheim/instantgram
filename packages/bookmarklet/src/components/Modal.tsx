@@ -25,7 +25,7 @@ function ModalView({ onClose, options }: { onClose: () => void; options: ModalOp
         <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
         <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>
         {!!buttonList.length && (
-          <div class={uiClasses.modalFooter} style="background-color:#f8f9fa!important">
+          <div class={uiClasses.modalFooter}>
             {buttonList.map((button) => (
               <button class={button.active ? "active" : undefined} onClick={() => {
                 button.callback?.();

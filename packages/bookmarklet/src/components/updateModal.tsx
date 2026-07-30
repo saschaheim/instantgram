@@ -6,8 +6,8 @@ const inline = (text: string) => text
   .replace(/&/g, "&amp;")
   .replace(/</g, "&lt;")
   .replace(/>/g, "&gt;")
-  .replace(/`([^`]+)`/g, "<code style=\"font-size:.95em;background:#f3f6f9;color:#234;padding:2px 6px;border-radius:6px\">$1</code>")
-  .replace(/\*\*([^*]+)\*\*/g, "<strong style=\"font-weight:700;color:#111\">$1</strong>");
+  .replace(/`([^`]+)`/g, "<code style=\"font-size:.95em;background:#ebe5df;color:#101820;padding:2px 6px;border-radius:6px\">$1</code>")
+  .replace(/\*\*([^*]+)\*\*/g, "<strong style=\"font-weight:700;color:#101820\">$1</strong>");
 
 function Changelog({ text }: { text: string }) {
   const intro: string[] = [];
@@ -27,15 +27,15 @@ function Changelog({ text }: { text: string }) {
 
   return (
     <div style="padding:26px 28px 18px;text-align:left;font-size:14px">
-      <div style="padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid #eef3f7">
+      <div style="padding:0 0 18px;margin:0 0 18px;border-bottom:1px solid #ded8d2">
         {intro.map((line) => (
           <p style="margin:0;font-size:18px;font-weight:800;line-height:1.25;letter-spacing:-.02em;color:#101820" dangerouslySetInnerHTML={{ __html: inline(line) }} />
         ))}
       </div>
-      <ul style="margin:0;padding:0;list-style:none;color:#202124">
+      <ul style="margin:0;padding:0;list-style:none;color:#101820">
         {details.map((line) => (
-          <li style="position:relative;margin:0 0 12px;padding:0 0 0 18px;line-height:1.62;color:#24323d">
-            <span style="position:absolute;left:0;top:.58em;width:7px;height:7px;border-radius:999px;background:linear-gradient(135deg,#4b8db5,#6ea8c8)" />
+          <li style="position:relative;margin:0 0 12px;padding:0 0 0 18px;line-height:1.62;color:#36434d">
+            <span style="position:absolute;left:0;top:.58em;width:7px;height:7px;border-radius:999px;background:#367da3" />
             <span dangerouslySetInnerHTML={{ __html: inline(line) }} />
           </li>
         ))}

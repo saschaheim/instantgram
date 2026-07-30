@@ -202,7 +202,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
     <meta name="theme-color" content="#101820" />
     <meta name="description" content={projectLead} />
     <title>{pageTitle}</title>
-    <link rel="icon" href={asset("img/favicon.png")} />
+    <link rel="icon" href={asset("img/favicon.svg")} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={asset("img/apple-touch-icon-180x180.png")} sizes="180x180" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -284,14 +284,16 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
             <div class="media-frame">
               <div class="media-slideshow">
                 <img class="media-item active" src={asset("img/preview-post.jpg")} alt="Autumn colors in the Eastern Washington countryside" />
+                <video class="media-item" src={asset("img/preview-thailand.mp4")} muted loop playsinline preload="metadata" aria-label="Turquoise lagoon surrounded by Thailand's dramatic green cliffs"></video>
                 <img class="media-item" src={asset("img/preview-fashion-black.jpg")} alt="Urban fashion portrait in Beijing" />
-                <video class="media-item" src={asset("img/preview-city.mp4")} muted loop playsinline preload="metadata" aria-label="Fast-paced city travel video"></video>
                 <img class="media-item" src={asset("img/preview-fashion-red.jpg")} alt="Street fashion portrait with a red blazer" />
+                <video class="media-item" src={asset("img/preview-nature.mp4")} muted loop playsinline preload="metadata" aria-label="Aerial view of waterfalls, mist, and lush green mountains"></video>
                 <div class="media-pagination" aria-label="Preview slides">
                   <button class="active" type="button" aria-label="Show preview 1"></button>
                   <button type="button" aria-label="Show preview 2"></button>
                   <button type="button" aria-label="Show preview 3"></button>
                   <button type="button" aria-label="Show preview 4"></button>
+                  <button type="button" aria-label="Show preview 5"></button>
                 </div>
               </div>
               <span class="media-badge">{text.media}</span>
@@ -599,6 +601,8 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
     transition: opacity .8s ease, transform 4.8s ease;
   }
   .media-item.active { z-index: 1; opacity: 1; transform: scale(1); }
+  video.media-item { transform: none; transition: opacity .8s ease; }
+  video.media-item.active { transform: none; }
   .media-pagination {
     position: absolute;
     z-index: 3;
@@ -619,7 +623,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
     transition: width .25s ease, background .25s ease;
   }
   .media-pagination button.active { width: 18px; background: var(--white); }
-  .media-badge { position: absolute; left: 14px; bottom: 14px; padding: 8px 11px; border-radius: 999px; color: var(--white); background: rgba(16,24,32,.82); font-size: 10px; font-weight: 700; backdrop-filter: blur(8px); }
+  .media-badge { position: absolute; z-index: 3; left: 14px; bottom: 14px; padding: 8px 11px; border-radius: 999px; color: var(--white); background: rgba(16,24,32,.82); font-size: 10px; font-weight: 700; backdrop-filter: blur(8px); }
   .app-action div { display: grid; gap: 3px; }
   .app-action strong { font: 700 13px/1 var(--display); }
   .app-action button { padding: 11px 14px; border: 0; border-radius: 10px; color: var(--white); background: var(--blue-dark); font-weight: 700; }
