@@ -264,6 +264,7 @@ function SlideImage({ mediaUrl, shouldPreload }: { mediaUrl: string; shouldPrelo
     <img
       src={readyUrl}
       decoding="async"
+      draggable={false}
       onError={() => setReadyUrl(undefined)}
     />
   ) : <div class="slide-placeholder" aria-hidden="true" />;
@@ -278,28 +279,16 @@ const playFlipAnimation = (
     return null;
   }
 
-  const scaleX = firstRect.width / lastRect.width;
-  const scaleY = firstRect.height / lastRect.height;
-  const translateX = firstRect.left - lastRect.left;
-  const translateY = firstRect.top - lastRect.top;
-  const noVisualChange = Math.abs(scaleX - 1) < 0.001
-    && Math.abs(scaleY - 1) < 0.001
-    && Math.abs(translateX) < 0.5
-    && Math.abs(translateY) < 0.5;
+  const noVisualChange = Math.abs(firstRect.width - lastRect.width) < 0.5
+    && Math.abs(firstRect.height - lastRect.height) < 0.5;
 
   if (noVisualChange) {
     return null;
   }
 
   return element.animate([
-    {
-      transformOrigin: "top center",
-      transform: `translate(${translateX}px,${translateY}px) scale(${scaleX},${scaleY})`,
-    },
-    {
-      transformOrigin: "top center",
-      transform: "translate(0,0) scale(1,1)",
-    },
+    { width: `${firstRect.width}px`, height: `${firstRect.height}px` },
+    { width: `${lastRect.width}px`, height: `${lastRect.height}px` },
   ], {
     duration: 280,
     easing: "cubic-bezier(.22,.61,.36,1)",
@@ -406,6 +395,92 @@ export function ReactiveMediaModalBody({
     store.setSelectedIndex(index);
   };
 
+  const dragRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    dragging: boolean;
+    width: number;
+    baseTranslate: number;
+    offset: number;
+    lastX: number;
+    lastT: number;
+    velocity: number;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
+
+  const endDrag = (nextIndex: number) => {
+    const slider = sliderRef.current;
+    dragRef.current = null;
+    if (!slider) return;
+    slider.classList.remove("dragging");
+    slider.style.transition = "";
+    slider.style.transform = `translateX(-${nextIndex * 100}%)`;
+    selectSlide(nextIndex);
+  };
+
+  const handleSliderPointerDown = (event: PointerEvent) => {
+    if (slides.length <= 1 || event.button > 0) return;
+    const slider = sliderRef.current;
+    const width = slider?.getBoundingClientRect().width;
+    if (!slider || !width) return;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      dragging: false,
+      width,
+      baseTranslate: -state.selectedIndex * width,
+      offset: 0,
+      lastX: event.clientX,
+      lastT: event.timeStamp,
+      velocity: 0,
+    };
+  };
+
+  const handleSliderPointerMove = (event: PointerEvent) => {
+    const drag = dragRef.current;
+    const slider = sliderRef.current;
+    if (!drag || !slider || event.pointerId !== drag.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    if (!drag.dragging) {
+      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
+      drag.dragging = true;
+      suppressClickRef.current = true;
+      slider.classList.add("dragging");
+      slider.style.transition = "none";
+      slider.setPointerCapture(event.pointerId);
+    }
+    event.preventDefault();
+    const dt = event.timeStamp - drag.lastT;
+    if (dt > 0) drag.velocity = (event.clientX - drag.lastX) / dt;
+    drag.lastX = event.clientX;
+    drag.lastT = event.timeStamp;
+
+    const atStart = state.selectedIndex === 0 && dx > 0;
+    const atEnd = state.selectedIndex === slides.length - 1 && dx < 0;
+    drag.offset = atStart || atEnd ? dx * 0.35 : dx;
+    slider.style.transform = `translateX(${drag.baseTranslate + drag.offset}px)`;
+  };
+
+  const handleSliderPointerEnd = (event: PointerEvent) => {
+    const drag = dragRef.current;
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (!drag.dragging) {
+      dragRef.current = null;
+      return;
+    }
+    const ratio = drag.offset / drag.width;
+    const flick = Math.abs(drag.velocity) > 0.35;
+    let nextIndex = state.selectedIndex;
+    if (flick || Math.abs(ratio) > 0.2) {
+      nextIndex += drag.offset < 0 ? 1 : -1;
+    }
+    nextIndex = Math.max(0, Math.min(slides.length - 1, nextIndex));
+    endDrag(nextIndex);
+  };
+
   useLayoutEffect(() => {
     if (state.mode !== "media") {
       return undefined;
@@ -428,11 +503,10 @@ export function ReactiveMediaModalBody({
 
     const activeVideo = videoRefs.current[state.selectedIndex];
     const firstModalRect = modalWindow.getBoundingClientRect();
-    const previousTransition = modalWindow.style.transition;
     const activeMedia = activeVideo || (rootElement.querySelectorAll<HTMLElement>(".slide img")[state.selectedIndex] ?? null);
     const previousMediaTransition = activeMedia?.style.transition ?? "";
 
-    modalWindow.style.transition = "none";
+    modalWindow.classList.add("flip-animating");
     if (activeMedia) {
       activeMedia.style.transition = "none";
     }
@@ -443,7 +517,7 @@ export function ReactiveMediaModalBody({
     previousExpandedRef.current = state.expanded;
 
     const finish = () => {
-      modalWindow.style.transition = previousTransition;
+      modalWindow.classList.remove("flip-animating");
       if (activeMedia) {
         activeMedia.style.transition = previousMediaTransition;
       }
@@ -457,6 +531,7 @@ export function ReactiveMediaModalBody({
     const settle = () => {
       animation.removeEventListener("finish", settle);
       animation.removeEventListener("cancel", settle);
+      animation.cancel();
       finish();
     };
 
@@ -530,16 +605,17 @@ export function ReactiveMediaModalBody({
 
     progress(0);
 
+    let handleTimeUpdate: (() => void) | undefined;
     if (video) {
       video.defaultMuted = video.muted = mute;
-      const sync = () => {
-        progress(video.duration && isFinite(video.duration) ? video.currentTime / video.duration * 100 : 0);
-        if (!video.paused && !video.ended) frame = requestAnimationFrame(sync);
-      };
-      if (auto) video.onended = next;
-      void video.play().then(() => {
-        if (auto) sync();
-      }).catch(() => {
+      if (auto) {
+        handleTimeUpdate = () => {
+          progress(video.duration && isFinite(video.duration) ? (video.currentTime / video.duration) * 100 : 0);
+        };
+        video.addEventListener("timeupdate", handleTimeUpdate);
+        video.onended = next;
+      }
+      void video.play().catch(() => {
         if (auto) timedProgress();
       });
     } else if (auto) {
@@ -550,6 +626,7 @@ export function ReactiveMediaModalBody({
       clearTimeout(timer);
       cancelAnimationFrame(frame);
       if (video) {
+        if (handleTimeUpdate) video.removeEventListener("timeupdate", handleTimeUpdate);
         video.onended = null;
         video.pause();
       }
@@ -577,6 +654,17 @@ export function ReactiveMediaModalBody({
         class="slider"
         ref={sliderRef}
         style={{ transform: `translateX(-${state.selectedIndex * 100}%)` }}
+        onPointerDown={handleSliderPointerDown}
+        onPointerMove={handleSliderPointerMove}
+        onPointerUp={handleSliderPointerEnd}
+        onPointerCancel={handleSliderPointerEnd}
+        onClickCapture={(event) => {
+          if (suppressClickRef.current) {
+            suppressClickRef.current = false;
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
       >
         {slides.map((slide, index) => {
           const shouldPreload = slides.length <= 1 || index === state.selectedIndex || index === (state.selectedIndex + 1) % slides.length;

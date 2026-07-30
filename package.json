@@ -8,7 +8,7 @@
     "build:release": "pnpm run build:all",
     "build:bookmarklet": "pnpm --filter @instantgram/bookmarklet build",
     "build:site": "pnpm --filter @instantgram/site build",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev",
     "lint": "turbo run lint",
     "test": "turbo run test"
   },

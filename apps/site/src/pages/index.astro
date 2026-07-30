@@ -7,11 +7,12 @@ import siteVersion from "../generated/version.json";
 const locale = "en-US";
 const content = localeContent[locale];
 const bookmarklets = readBookmarklets();
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const languageLinks = locales.map((entry) => ({
   lang: entry,
   langIso: localeContent[entry].langIso,
   name: localeContent[entry].name,
-  href: entry === "en-US" ? "./index.html" : `./lang/${entry.toLowerCase()}/index.html`,
+  href: entry === "en-US" ? `${base}/index.html` : `${base}/lang/${entry.toLowerCase()}/index.html`,
   alternateHref: localeContent[entry].link,
 }));
 ---
@@ -26,6 +27,6 @@ const languageLinks = locales.map((entry) => ({
   firefoxBookmarkletHtml={readFirefoxBookmarklets()[locale]}
   version={siteVersion.version}
   languageLinks={languageLinks}
-  assetBase="."
-  homeHref="./index.html"
+  assetBase={base}
+  homeHref={`${base}/index.html`}
 />

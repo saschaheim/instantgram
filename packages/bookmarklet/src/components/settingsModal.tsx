@@ -97,9 +97,11 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
           ))}
         </div>
         <div class="tc">
-          <div class="tp fade active show">
-            {pane === "general" && <div class="sw mb-0" dangerouslySetInnerHTML={{ __html: localize("ms.a") }} />}
-            {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
+          <div class={`tp${pane === "general" ? " active" : ""}`}>
+            {settings.filter((setting) => setting.pane === "general").map(renderSetting)}
+          </div>
+          <div class={`tp${pane === "stories" ? " active" : ""}`}>
+            {settings.filter((setting) => setting.pane === "stories").map(renderSetting)}
           </div>
         </div>
       </div>

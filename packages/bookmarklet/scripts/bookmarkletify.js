@@ -49,6 +49,9 @@ const minify = (code) => {
       code: true,
       comments: false,
       beautify: false,
+      // Single quotes aren't percent-encoded by encodeURI() (unlike "), so preferring
+      // them here meaningfully shrinks the encoded javascript: URI length.
+      quote_style: 1,
     },
   });
 
