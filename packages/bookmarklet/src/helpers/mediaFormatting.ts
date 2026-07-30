@@ -10,9 +10,16 @@ const buildDatePlaceholders = (date: Date, userName: string): Record<string, str
     Username: userName,
 });
 
+type MediaExtension = "mp4" | "jpg" | "jpeg" | "webp" | "avif";
+
+const getImageExtension = (url: string): Exclude<MediaExtension, "mp4"> => {
+    const extension = new URL(url).pathname.toLowerCase().match(/\.(jpe?g|webp|avif)$/)?.[1];
+    return extension === "jpeg" || extension === "webp" || extension === "avif" ? extension : "jpg";
+};
+
 export const getFormattedFilenameAndUrl = (media: DownloadableMedia, userName: string, template: string, index: number) => {
     if (isDownloadableImageLike(media) && media.url) {
-        return { formattedFilename: `${userName}.jpg`, url: media.url };
+        return { formattedFilename: `${userName}.${getImageExtension(media.url)}`, url: media.url };
     }
 
     if (typeof media === "string") {
@@ -28,12 +35,13 @@ export const getFormattedFilenameAndUrl = (media: DownloadableMedia, userName: s
     }
 };
 
-export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: "mp4" | "jpg"; url: string } | null => {
+export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: MediaExtension; url: string } | null => {
     if (item.items) {
         if ("video_versions" in item && item.items[0]?.video_versions?.[0]?.url) {
             return { extension: "mp4", url: item.items[0].video_versions[0].url };
         } else if (item.items[0]?.image_versions2?.candidates?.[0]?.url) {
-            return { extension: "jpg", url: item.items[0].image_versions2.candidates[0].url };
+            const url = item.items[0].image_versions2.candidates[0].url;
+            return { extension: getImageExtension(url), url };
         } else {
             console.error('Error: No valid video or image URL found in item.items[0]');
             return null;
@@ -43,7 +51,8 @@ export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: "mp4" |
     if ("video_versions" in item && item.video_versions?.[0]?.url) {
         return { extension: "mp4", url: item.video_versions[0].url };
     } else if (item.image_versions2?.candidates?.[0]?.url) {
-        return { extension: "jpg", url: item.image_versions2.candidates?.[0]?.url };
+        const url = item.image_versions2.candidates[0].url;
+        return { extension: getImageExtension(url), url };
     } else {
         console.error('Error: No valid video or image URL found');
         return null;
@@ -74,8 +83,8 @@ export const userFilenameFormatter = (filename: string, placeholders: Record<str
     return filename.replace(/\s+/g, "-").replace(/[^\w-.]/g, "");
 };
 
-export const buildProxyDownloadUrl = (url: string, filename: string): string =>
-    `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(filename)}`;
+export const buildProxyDownloadUrl = (url: string, filename: string, version: string, sourceUrl: string): string =>
+    `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(filename)}&s=${encodeURIComponent(sourceUrl)}&v=${encodeURIComponent(version)}`;
 
 export const wrapInSliderContainer = (modalBody: string) =>
     `<div class="slider-container"><div class="slider">${modalBody}</div><div class="slider-controls"></div></div>`;

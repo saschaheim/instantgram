@@ -27,6 +27,15 @@ describe("getImgOrVideoUrl", () => {
         });
     });
 
+    it("keeps the actual webp extension returned by Instagram", () => {
+        const item = loadFixture("post-single-image").items[0];
+        item.image_versions2.candidates[0].url = "https://scontent.cdninstagram.com/v/photo.webp?x=1";
+        expect(getImgOrVideoUrl(item)).toEqual({
+            extension: "webp",
+            url: "https://scontent.cdninstagram.com/v/photo.webp?x=1",
+        });
+    });
+
     it("returns null when neither image nor video candidates are present", () => {
         expect(getImgOrVideoUrl({})).toBeNull();
     });
@@ -69,6 +78,11 @@ describe("getFormattedFilenameAndUrl", () => {
 
         expect(formattedFilename).toBe("someuser.jpg");
         expect(url).toBe(pic.url);
+    });
+
+    it("uses the actual avif extension for a downloadable-image-like object", () => {
+        const pic = { url: "https://scontent.cdninstagram.com/profile.avif?size=large" };
+        expect(getFormattedFilenameAndUrl(pic, "someuser", "{Username}", 0).formattedFilename).toBe("someuser.avif");
     });
 });
 

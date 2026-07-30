@@ -201,7 +201,8 @@ export function UtilityModalHeading({
 const getDownloadProps = (slide: MediaSlide, program: Program) => {
   const directUrl = slide.downloadAttributes["data-direct-url"] || slide.mediaUrl;
   const filename = slide.downloadAttributes["data-static-filename"];
-  const proxyUrl = buildProxyDownloadUrl(directUrl, filename);
+  const sourceUrl = window.location.origin + window.location.pathname;
+  const proxyUrl = buildProxyDownloadUrl(directUrl, filename, program.VERSION, sourceUrl);
   const openInNewTab = program.settings.openInNewTab;
 
   return {
@@ -211,7 +212,7 @@ const getDownloadProps = (slide: MediaSlide, program: Program) => {
   };
 };
 
-const queueMediaRetry = (element: HTMLImageElement | HTMLVideoElement, mediaUrl: string, shouldMute: boolean) => {
+const queueVideoRetry = (element: HTMLVideoElement, mediaUrl: string, shouldMute: boolean) => {
   const retries = Number(element.dataset.mediaRetries || "0");
   if (retries >= 2) {
     return;
@@ -219,20 +220,54 @@ const queueMediaRetry = (element: HTMLImageElement | HTMLVideoElement, mediaUrl:
   element.dataset.mediaRetries = String(retries + 1);
 
   setTimeout(() => {
-    if (element instanceof HTMLVideoElement) {
-      element.defaultMuted = shouldMute;
-      element.muted = shouldMute;
-      element.removeAttribute("src");
-      element.load();
-      element.src = mediaUrl;
-      element.load();
-      return;
-    }
-
+    element.defaultMuted = shouldMute;
+    element.muted = shouldMute;
     element.removeAttribute("src");
+    element.load();
     element.src = mediaUrl;
+    element.load();
   }, (retries + 1) * 800);
 };
+
+function SlideImage({ mediaUrl, shouldPreload }: { mediaUrl: string; shouldPreload: boolean }) {
+  const [readyUrl, setReadyUrl] = useState<string>();
+
+  useEffect(() => {
+    if (!shouldPreload || readyUrl === mediaUrl) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    let retryTimer = 0;
+    const preload = (retry = 0) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => {
+        if (!cancelled) setReadyUrl(mediaUrl);
+      };
+      image.onerror = () => {
+        if (!cancelled && retry < 2) {
+          retryTimer = window.setTimeout(() => preload(retry + 1), (retry + 1) * 800);
+        }
+      };
+      image.src = mediaUrl;
+    };
+    preload();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(retryTimer);
+    };
+  }, [mediaUrl, readyUrl, shouldPreload]);
+
+  return readyUrl === mediaUrl ? (
+    <img
+      src={readyUrl}
+      decoding="async"
+      onError={() => setReadyUrl(undefined)}
+    />
+  ) : <div class="slide-placeholder" aria-hidden="true" />;
+}
 
 const playFlipAnimation = (
   element: HTMLElement | null,
@@ -558,15 +593,10 @@ export function ReactiveMediaModalBody({
                   controls
                   preload={shouldPreload ? "metadata" : "none"}
                   muted={shouldMute}
-                  onError={(event) => queueMediaRetry(event.currentTarget as HTMLVideoElement, slide.mediaUrl, shouldMute)}
+                  onError={(event) => queueVideoRetry(event.currentTarget, slide.mediaUrl, shouldMute)}
                 />
               ) : (
-                <img
-                  src={shouldPreload ? slide.mediaUrl : undefined}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(event) => queueMediaRetry(event.currentTarget as HTMLImageElement, slide.mediaUrl, shouldMute)}
-                />
+                <SlideImage mediaUrl={slide.mediaUrl} shouldPreload={shouldPreload} />
               )}
             </div>
           );
