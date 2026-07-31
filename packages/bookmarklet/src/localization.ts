@@ -9,7 +9,7 @@ const enUS = {
     "a.nf": "Did you open an Instagram post? For example:",
     "a.ie": "This media isn't supported yet.",
     "ms.t": "Settings",
-    "ms.a": "<span class=\"sx\">New:</span> Monetized posts are currently not supported. Some changes apply immediately; others require reopening the bookmarklet.",
+    "ms.a": "<span class=sx>New:</span> Monetized posts are currently not supported. Some changes apply immediately; others require reopening the bookmarklet.",
     "ms.g": "General",
     "msg.t2": "Download in a new tab",
     "msg.d2": "The download opens in a new tab",

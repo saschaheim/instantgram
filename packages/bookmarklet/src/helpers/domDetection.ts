@@ -62,8 +62,7 @@ export const resolveCurrentStoryIndex = (el: HTMLElement): number => {
         } else {
             const spanElement = allDivs[0]?.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.children[1]?.querySelector('span');
             if (spanElement) {
-                const targetIndex = Array.from(allDivs[0]?.parentNode?.parentNode?.children ?? []).findIndex(child => child.children.length > 0);
-                return (slidesChildren.length - targetIndex) > 0 ? 0 : 0;
+                return 0;
             } else {
                 for (const div of Array.from(allDivs)) {
                     const widthStyle = div.style.width;

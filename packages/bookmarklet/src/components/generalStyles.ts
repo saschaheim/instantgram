@@ -1,4 +1,4 @@
-import { cssLinearGradient, sharedUiClasses } from "./styleShared";
+import { cssImportant as I, cssLinearGradient, sharedUiClasses } from "./styleShared";
 
 const { btn, btnPrimary, btnSuccess, modalBody } = sharedUiClasses;
 
@@ -14,11 +14,11 @@ const slideOnRules = [
 const generalRules = [
   "."+btn+"{padding:.25rem 1.9rem .4rem;font-size:1rem;font-weight:400;line-height:1.5;color:#212529;text-align:center;vertical-align:middle;user-select:none;background:transparent;border:1px solid transparent;border-radius:.25rem;cursor:pointer}",
   "@keyframes horizontal-shaking{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(5px)}50%{transform:translateX(-5px)}}",
-  "."+btnPrimary+"{color:#fff!important;"+cssLinearGradient+"border:4px!important}",
-  "."+btnPrimary+":hover{color:#fff!important;background-color:#0069d9!important;border-color:#0062cc!important}",
-  "."+btnSuccess+"{color:#fff!important;background-color:#28a745!important;border-color:#28a745!important}",
-  ".mt-2{margin-top:.5rem!important}",
-  ".mb-0{margin-bottom:0!important}",
+  "."+btnPrimary+"{color:#fff"+I+";"+cssLinearGradient+"border:4px"+I+"}",
+  "."+btnPrimary+":hover{color:#fff"+I+";background-color:#0069d9"+I+";border-color:#0062cc"+I+"}",
+  "."+btnSuccess+"{color:#fff"+I+";background-color:#28a745"+I+";border-color:#28a745"+I+"}",
+  ".mt-2{margin-top:.5rem"+I+"}",
+  ".mb-0{margin-bottom:0"+I+"}",
   "."+modalBody+" *{box-sizing:border-box}",
   "button,input{margin:0;font:inherit}",
   ".sg{margin:0;padding:0}",
@@ -37,7 +37,7 @@ const generalRules = [
   ".sr{display:flex;align-items:center;height:100%;gap:10px}",
   ".sgw{flex:1 1 0;min-width:0;padding-right:0}",
   ".se{flex:0 0 auto}",
-  ".sm{color:#58636d!important}",
+  ".sm{color:#58636d"+I+"}",
   ".sf,.fi{display:block;width:100%}",
   ".sf{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem}",
   ".fi{padding:.375rem .75rem;margin:.05rem 0 0;width:100%;font-size:.95rem;font-weight:400;line-height:1.45;height:calc(1.45em + .75rem + 2px);color:#495057;background:#fff;border:1px solid #ced4da;border-radius:.25rem;transition:border-color .15s ease-in-out,box-shadow .15s ease-in-out}",
