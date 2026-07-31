@@ -8,6 +8,7 @@ import { LocalizationKey } from "../localization";
 import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
 import { MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
+import { logoIconGlyphPath, logoIconGlyphTransform, logoIconPath, logoViewBox, logoWordmarkPath, logoWordmarkTransform } from "../helpers/logo";
 import { ModalContent } from "./Modal";
 import { SettingsConfig, SettingsModalBody } from "./settingsModal";
 import { uiClasses } from "./uiTokens";
@@ -171,7 +172,13 @@ export function HeaderIconButton({
 }
 
 function BaseHeading({
-  left = <span class="igb"><b>i</b><span>instantgram</span></span>,
+  left = (
+    <svg class="igb" viewBox={logoViewBox} role="img" aria-label="instantgram">
+      <path class="igi" d={logoIconPath} />
+      <path class="igg" transform={logoIconGlyphTransform} d={logoIconGlyphPath} />
+      <path class="igt" transform={logoWordmarkTransform} d={logoWordmarkPath} fill-rule="evenodd" />
+    </svg>
+  ),
   middle,
   right,
 }: {
