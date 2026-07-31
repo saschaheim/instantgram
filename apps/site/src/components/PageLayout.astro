@@ -1,4 +1,9 @@
 ---
+import { Image } from "astro:assets";
+import previewPost from "../assets/preview-post.jpg";
+import previewFashionBlack from "../assets/preview-fashion-black.jpg";
+import previewFashionRed from "../assets/preview-fashion-red.jpg";
+
 interface LanguageLink {
   lang: string;
   name: string;
@@ -238,10 +243,9 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
           <div class="actions">
             <article class="action-card action-primary">
               <div class="instantgram-info">
-                <div class="browser-stack" aria-label="Chrome, Edge, Firefox and Safari">
+                <div class="browser-stack" aria-label="Chrome, Edge and Safari">
                   <span><img src={asset("img/browsers/chrome.svg")} alt="Chrome" /></span>
                   <span><img src={asset("img/browsers/edge.svg")} alt="Edge" /></span>
-                  <span><img src={asset("img/browsers/firefox.svg")} alt="Firefox" /></span>
                   <span><img src={asset("img/browsers/safari.svg")} alt="Safari" /></span>
                 </div>
                 <div>
@@ -283,10 +287,10 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
             </div>
             <div class="media-frame">
               <div class="media-slideshow">
-                <img class="media-item active" src={asset("img/preview-post.jpg")} alt="Autumn colors in the Eastern Washington countryside" />
+                <Image class="media-item active" src={previewPost} width={1200} alt="Autumn colors in the Eastern Washington countryside" loading="eager" />
                 <video class="media-item" src={asset("img/preview-thailand.mp4")} muted loop playsinline preload="metadata" aria-label="Turquoise lagoon surrounded by Thailand's dramatic green cliffs"></video>
-                <img class="media-item" src={asset("img/preview-fashion-black.jpg")} alt="Urban fashion portrait in Beijing" />
-                <img class="media-item" src={asset("img/preview-fashion-red.jpg")} alt="Street fashion portrait with a red blazer" />
+                <Image class="media-item" src={previewFashionBlack} alt="Urban fashion portrait in Beijing" loading="eager" />
+                <Image class="media-item" src={previewFashionRed} alt="Street fashion portrait with a red blazer" loading="eager" />
                 <video class="media-item" src={asset("img/preview-nature.mp4")} muted loop playsinline preload="metadata" aria-label="Aerial view of waterfalls, mist, and lush green mountains"></video>
                 <div class="media-pagination" aria-label="Preview slides">
                   <button class="active" type="button" aria-label="Show preview 1"></button>
@@ -305,7 +309,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
           </div>
           <span class="float-chip chip-one">MP4</span>
           <span class="float-chip chip-two">JPG</span>
-          <span class="float-chip chip-three">4K</span>
+          <span class="float-chip chip-three">WEBP</span>
         </div>
       </section>
 
@@ -523,7 +527,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
   }
   .action-primary { border-color: rgba(54,125,163,.35); background: var(--white); box-shadow: 0 18px 50px rgba(36,69,87,.1); }
   .action-card strong { font: 700 16px/1.2 var(--display); }
-  .instantgram-info { display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center; }
+  .instantgram-info { display: grid; grid-template-columns: 70px 1fr; gap: 12px; align-items: center; }
   .firefox-info { display: grid; grid-template-columns: 50px 1fr; gap: 12px; align-items: center; }
   .firefox-logo { width: 50px; height: 50px; grid-row: 1 / span 2; }
   .action-card p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
@@ -549,7 +553,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
   .hero-visual { position: relative; display: grid; min-height: 560px; place-items: center; }
   .browser-stack {
     display: flex;
-    width: 90px;
+    width: 70px;
     padding-left: 10px;
   }
   .browser-stack span {
