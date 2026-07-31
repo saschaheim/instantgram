@@ -73,6 +73,17 @@ const createStore = <TState,>(state: TState) => {
   };
 };
 
+const createBaseStoreMethods = <TState extends { mode: string; settingsVersion: number }>(
+  store: ReturnType<typeof createStore<TState>>,
+  idleMode: TState["mode"]
+) => ({
+  bumpSettingsVersion: () => store.update({ settingsVersion: store.getState().settingsVersion + 1 } as Partial<TState>),
+  closeSettings: () => store.update({ mode: idleMode } as Partial<TState>),
+  getState: store.getState,
+  openSettings: () => store.update({ mode: "settings" } as Partial<TState>),
+  subscribe: store.subscribe,
+});
+
 export const createMediaViewerStore = (selectedIndex = 0, expanded = false): MediaViewerStore => {
   const store = createStore<MediaViewerState>({
     expanded,
@@ -82,13 +93,9 @@ export const createMediaViewerStore = (selectedIndex = 0, expanded = false): Med
   });
 
   return {
-    bumpSettingsVersion: () => store.update({ settingsVersion: store.getState().settingsVersion + 1 }),
-    closeSettings: () => store.update({ mode: "media" }),
-    getState: store.getState,
-    openSettings: () => store.update({ mode: "settings" }),
+    ...createBaseStoreMethods(store, "media"),
     setExpanded: (expanded) => store.getState().expanded === expanded || store.update({ expanded }),
     setSelectedIndex: (selectedIndexValue) => store.getState().selectedIndex === selectedIndexValue || store.update({ selectedIndex: selectedIndexValue }),
-    subscribe: store.subscribe,
     toggleExpanded: () => store.update({ expanded: !store.getState().expanded }),
   };
 };
@@ -99,13 +106,7 @@ export const createUtilityViewerStore = (): UtilityViewerStore => {
     settingsVersion: 0,
   });
 
-  return {
-    bumpSettingsVersion: () => store.update({ settingsVersion: store.getState().settingsVersion + 1 }),
-    closeSettings: () => store.update({ mode: "message" }),
-    getState: store.getState,
-    openSettings: () => store.update({ mode: "settings" }),
-    subscribe: store.subscribe,
-  };
+  return createBaseStoreMethods(store, "message");
 };
 
 const useStoreState = <TState,>(store: StoreLike<TState>) => {

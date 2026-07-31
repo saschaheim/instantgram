@@ -2,7 +2,7 @@ import { Program } from "../App";
 import { h } from "preact";
 import { Modal } from "../components/Modal";
 import { UpdateModalBody } from "../components/updateModal";
-import { findAppId, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
+import { findAppId, mediaInfoUrlPrefix, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";
 import { normalizeVersionString } from "../helpers/common";
 
@@ -18,7 +18,7 @@ export class VersionUpdater {
 
     constructor(program: Program) {
         this.program = program;
-        this.storageKey = `${program.STORAGE_NAME}`;
+        this.storageKey = program.STORAGE_NAME;
     }
 
     public async check(localVersion: string): Promise<void> {
@@ -33,21 +33,22 @@ export class VersionUpdater {
     }
 
     private async fetchChangelog(): Promise<Changelog | null> {
+        const failedPrefix = "Failed to fetch changelog: ";
         const appId = findAppId();
         const mediaId = shortcodeToMediaId(this.changelogPostShortcode);
         if (!appId || !mediaId) {
-            console.error("Failed to fetch changelog: missing Instagram App ID or media ID");
+            console.error(failedPrefix+"missing Instagram App ID or media ID");
             return null;
         }
-        const text = (await secureFetch(`https://i.instagram.com/api/v1/media/${mediaId}/info/`, appId))
+        const text = (await secureFetch(mediaInfoUrlPrefix+mediaId+"/info/", appId))
             ?.items?.[0]?.caption?.text;
         if (!text) {
-            console.error("Failed to fetch changelog: caption text missing");
+            console.error(failedPrefix+"caption text missing");
             return null;
         }
         const [date, textBody] = text.split("::");
         if (!date || !textBody) {
-            console.error("Failed to fetch changelog: invalid caption format");
+            console.error(failedPrefix+"invalid caption format");
             return null;
         }
         return { date, textBody };
