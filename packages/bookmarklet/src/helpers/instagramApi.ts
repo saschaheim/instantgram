@@ -1,6 +1,9 @@
+import { storiesPathPrefix } from "./common";
 import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
 
-export const mediaInfoUrlPrefix = "https://i.instagram.com/api/v1/media/";
+const iApiV1Prefix = "https://i.instagram.com/api/v1/";
+const wwwPrefix = "https://www.instagram.com/";
+export const mediaInfoUrlPrefix = iApiV1Prefix+"media/";
 
 const mediaIdCache: Map<string, string> = new Map();
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -37,7 +40,7 @@ export const findPostId = (articleNode: HTMLElement) => {
     const segments = pathname.split('/');
     const normalizedPathId = pathname.startsWith("/reel/") || pathname.startsWith("/reels/")
         ? normalizePostId(segments[2])
-        : pathname.startsWith("/stories/")
+        : pathname.startsWith(storiesPathPrefix)
             ? segments[3]
             : null;
     if (normalizedPathId) {
@@ -122,7 +125,7 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
             const postId = articleNode ? findPostId(articleNode) : null;
             const mediaId = id || (postId ? await findMediaId(postId) : null);
             if (!mediaId) return null;
-            return "https://i.instagram.com/api/v1/feed/reels_media/?reel_ids="+(isHighlight ? 'highlight%3A' : '')+mediaId;
+            return iApiV1Prefix+"feed/reels_media/?reel_ids="+(isHighlight ? 'highlight%3A' : '')+mediaId;
         },
         'getMediaFromInfo': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
@@ -135,7 +138,7 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
         },
         'getUserFromInfo': () => {
             const userId = "userId" in config ? config.userId : null;
-            return userId ? "https://i.instagram.com/api/v1/users/"+userId+"/info/" : null;
+            return userId ? iApiV1Prefix+"users/"+userId+"/info/" : null;
         },
     };
     const url = await urlMap[type]?.();
@@ -187,7 +190,7 @@ const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> =
         return null;
     }
 
-    const url = "https://www.instagram.com/web/search/topsearch/?query="+encodeURIComponent(userName);
+    const url = wwwPrefix+"web/search/topsearch/?query="+encodeURIComponent(userName);
     const payload = await secureFetch(url, appId);
     const users = payload?.users as Array<{ user?: SearchOwner }> | undefined;
     const wanted = userName.toLowerCase();
@@ -226,7 +229,7 @@ const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
         return null;
     }
 
-    const url = "https://www.instagram.com/api/v1/feed/user/"+encodeURIComponent(userName)+"/username/?count=1";
+    const url = wwwPrefix+"api/v1/feed/user/"+encodeURIComponent(userName)+"/username/?count=1";
     const payload = await secureFetch(url, appId);
     const items = payload?.items as Array<{ user?: FeedOwner }> | undefined;
     return items?.[0]?.user ?? null;

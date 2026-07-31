@@ -1,4 +1,5 @@
 import { Program } from "../App";
+import { storiesHighlightsPathPrefix, storiesPathPrefix } from "./common";
 import localize from "./localize";
 import { MediaScanResult, MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
@@ -78,7 +79,7 @@ export const generateModalBody = async (el: HTMLElement, program: Program): Prom
     }
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);
-    const userId = isPathMatch("/stories/") ? (await resolveProfile(userName)).userId : null;
+    const userId = isPathMatch(storiesPathPrefix) ? (await resolveProfile(userName)).userId : null;
 
     const mediaInfo = await getMediaInfo(el, postId, userId);
     if (!mediaInfo) {
@@ -134,9 +135,9 @@ export const getMediaInfo = async (
         return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId, isHighlight: false });
     }
 
-    if (window.location.pathname.startsWith("/stories/highlights/")) {
+    if (window.location.pathname.startsWith(storiesHighlightsPathPrefix)) {
         return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: null, isHighlight: true });
-    } else if (window.location.pathname.startsWith("/stories/")) {
+    } else if (window.location.pathname.startsWith(storiesPathPrefix)) {
         return await fetchDataFromApi({ type: 'getReelsMediaFromFeed', articleNode: el, id: userId, isHighlight: false });
     } else {
         return await fetchDataFromApi({ type: 'getMediaFromInfo', articleNode: el });

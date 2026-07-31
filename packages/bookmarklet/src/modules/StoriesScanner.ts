@@ -1,6 +1,7 @@
 import { Program } from "../App";
 import { Module, NO_TARGET_FOUND, getErrorMessage } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
+import { storiesHighlightsPathPrefix, storiesPathPrefix } from "../helpers/common";
 import { getElementWithHighestWidth } from "../helpers/domDetection";
 import { generateModalBody } from "../helpers/modalMedia";
 import { traverseReactDOMAndFindHidden } from "../helpers/reactMedia";
@@ -113,12 +114,12 @@ export class StoriesScanner implements Module {
 
             const path = window.location.pathname; // Get the current URL path
             // Process highlights stories if the path matches
-            if (path.startsWith("/stories/highlights/")) {
+            if (path.startsWith(storiesHighlightsPathPrefix)) {
                 return await this.handleHighlightsStories($container, program)
                     || { found: false };
             }
             // Process feed stories if the path matches
-            else if (path.startsWith("/stories/")) {
+            else if (path.startsWith(storiesPathPrefix)) {
                 return await this.handleFeedStories($container, program)
                     || { found: false };
             } else {

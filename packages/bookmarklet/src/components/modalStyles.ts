@@ -1,4 +1,4 @@
-import { cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "./styleShared";
+import { cssEasing as E, cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "./styleShared";
 
 const {
   modalOverlay,
@@ -23,7 +23,7 @@ const modalCssRules = [
   "."+modal+"{font-size:14px"+I+";line-height:1.5"+I+"}",
   "."+modalFooter+" button,."+modalHeader+" h5{font-size:16px"+I+"}",
   "."+modalOverlay+"{display:none"+I+";opacity:0"+I+";transition:.1s"+I+";position:fixed"+I+";inset:0"+I+";z-index:1000"+I+";background:rgba(0,0,0,.65)"+I+";justify-content:center"+I+";align-items:center"+I+"}",
-  "."+modal+"{transition:width .28s cubic-bezier(.22,.61,.36,1),transform .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s cubic-bezier(.22,.61,.36,1)"+I+";display:inline-block"+I+";width:400px"+I+";padding:0"+I+";z-index:1001"+I+";transform:translateY(0);border-radius:16px"+I+";background:transparent"+I+";box-shadow:0 24px 70px rgba(0,0,0,.3)"+I+"}",
+  "."+modal+"{transition:width .28s "+E+",transform .28s "+E+",box-shadow .28s "+E+I+";display:inline-block"+I+";width:400px"+I+";padding:0"+I+";z-index:1001"+I+";transform:translateY(0);border-radius:16px"+I+";background:transparent"+I+";box-shadow:0 24px 70px rgba(0,0,0,.3)"+I+"}",
   "@media (min-width:736px){."+modal+"{width:640px"+I+"}}",
   "."+modal+".ime{width:min(92vw,980px)"+I+";box-shadow:0 22px 60px rgba(0,0,0,.28)"+I+"}",
   "."+modal+".ime .slider-container{width:100%"+I+";max-width:none"+I+"}",

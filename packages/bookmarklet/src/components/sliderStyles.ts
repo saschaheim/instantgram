@@ -1,13 +1,13 @@
-import { cssImportant as I, sharedUiClasses } from "./styleShared";
+import { cssEasing as E, cssImportant as I, sharedUiClasses } from "./styleShared";
 
 const { modalDb } = sharedUiClasses;
 
 const sliderRules = [
-  ".slider-container{width:100%;display:flex;flex-direction:column;overflow:hidden visible;position:relative;margin:0 auto;background:#fff;transition:width .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s ease,background-color .28s ease}",
-  ".slider{display:flex;align-items:stretch;transition:transform .45s cubic-bezier(.22,.61,.36,1);position:relative;will-change:transform;touch-action:pan-y;cursor:grab;background:#000}",
+  ".slider-container{width:100%;display:flex;flex-direction:column;overflow:hidden visible;position:relative;margin:0 auto;background:#fff;transition:width .28s "+E+",box-shadow .28s ease,background-color .28s ease}",
+  ".slider{display:flex;align-items:stretch;transition:transform .45s "+E+";position:relative;will-change:transform;touch-action:pan-y;cursor:grab;background:#000}",
   ".slider.dragging{cursor:grabbing}",
   ".slide{position:relative;flex:0 0 100%;width:100%;background:#000}",
-  ".slide img,.slide video{display:block;width:calc(100% + 2px);height:300px;max-height:300px;margin-left:-1px;object-fit:contain;background:#000;-webkit-user-drag:none;user-select:none;transition:width .28s cubic-bezier(.22,.61,.36,1),height .28s cubic-bezier(.22,.61,.36,1),max-height .28s cubic-bezier(.22,.61,.36,1),transform .28s ease,filter .28s ease}",
+  ".slide img,.slide video{display:block;width:calc(100% + 2px);height:300px;max-height:300px;margin-left:-1px;object-fit:contain;background:#000;-webkit-user-drag:none;user-select:none;transition:width .28s "+E+",height .28s "+E+",max-height .28s "+E+",transform .28s ease,filter .28s ease}",
   ".slide-placeholder{width:100%;height:300px;max-height:300px;background:#000}",
   ".slider-container>."+modalDb+'{display:flex;align-items:center;justify-content:center;min-height:52px;padding:12px 16px;width:100%;box-sizing:border-box;font:600 20px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif'+I+'}',
   ".slider-controls{display:flex;justify-content:center;align-items:center;margin:0;padding:11px 12px 14px;flex-wrap:wrap;gap:6px;background:#f7f4ef;border-top:1px solid #ded8d2}",

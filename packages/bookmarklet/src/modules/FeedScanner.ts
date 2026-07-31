@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { getElementInViewPercentage } from "../helpers/domDetection";
+import { findWithMaxScore, getElementInViewPercentage } from "../helpers/domDetection";
 import { generateModalBody } from "../helpers/modalMedia";
 
 /**
@@ -15,20 +15,6 @@ export class FeedScanner implements Module {
      */
     public getName(): string {
         return "FeedScanner";
-    }
-
-    /**
-     * Collects information on media elements (e.g., images, videos) within the feed.
-     * Each element is checked for its visibility percentage.
-     * @param articles HTMLCollection of articles to scan for media elements.
-     * @returns {Array<{ i1: number, mediaEl: Element, elemVisiblePercentage: number }>} Array containing media element info.
-     */
-    private collectMediaElementsInfo(articles: HTMLCollectionOf<HTMLElement>): Array<{ i1: number, mediaEl: Element, elemVisiblePercentage: number }> {
-        return Array.from(articles).map((mediaEl, index) => ({
-            i1: index,
-            mediaEl: mediaEl,
-            elemVisiblePercentage: getElementInViewPercentage(mediaEl) || 0 // Calculate visibility of each media element
-        }));
     }
 
     /**
@@ -47,16 +33,8 @@ export class FeedScanner implements Module {
                 return { found: false, errorMessage: NO_TARGET_FOUND };
             }
 
-            // Collect media element information (visibility, index)
-            const mediaElementsInfo = this.collectMediaElementsInfo(articles);
-
             // Find the most visible article based on visibility percentage
-            const mostVisibleArticle = mediaElementsInfo.reduce((max, current) =>
-                max.elemVisiblePercentage > current.elemVisiblePercentage ? max : current
-            );
-
-            // Get the actual article element based on the index
-            const article = articles[mostVisibleArticle.i1];
+            const article = findWithMaxScore(Array.from(articles), a => getElementInViewPercentage(a) || 0);
 
             // If the article is too small or doesn't exist, return an error
             if (!article || article.getBoundingClientRect().height < 40) {

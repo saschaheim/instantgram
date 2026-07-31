@@ -2,8 +2,11 @@ import { Program } from "../App";
 
 export const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms));
 
+export const storiesPathPrefix = "/stories/";
+export const storiesHighlightsPathPrefix = storiesPathPrefix+"highlights/";
+
 export const resolveShouldMuteVideos = (program: Program): boolean =>
-    window.location.pathname.startsWith("/stories/")
+    window.location.pathname.startsWith(storiesPathPrefix)
         ? program.settings.storiesMuted
         : program.settings.videosMuted;
 

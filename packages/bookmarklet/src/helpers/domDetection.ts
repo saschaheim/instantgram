@@ -86,13 +86,24 @@ export const findAD = (el: HTMLElement): boolean => {
         .some(node => node.children.length === 0 && labels.has(node.textContent?.trim().toLocaleLowerCase() || ""));
 };
 
+// Shared by every "pick the element with the highest score" scan (widest div,
+// most-visible article/story). requirePositive mirrors call sites that must
+// discard a max score of 0 or less (i.e. nothing actually scored) as "not found".
+export const findWithMaxScore = <T,>(items: readonly T[], score: (item: T) => number, requirePositive?: boolean): T | null => {
+    let best: T | null = null;
+    let bestScore = 0;
+    for (let i = 0; i < items.length; i++) {
+        const s = score(items[i]);
+        if (best === null || s > bestScore) {
+            best = items[i];
+            bestScore = s;
+        }
+    }
+    return requirePositive && bestScore <= 0 ? null : best;
+};
+
 export const getElementWithHighestWidth = (el: HTMLElement): HTMLElement | null => {
     if (!el) return null;
     const divs = el.querySelectorAll<HTMLElement>('div > div > div');
-    if (divs.length === 0) return null;
-    return Array.from(divs).reduce((maxDiv, currentDiv) => {
-        const maxWidth = parseFloat(getComputedStyle(maxDiv).width);
-        const currentWidth = parseFloat(getComputedStyle(currentDiv).width);
-        return currentWidth > maxWidth ? currentDiv : maxDiv;
-    }, divs[0]);
+    return findWithMaxScore(Array.from(divs), div => parseFloat(getComputedStyle(div).width));
 };

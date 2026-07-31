@@ -7,6 +7,7 @@ export const supportedLocales = ["en-US", "de-DE", "es-AR", "pt-BR"] as const;
 export type SupportedLocale = typeof supportedLocales[number];
 export const isInstagramHost = (): boolean => location.hostname.includes("instagram.com");
 const localeCachePrefix = "instantgram_i18n_";
+const cannotLoadPrefix = "[instantgram] Cannot load ";
 const localeListeners = new Set<() => void>();
 const remoteLocalePosts: Partial<Record<SupportedLocale, string>> = {
     "de-DE": "DbYMOJYNH40",
@@ -58,7 +59,7 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
     const appId = findAppId();
     const mediaId = shortcode && shortcodeToMediaId(shortcode);
     if (!appId || !mediaId) {
-        console.error("[instantgram] Cannot load "+locale+": missing app ID or media ID");
+        console.error(cannotLoadPrefix+locale+": missing app ID or media ID");
         return false;
     }
     const caption = (await secureFetch(mediaInfoUrlPrefix+mediaId+"/info/", appId))
@@ -66,7 +67,7 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
     const prefix = "i18n:"+locale+"::";
     const prefixIndex = caption?.indexOf(prefix) ?? -1;
     if (prefixIndex < 0) {
-        console.error("[instantgram] Cannot load "+locale+": caption or language prefix missing");
+        console.error(cannotLoadPrefix+locale+": caption or language prefix missing");
         return false;
     }
     try {
@@ -76,7 +77,7 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
         localStorage.setItem(localeCachePrefix + locale, JSON.stringify(dictionary));
         return true;
     } catch (error) {
-        console.error("[instantgram] Cannot load "+locale+": invalid translation JSON", error);
+        console.error(cannotLoadPrefix+locale+": invalid translation JSON", error);
         return false;
     }
 };

@@ -1,7 +1,7 @@
 import { Program } from "../App";
 import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { getElementInViewPercentage } from "../helpers/domDetection";
+import { findWithMaxScore, getElementInViewPercentage } from "../helpers/domDetection";
 import { generateModalBody } from "../helpers/modalMedia";
 
 /**
@@ -36,24 +36,7 @@ export class ReelsScanner implements Module {
      * @returns {HTMLElement | null} The most relevant article or null if none is found.
      */
     private findMostRelevantArticle(articles: HTMLElement[]): HTMLElement | null {
-        if (articles.length === 0) {
-            return null; // Return null if no articles are provided
-        }
-
-        // Map each article to an object containing its index, reference, and visibility
-        const mediaElementInfos = articles.map((article, index) => ({
-            index,
-            article,
-            visibility: getElementInViewPercentage(article) // Calculate visibility for each article
-        }));
-
-        // Find the article with the highest visibility
-        const mostVisible = mediaElementInfos.reduce((max, current) => (
-            max.visibility > current.visibility ? max : current
-        ), { index: -1, visibility: 0 }); // Initialize with -1 to handle empty array gracefully
-
-        // Return the most visible article if its visibility is above 0
-        return mostVisible.visibility > 0 ? articles[mostVisible.index] : null;
+        return findWithMaxScore(articles, getElementInViewPercentage, true);
     }
 
     /**

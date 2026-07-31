@@ -1,3 +1,5 @@
+import { cssEasing } from "../components/styleShared";
+
 // Shared FLIP (First-Last-Invert-Play) grow/shrink animation, used both for the media
 // modal's expand/collapse toggle and for the modal's initial open, so both look and feel
 // exactly the same.
@@ -37,7 +39,7 @@ export const playFlipAnimation = (
     },
   ], {
     duration: 280,
-    easing: "cubic-bezier(.22,.61,.36,1)",
+    easing: cssEasing,
     fill: "both",
   });
 };
