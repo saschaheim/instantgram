@@ -35,7 +35,7 @@ const modalCssRules = [
   `.${modalBody}{background:#f7f4ef!important;color:#101820!important;position:relative!important;flex:1 1 auto!important;transition:background-color .28s ease,padding .28s ease}`,
   `.${modal}.ime .${modalBody}{padding:0!important}`,
   `.${modalFooter}{background:#ebe5df!important;border-top:1px solid #d9d2cb!important;border-bottom-left-radius:14px!important;border-bottom-right-radius:14px!important;line-height:1.5!important;min-height:48px!important;padding:6px 9px!important;user-select:none!important;display:flex!important;align-items:center!important;justify-content:center!important}`,
-  `.${modalFooter} button{width:100%!important;min-height:39px!important;background-color:transparent!important;border:0!important;outline:0!important;cursor:pointer!important}`,
+  `.${modalFooter} button{width:100%!important;min-height:39px!important;background-color:transparent!important;border:0!important;outline:0!important;font-weight:700!important;cursor:pointer!important}`,
   `.${modalFooter} button.active{color:#367da3!important}`,
   `.${modalShow}{opacity:1!important}`,
   `.${modalVisible}{display:flex!important}`,
