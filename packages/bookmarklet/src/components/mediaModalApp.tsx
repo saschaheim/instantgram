@@ -9,6 +9,7 @@ import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
 import { MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
 import { logoIconGlyphPath, logoIconGlyphTransform, logoIconPath, logoViewBox, logoWordmarkPath, logoWordmarkTransform } from "../helpers/logo";
+import { playFlipAnimation } from "../helpers/flipAnimation";
 import { ModalContent } from "./Modal";
 import { SettingsConfig, SettingsModalBody } from "./settingsModal";
 import { uiClasses } from "./uiTokens";
@@ -277,31 +278,6 @@ function SlideImage({ mediaUrl, shouldPreload }: { mediaUrl: string; shouldPrelo
   ) : <div class="slide-placeholder" aria-hidden="true" />;
 }
 
-const playFlipAnimation = (
-  element: HTMLElement | null,
-  firstRect: DOMRect | undefined,
-  lastRect: DOMRect | undefined,
-): Animation | null => {
-  if (!element || !firstRect || !lastRect || !lastRect.width || !lastRect.height) {
-    return null;
-  }
-
-  const noVisualChange = Math.abs(firstRect.width - lastRect.width) < 0.5
-    && Math.abs(firstRect.height - lastRect.height) < 0.5;
-
-  if (noVisualChange) {
-    return null;
-  }
-
-  return element.animate([
-    { width: `${firstRect.width}px`, height: `${firstRect.height}px` },
-    { width: `${lastRect.width}px`, height: `${lastRect.height}px` },
-  ], {
-    duration: 280,
-    easing: "cubic-bezier(.22,.61,.36,1)",
-    fill: "both",
-  });
-};
 
 const buildSettingsRight = (version: string, closeSettings: () => void, onLocaleChange: () => void) => (
   <>
@@ -510,10 +486,15 @@ export function ReactiveMediaModalBody({
 
     const activeVideo = videoRefs.current[state.selectedIndex];
     const firstModalRect = modalWindow.getBoundingClientRect();
+    const previousTransition = modalWindow.style.transition;
+    const previousOverflow = modalWindow.style.overflow;
     const activeMedia = activeVideo || (rootElement.querySelectorAll<HTMLElement>(".slide img")[state.selectedIndex] ?? null);
     const previousMediaTransition = activeMedia?.style.transition ?? "";
 
-    modalWindow.classList.add("flip-animating");
+    modalWindow.style.transition = "none";
+    // Clip the non-matching axis while a single uniform scale animates in, so tall media
+    // never visibly spills outside the modal during the transition.
+    modalWindow.style.overflow = "hidden";
     if (activeMedia) {
       activeMedia.style.transition = "none";
     }
@@ -524,7 +505,8 @@ export function ReactiveMediaModalBody({
     previousExpandedRef.current = state.expanded;
 
     const finish = () => {
-      modalWindow.classList.remove("flip-animating");
+      modalWindow.style.transition = previousTransition;
+      modalWindow.style.overflow = previousOverflow;
       if (activeMedia) {
         activeMedia.style.transition = previousMediaTransition;
       }
@@ -538,7 +520,6 @@ export function ReactiveMediaModalBody({
     const settle = () => {
       animation.removeEventListener("finish", settle);
       animation.removeEventListener("cancel", settle);
-      animation.cancel();
       finish();
     };
 
@@ -559,14 +540,44 @@ export function ReactiveMediaModalBody({
       return undefined;
     }
 
-    const timeoutId = setTimeout(() => {
+    let settled = false;
+    const trigger = () => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollId);
+      clearTimeout(fallbackTimer);
+      clearTimeout(delayTimer);
       store.setExpanded(true);
-    }, 500);
+    };
+
+    // The active slide may still be showing its .slide-placeholder (fixed 300px height)
+    // instead of the real <img>/<video> at this point, since image loading is async and
+    // this effect fires as soon as the modal mounts. Poll until the real media element is
+    // present AND loaded, so the FLIP animation always measures the true expanded size,
+    // same as it does for a manual click (which can only happen once you can see it).
+    let delayTimer: ReturnType<typeof setTimeout> | undefined;
+    const isReady = () => {
+      const activeVideo = videoRefs.current[state.selectedIndex];
+      if (activeVideo) return activeVideo.readyState >= 1;
+      const activeSlideEl = rootRef.current?.querySelectorAll<HTMLElement>(".slide")[state.selectedIndex];
+      const activeImage = activeSlideEl?.querySelector<HTMLImageElement>("img") ?? null;
+      return !!activeImage?.complete;
+    };
+    const pollId = setInterval(() => {
+      if (isReady()) {
+        // Keep a short pause once ready so the expand doesn't happen instantly on open.
+        delayTimer = setTimeout(trigger, 500);
+        clearInterval(pollId);
+      }
+    }, 100);
+    const fallbackTimer = setTimeout(trigger, 3000);
 
     return () => {
-      clearTimeout(timeoutId);
+      clearInterval(pollId);
+      clearTimeout(fallbackTimer);
+      clearTimeout(delayTimer);
     };
-  }, [program.settings.autoExpand, state.mode, store]);
+  }, [program.settings.autoExpand, state.mode, state.selectedIndex, store]);
 
   useEffect(() => {
     if (state.mode !== "media") {
@@ -674,7 +685,10 @@ export function ReactiveMediaModalBody({
         }}
       >
         {slides.map((slide, index) => {
-          const shouldPreload = slides.length <= 1 || index === state.selectedIndex || index === (state.selectedIndex + 1) % slides.length;
+          const shouldPreload = slides.length <= 1
+            || index === state.selectedIndex
+            || index === (state.selectedIndex + 1) % slides.length
+            || index === (state.selectedIndex - 1 + slides.length) % slides.length;
           return (
             <div class="slide" key={index}>
               {slide.mediaType === MediaType.Video ? (

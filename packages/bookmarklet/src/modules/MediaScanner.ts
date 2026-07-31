@@ -160,10 +160,10 @@ export class MediaScanner implements Module {
     }
 
     private showScannerResult(scannerResult: MediaScanResult, program: Program, modal?: Modal): void {
-        const viewerStore = createMediaViewerStore(
-            scannerResult.selectedSliderIndex,
-            program.settings.autoExpand
-        );
+        // Always start collapsed, even when autoExpand is on: mediaModalApp's autoExpand
+        // effect drives the same store.setExpanded(true) call a manual click would, so the
+        // grow animation is guaranteed to be identical instead of skipped on first mount.
+        const viewerStore = createMediaViewerStore(scannerResult.selectedSliderIndex);
         const options: ConstructorParameters<typeof Modal>[0] = {
             body: h(ReactiveMediaModalBody, {
                 onSettingChange: (settingKey: string, value: string | boolean) => {

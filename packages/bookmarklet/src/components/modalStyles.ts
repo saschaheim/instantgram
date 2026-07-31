@@ -26,7 +26,6 @@ const modalCssRules = [
   `.${modal}{transition:width .28s cubic-bezier(.22,.61,.36,1),transform .28s cubic-bezier(.22,.61,.36,1),box-shadow .28s cubic-bezier(.22,.61,.36,1)!important;display:inline-block!important;width:400px!important;padding:0!important;z-index:1001!important;transform:translateY(0);border-radius:16px!important;background:transparent!important;box-shadow:0 24px 70px rgba(0,0,0,.3)!important}`,
   `@media (min-width:736px){.${modal}{width:640px!important}}`,
   `.${modal}.ime{width:min(92vw,980px)!important;box-shadow:0 22px 60px rgba(0,0,0,.28)!important}`,
-  `.${modal}.flip-animating{transition:none!important;box-shadow:none!important;overflow:hidden!important}`,
   `.${modal}.ime .slider-container{width:100%!important;max-width:none!important}`,
   `.${modal}.ime .slide img,.${modal}.ime .slide video{width:100%!important;height:auto!important;max-height:calc(min(78vh,760px) - 64px)!important}`,
   `.${modal}.ime .${modalDb}{min-height:56px}`,
