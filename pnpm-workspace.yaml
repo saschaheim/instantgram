@@ -2,9 +2,25 @@ packages:
   - "apps/*"
   - "packages/*"
 
+overrides:
+  sharp: ^0.35.3
+
+minimumReleaseAgeExclude:
+  - '@turbo/darwin-64@2.10.8'
+  - '@turbo/darwin-arm64@2.10.8'
+  - '@turbo/linux-64@2.10.8'
+  - '@turbo/linux-arm64@2.10.8'
+  - '@turbo/windows-64@2.10.8'
+  - '@turbo/windows-arm64@2.10.8'
+  - turbo@2.10.8
+
 nodeLinker: hoisted
 
 onlyBuiltDependencies:
   - "@swc/core"
   - esbuild
   - sharp
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
