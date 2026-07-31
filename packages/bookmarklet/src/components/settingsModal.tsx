@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { Program } from "../App";
 import localize from "../helpers/localize";
 import { uiClasses } from "./uiTokens";
@@ -29,6 +29,14 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
   ));
   const [format, setFormat] = useState(() => stored(program, "g4"));
   const [saved, setSaved] = useState(false);
+  const tcRef = useRef<HTMLDivElement>(null);
+  const [minHeight, setMinHeight] = useState<number>();
+
+  useLayoutEffect(() => {
+    if (tcRef.current) {
+      setMinHeight(tcRef.current.getBoundingClientRect().height);
+    }
+  }, []);
 
   useEffect(() => {
     if (!saved) return undefined;
@@ -96,12 +104,9 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
             </button>
           ))}
         </div>
-        <div class="tc">
-          <div class={`tp${pane === "general" ? " active" : ""}`}>
-            {settings.filter((setting) => setting.pane === "general").map(renderSetting)}
-          </div>
-          <div class={`tp${pane === "stories" ? " active" : ""}`}>
-            {settings.filter((setting) => setting.pane === "stories").map(renderSetting)}
+        <div class="tc" ref={tcRef} style={minHeight ? { minHeight: `${minHeight}px` } : undefined}>
+          <div class="tp">
+            {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
           </div>
         </div>
       </div>

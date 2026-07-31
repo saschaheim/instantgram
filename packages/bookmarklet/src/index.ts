@@ -56,7 +56,9 @@ const runApp = async () => {
     console.info(["Browser Version", program.browser.version]);
     console.info(["Browser OS", navigator.platform]);
     if (!embeddedLocales && !isInstagramHost()) {
-        console.info("[instantgram] Additional languages and update checks are only available on instagram.com");
+        console.info(FIREFOX_LITE
+            ? "[instantgram] Additional languages are only available on instagram.com"
+            : "[instantgram] Additional languages and update checks are only available on instagram.com");
     }
 
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner

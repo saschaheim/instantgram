@@ -16,7 +16,7 @@ const enUS = {
     "msg.t3": "Slideshow on/off",
     "msg.d3": "Enable or disable the automatic slideshow",
     "msg.t4": "Change filename format",
-    "msg.d4": "Change the filename format for downloads here.<br/>The default format is:<br>{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
+    "msg.d4": "Change the filename format for downloads here.\nThe default format is:\n{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}",
     "msg.t5": "Mute videos",
     "msg.d5": "Post, feed and reel videos are muted when opened",
     "msg.t6": "Auto-expand",
