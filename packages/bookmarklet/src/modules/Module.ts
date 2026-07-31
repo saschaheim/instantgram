@@ -17,7 +17,7 @@ export const getErrorMessage = (e: unknown): string => e instanceof Error ? e.me
  * uses for unexpected exceptions.
  */
 export const handleScanError = (program: Program, moduleName: string, e: unknown): MediaScanResult => {
-    console.error(`[${program.NAME}] ${program.VERSION}`, moduleName + "()", e);
+    console.error("["+program.NAME+"] "+program.VERSION, moduleName + "()", e);
     return { found: false, errorMessage: getErrorMessage(e), error: e };
 };
 

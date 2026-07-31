@@ -1,8 +1,10 @@
 import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
 
+export const mediaInfoUrlPrefix = "https://i.instagram.com/api/v1/media/";
+
 const mediaIdCache: Map<string, string> = new Map();
 const shortcodeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-const shortcodePattern = new RegExp(`^[${shortcodeAlphabet.replace(/[-_]/g, "\\$&")}]+$`);
+const shortcodePattern = new RegExp("^["+shortcodeAlphabet.replace(/[-_]/g, "\\$&")+"]+$");
 const canonicalShortcodeLength = 11;
 
 const normalizePostId = (postId: string | null): string | null => {
@@ -120,7 +122,7 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
             const postId = articleNode ? findPostId(articleNode) : null;
             const mediaId = id || (postId ? await findMediaId(postId) : null);
             if (!mediaId) return null;
-            return `https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=${isHighlight ? 'highlight%3A' : ''}${mediaId}`;
+            return "https://i.instagram.com/api/v1/feed/reels_media/?reel_ids="+(isHighlight ? 'highlight%3A' : '')+mediaId;
         },
         'getMediaFromInfo': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
@@ -129,11 +131,11 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
             if (!postId) return null;
             const mediaId = await findMediaId(postId);
             if (!mediaId) return null;
-            return `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
+            return mediaInfoUrlPrefix+mediaId+"/info/";
         },
         'getUserFromInfo': () => {
             const userId = "userId" in config ? config.userId : null;
-            return userId ? `https://i.instagram.com/api/v1/users/${userId}/info/` : null;
+            return userId ? "https://i.instagram.com/api/v1/users/"+userId+"/info/" : null;
         },
     };
     const url = await urlMap[type]?.();
@@ -185,7 +187,7 @@ const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> =
         return null;
     }
 
-    const url = `https://www.instagram.com/web/search/topsearch/?query=${encodeURIComponent(userName)}`;
+    const url = "https://www.instagram.com/web/search/topsearch/?query="+encodeURIComponent(userName);
     const payload = await secureFetch(url, appId);
     const users = payload?.users as Array<{ user?: SearchOwner }> | undefined;
     const wanted = userName.toLowerCase();
@@ -224,7 +226,7 @@ const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
         return null;
     }
 
-    const url = `https://www.instagram.com/api/v1/feed/user/${encodeURIComponent(userName)}/username/?count=1`;
+    const url = "https://www.instagram.com/api/v1/feed/user/"+encodeURIComponent(userName)+"/username/?count=1";
     const payload = await secureFetch(url, appId);
     const items = payload?.items as Array<{ user?: FeedOwner }> | undefined;
     return items?.[0]?.user ?? null;

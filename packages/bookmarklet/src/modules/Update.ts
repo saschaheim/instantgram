@@ -62,8 +62,8 @@ export class VersionUpdater {
             this.showUpdateModal(normalizedLocalVersion, onlineVersion, textBody);
             console.warn(localize("u.i"));
             console.warn(localize("u.v")
-                .replace("${data.version}", normalizedLocalVersion)
-                .replace("${data.onlineVersion}", onlineVersion));
+                .replace("%version%", normalizedLocalVersion)
+                .replace("%onlineVersion%", onlineVersion));
         }
     }
 

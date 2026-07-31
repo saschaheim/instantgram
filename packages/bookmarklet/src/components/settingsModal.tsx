@@ -16,7 +16,7 @@ export type SettingsConfig = {
 
 const defaultFormat = "{Username}__{Year}-{Month}-{Day}--{Hour}-{Minute}";
 const stored = (program: Program, id: string) =>
-  localStorage.getItem(`${program.STORAGE_NAME}_${id}`) ?? (id === "g4" ? defaultFormat : "false");
+  localStorage.getItem(program.STORAGE_NAME+"_"+id) ?? (id === "g4" ? defaultFormat : "false");
 
 export function SettingsModalBody({ program, settings, onSettingChange }: {
   program: Program;
@@ -45,13 +45,13 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
   }, [saved]);
 
   const change = (id: string, value: boolean) => {
-    localStorage.setItem(`${program.STORAGE_NAME}_${id}`, String(value));
+    localStorage.setItem(program.STORAGE_NAME+"_"+id, String(value));
     setChecks((current) => ({ ...current, [id]: value }));
     onSettingChange(id, value);
   };
 
   const save = () => {
-    localStorage.setItem(`${program.STORAGE_NAME}_g4`, format);
+    localStorage.setItem(program.STORAGE_NAME+"_g4", format);
     onSettingChange("g4", format);
     setSaved(true);
   };
@@ -61,7 +61,7 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
     const description = localize(setting.description);
     return (
       <div
-        class={`si${setting.largeInput ? " wide" : ""}`}
+        class={"si"+(setting.largeInput ? " wide" : "")}
         key={setting.id}
         title={setting.largeInput ? undefined : description}
         onClick={setting.largeInput ? undefined : () => change(setting.id, !checks[setting.id])}
@@ -72,7 +72,7 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
               <strong>{title}</strong>
               <p class="sm mb-0">{description}</p>
               <input class="fi" value={format} placeholder={defaultFormat} onInput={(event) => setFormat(event.currentTarget.value)} />
-              <button class={`${uiClasses.btn} ${saved ? uiClasses.btnSuccess : uiClasses.btnPrimary} mt-2`} onClick={save}>
+              <button class={uiClasses.btn+" "+(saved ? uiClasses.btnSuccess : uiClasses.btnPrimary)+" mt-2"} onClick={save}>
                 {localize(saved ? "sd" : "s")}
               </button>
             </div>
@@ -99,12 +99,12 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
       <div class="sy">
         <div class="st">
           {(["general", "stories"] as SettingsPane[]).map((name) => (
-            <button class={`tb${pane === name ? " active" : ""}`} onClick={() => setPane(name)}>
+            <button class={"tb"+(pane === name ? " active" : "")} onClick={() => setPane(name)}>
               {name === "general" ? localize("ms.g") : "Stories"}
             </button>
           ))}
         </div>
-        <div class="tc" ref={tcRef} style={minHeight ? { minHeight: `${minHeight}px` } : undefined}>
+        <div class="tc" ref={tcRef} style={minHeight ? { minHeight: minHeight+"px" } : undefined}>
           <div class="tp">
             {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
           </div>

@@ -19,17 +19,17 @@ const getImageExtension = (url: string): Exclude<MediaExtension, "mp4"> => {
 
 export const getFormattedFilenameAndUrl = (media: DownloadableMedia, userName: string, template: string, index: number) => {
     if (isDownloadableImageLike(media) && media.url) {
-        return { formattedFilename: `${userName}.${getImageExtension(media.url)}`, url: media.url };
+        return { formattedFilename: userName+"."+getImageExtension(media.url), url: media.url };
     }
 
     if (typeof media === "string") {
         const filename = userFilenameFormatter(template, buildDatePlaceholders(new Date(), userName));
-        return { formattedFilename: `${filename}_${index + 1}.txt`, url: media };
+        return { formattedFilename: filename+"_"+(index + 1)+".txt", url: media };
     } else if (isInstagramMediaItem(media)) {
         const date = new Date((media.taken_at ?? Date.now() / 1000) * 1000);
         const filename = userFilenameFormatter(template, buildDatePlaceholders(date, userName));
         const { extension, url } = getImgOrVideoUrl(media);
-        return { formattedFilename: `${filename}_${index + 1}.${extension}`, url };
+        return { formattedFilename: filename+"_"+(index + 1)+"."+extension, url };
     } else {
         throw new Error("Unsupported media type");
     }
@@ -61,8 +61,8 @@ export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: MediaEx
 
 export const getMediaElement = (mediaType: MediaType, url: string, muted: boolean): string => {
     return mediaType === MediaType.Video
-        ? `<video style="background:black;" height="450" data-media-src="${url}" controls preload="none"${muted ? " muted" : ""}></video>`
-        : `<img data-media-src="${url}" loading="lazy" decoding="async" />`;
+        ? '<video style="background:black;" height="450" data-media-src="'+url+'" controls preload="none"'+(muted ? " muted" : "")+"></video>"
+        : '<img data-media-src="'+url+'" loading="lazy" decoding="async" />';
 };
 
 export const resolveElementMediaType = (mediaArray: InstagramMediaItem) => {
@@ -77,24 +77,24 @@ export const resolveOverallMediaType = () => {
 
 export const userFilenameFormatter = (filename: string, placeholders: Record<string, string>): string => {
     for (const placeholder in placeholders) {
-        const regex = new RegExp(`{${placeholder}}`, "g");
+        const regex = new RegExp("{"+placeholder+"}", "g");
         filename = filename.replace(regex, placeholders[placeholder]);
     }
     return filename.replace(/\s+/g, "-").replace(/[^\w-.]/g, "");
 };
 
 export const buildProxyDownloadUrl = (url: string, filename: string, version: string, sourceUrl: string): string =>
-    `https://instantgram.1337.pictures/download.php?data=${btoa(url)}:${btoa(filename)}&s=${encodeURIComponent(sourceUrl)}&v=${encodeURIComponent(version)}`;
+    "https://instantgram.1337.pictures/download.php?data="+btoa(url)+":"+btoa(filename)+"&s="+encodeURIComponent(sourceUrl)+"&v="+encodeURIComponent(version);
 
 export const wrapInSliderContainer = (modalBody: string) =>
-    `<div class="slider-container"><div class="slider">${modalBody}</div><div class="slider-controls"></div></div>`;
+    '<div class="slider-container"><div class="slider">'+modalBody+'</div><div class="slider-controls"></div></div>';
 
 export const resolveUserLink = (rootUrl: string, path: string, userName: string) => {
     if (path.startsWith("/p/") || path.startsWith("/stories/")) {
-        return `${rootUrl}/${userName}/`;
+        return rootUrl+"/"+userName+"/";
     } else if (path.startsWith("/reels/")) {
-        return `${rootUrl}/${userName}/reels/`;
+        return rootUrl+"/"+userName+"/reels/";
     } else {
-        return `${rootUrl}/${userName}`;
+        return rootUrl+"/"+userName;
     }
 };

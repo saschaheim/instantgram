@@ -20,7 +20,7 @@ function ModalView({ onClose, options }: { onClose: () => void; options: ModalOp
   const { heading = "", body = "", bodyStyle, buttonList = [], modalClassName } = options;
 
   return (
-    <div class={`${uiClasses.modal}${modalClassName ? ` ${modalClassName}` : ""}`}>
+    <div class={uiClasses.modal+(modalClassName ? " "+modalClassName : "")}>
       <div class={uiClasses.modalContent} style={!buttonList.length ? "padding-bottom:4px" : undefined}>
         <div class={uiClasses.modalHeader}>{typeof heading === "string" ? <h5>{heading}</h5> : heading}</div>
         <div class={uiClasses.modalBody} style={bodyStyle}>{typeof body === "string" ? <div>{body}</div> : body}</div>

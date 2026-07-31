@@ -11,7 +11,7 @@ export const normalizeVersionString = (version: string): string =>
     version.replace(/^v/i, "").trim().replace(/\./g, "-");
 
 export const formatVersionLabel = (version: string): string =>
-    `v${normalizeVersionString(version).replace(/-/g, ".")}`;
+    "v"+normalizeVersionString(version).replace(/-/g, ".");
 
 export const getBrowserInfo = (): { name: string; version: string } => {
     const ua = navigator.userAgent;

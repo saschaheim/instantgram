@@ -30,7 +30,7 @@ export const bundledLocalizations = {
         "c": "Schließen",
         "u.t": "Update verfügbar",
         "u.i": "[instantgram] ist veraltet. Bitte prüfe https://saschaheim.github.io/instantgram auf verfügbare Updates.",
-        "u.v": "[instantgram] Installierte Version: ${data.version} | Neues Update: ${data.onlineVersion}",
+        "u.v": "[instantgram] Installierte Version: %version% | Neues Update: %onlineVersion%",
         "modules.update@update_successful": "[instantgram] Update-Prüfung erfolgreich.",
         "ad": "Gesponsert"
     },
@@ -65,7 +65,7 @@ export const bundledLocalizations = {
         "c": "Cerrar",
         "u.t": "Actualización disponible",
         "u.i": "[instantgram] está desactualizado. Visita https://saschaheim.github.io/instantgram para ver las actualizaciones disponibles.",
-        "u.v": "[instantgram] Versión instalada: ${data.version} | Nueva actualización: ${data.onlineVersion}",
+        "u.v": "[instantgram] Versión instalada: %version% | Nueva actualización: %onlineVersion%",
         "modules.update@update_successful": "[instantgram] Comprobación de actualización completada.",
         "ad": "Patrocinado"
     },
@@ -100,7 +100,7 @@ export const bundledLocalizations = {
         "c": "Fechar",
         "u.t": "Atualização disponível",
         "u.i": "[instantgram] está desatualizado. Acesse https://saschaheim.github.io/instantgram para ver as atualizações disponíveis.",
-        "u.v": "[instantgram] Versão instalada: ${data.version} | Nova atualização: ${data.onlineVersion}",
+        "u.v": "[instantgram] Versão instalada: %version% | Nova atualização: %onlineVersion%",
         "modules.update@update_successful": "[instantgram] Verificação de atualização concluída.",
         "ad": "Patrocinado"
     }

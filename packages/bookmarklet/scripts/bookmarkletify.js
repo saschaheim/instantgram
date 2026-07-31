@@ -37,12 +37,17 @@ const minify = (code) => {
       join_vars: true,
       pure_getters: true,
       drop_console: false,
+      // console.log/info are diagnostic-only in this codebase (never used for their
+      // return value), so treating them as side-effect-free lets the compressor drop
+      // the calls entirely when unused. console.error/warn are left alone since some
+      // support flows rely on those being visible in production.
+      pure_funcs: ['console.log', 'console.info'],
     },
     mangle: {
       toplevel: true,
       reserved: ['$super', '$', 'exports', 'require'],
       properties: {
-        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput)$/,
+        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userName|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput)$/,
       },
     },
     output: {

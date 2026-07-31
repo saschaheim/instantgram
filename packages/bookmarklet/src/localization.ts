@@ -34,7 +34,7 @@ const enUS = {
     "c": "Close",
     "u.t": "Update available",
     "u.i": "[instantgram] is outdated. Please check https://saschaheim.github.io/instantgram for available updates.",
-    "u.v": "[instantgram] Installed version: ${data.version} | New update: ${data.onlineVersion}",
+    "u.v": "[instantgram] Installed version: %version% | New update: %onlineVersion%",
     "modules.update@update_successful": "[instantgram] Update check successful.",
     "ad": "Sponsored"
 } as const;

@@ -398,7 +398,7 @@ export function ReactiveMediaModalBody({
     if (!slider) return;
     slider.classList.remove("dragging");
     slider.style.transition = "";
-    slider.style.transform = `translateX(-${nextIndex * 100}%)`;
+    slider.style.transform = "translateX(-"+nextIndex*100+"%)";
     selectSlide(nextIndex);
   };
 
@@ -444,7 +444,7 @@ export function ReactiveMediaModalBody({
     const atStart = state.selectedIndex === 0 && dx > 0;
     const atEnd = state.selectedIndex === slides.length - 1 && dx < 0;
     drag.offset = atStart || atEnd ? dx * 0.35 : dx;
-    slider.style.transform = `translateX(${drag.baseTranslate + drag.offset}px)`;
+    slider.style.transform = "translateX("+(drag.baseTranslate+drag.offset)+"px)";
   };
 
   const handleSliderPointerEnd = (event: PointerEvent) => {
@@ -469,7 +469,7 @@ export function ReactiveMediaModalBody({
       return undefined;
     }
     const rootElement = rootRef.current;
-    const modalWindow = rootElement?.closest(`.${uiClasses.modal}`) as HTMLElement | null;
+    const modalWindow = rootElement?.closest("."+uiClasses.modal) as HTMLElement | null;
     if (!modalWindow) {
       return undefined;
     }
@@ -671,7 +671,7 @@ export function ReactiveMediaModalBody({
       <div
         class="slider"
         ref={sliderRef}
-        style={{ transform: `translateX(-${state.selectedIndex * 100}%)` }}
+        style={{ transform: "translateX(-"+state.selectedIndex*100+"%)" }}
         onPointerDown={handleSliderPointerDown}
         onPointerMove={handleSliderPointerMove}
         onPointerUp={handleSliderPointerEnd}

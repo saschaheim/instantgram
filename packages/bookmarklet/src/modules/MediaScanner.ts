@@ -100,7 +100,7 @@ export class MediaScanner implements Module {
      * @param program The program object that contains the configuration and context.
      */
     private initializeStyles(program: Program): void {
-        const styleId = `${program.DOM_PREFIX}-css`;
+        const styleId = program.DOM_PREFIX+"-css";
         document.getElementById(styleId)?.remove();
         const styleElement = document.createElement("style");
         styleElement.id = styleId;
@@ -247,7 +247,7 @@ export class MediaScanner implements Module {
             }
         } catch (error) {
             await loadingModal.close();
-            console.error(`Error executing scanner ${scannerClass.name}:`, error);
+            console.error("Error executing scanner "+scannerClass.name+":", error);
         }
     }
 
@@ -258,7 +258,7 @@ export class MediaScanner implements Module {
      * @returns {boolean} True if the modal is open, otherwise false.
      */
     private isModalOpen(): boolean {
-        return !!document.querySelector(`div.${uiClasses.modalOverlay}.${uiClasses.modalVisible}`);
+        return !!document.querySelector("div."+uiClasses.modalOverlay+"."+uiClasses.modalVisible);
     }
 
     /** 
@@ -300,7 +300,7 @@ export class MediaScanner implements Module {
             await this.handleURLPatterns(program);
         } catch (e) {
             // Log any errors that occur during execution
-            console.error(`${this.getName()}()`, `[${program.NAME}] ${program.VERSION}`, e);
+            console.error(this.getName()+"()", "["+program.NAME+"] "+program.VERSION, e);
         }
     }
 }

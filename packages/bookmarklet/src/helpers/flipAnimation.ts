@@ -29,7 +29,7 @@ export const playFlipAnimation = (
   return element.animate([
     {
       transformOrigin: "top center",
-      transform: `translate(${translateX}px,${translateY}px) scale(${scale})`,
+      transform: "translate("+translateX+"px,"+translateY+"px) scale("+scale+")",
     },
     {
       transformOrigin: "top center",

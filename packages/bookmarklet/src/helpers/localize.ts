@@ -1,5 +1,5 @@
 import { buildLocale, embeddedLocales, localizations, LocalizationKey } from "../localization";
-import { findAppId, secureFetch, shortcodeToMediaId } from "./instagramApi";
+import { findAppId, mediaInfoUrlPrefix, secureFetch, shortcodeToMediaId } from "./instagramApi";
 
 export const localeStorageKey = "instantgram_locale";
 export const localeUnavailableMessage = "[instantgram] Additional languages are only available on instagram.com";
@@ -58,15 +58,15 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
     const appId = findAppId();
     const mediaId = shortcode && shortcodeToMediaId(shortcode);
     if (!appId || !mediaId) {
-        console.error(`[instantgram] Cannot load ${locale}: missing app ID or media ID`);
+        console.error("[instantgram] Cannot load "+locale+": missing app ID or media ID");
         return false;
     }
-    const caption = (await secureFetch(`https://i.instagram.com/api/v1/media/${mediaId}/info/`, appId))
+    const caption = (await secureFetch(mediaInfoUrlPrefix+mediaId+"/info/", appId))
         ?.items?.[0]?.caption?.text;
-    const prefix = `i18n:${locale}::`;
+    const prefix = "i18n:"+locale+"::";
     const prefixIndex = caption?.indexOf(prefix) ?? -1;
     if (prefixIndex < 0) {
-        console.error(`[instantgram] Cannot load ${locale}: caption or language prefix missing`);
+        console.error("[instantgram] Cannot load "+locale+": caption or language prefix missing");
         return false;
     }
     try {
@@ -76,7 +76,7 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
         localStorage.setItem(localeCachePrefix + locale, JSON.stringify(dictionary));
         return true;
     } catch (error) {
-        console.error(`[instantgram] Cannot load ${locale}: invalid translation JSON`, error);
+        console.error("[instantgram] Cannot load "+locale+": invalid translation JSON", error);
         return false;
     }
 };
