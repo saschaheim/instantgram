@@ -1,8 +1,7 @@
 import { Program } from "../App";
-import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
+import { Module, runSimpleScan } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { findWithMaxScore, getElementInViewPercentage } from "../helpers/domDetection";
-import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * ReelsScanner is a module responsible for scanning and processing reels (media content) on the page.
@@ -46,20 +45,6 @@ export class ReelsScanner implements Module {
      * @returns {Promise<MediaScanResult | null>} The result of generating modal data or null in case of failure.
      */
     public async execute(program: Program): Promise<MediaScanResult | null> {
-        try {
-            const articles = this.getRelevantArticles(); // Get relevant articles
-            const mostRelevantArticle = this.findMostRelevantArticle(articles); // Find the most relevant article
-
-            // If no relevant article is found, return an error
-            if (!mostRelevantArticle) {
-                return { found: false, errorMessage: NO_TARGET_FOUND };
-            }
-
-            // Generate modal data for the most relevant article
-            const modalData = await generateModalBody(mostRelevantArticle, program);
-            return modalData; // Return the modal data
-        } catch (e) {
-            return handleScanError(program, this.getName(), e);
-        }
+        return runSimpleScan(program, this.getName(), () => this.findMostRelevantArticle(this.getRelevantArticles()));
     }
 }

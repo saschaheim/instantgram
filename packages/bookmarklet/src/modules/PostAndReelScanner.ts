@@ -1,7 +1,6 @@
 import { Program } from "../App";
-import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
+import { Module, runSimpleScan } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * PostAndReelScanner is a module responsible for scanning posts and reels on the page.
@@ -34,19 +33,6 @@ export class PostAndReelScanner implements Module {
      * @returns {Promise<MediaScanResult | null>} The modal data or null in case of failure.
      */
     public async execute(program: Program): Promise<MediaScanResult | null> {
-        try {
-            const $article = this.getArticleElement(); // Get the article element
-
-            // If no article is found, return an error
-            if (!$article) {
-                return { found: false, errorMessage: NO_TARGET_FOUND };
-            }
-
-            // Generate the modal data based on the article element
-            const modalData = await generateModalBody($article, program);
-            return modalData; // Return the generated modal data
-        } catch (e) {
-            return handleScanError(program, this.getName(), e);
-        }
+        return runSimpleScan(program, this.getName(), () => this.getArticleElement());
     }
 }

@@ -33,7 +33,7 @@ describe("FeedScanner", () => {
 
         const result = await new FeedScanner().execute(program);
         expect(result?.found).toBe(false);
-        expect(result?.errorMessage).toBeUndefined();
+        expect(result?.errorMessage).toMatch(/No target found/i);
         expect(generateModalBody).not.toHaveBeenCalled();
     });
 

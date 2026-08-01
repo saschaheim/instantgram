@@ -1,5 +1,6 @@
 import { Program } from "../App";
 import { MediaScanResult } from "../model/MediaScanResult";
+import { generateModalBody } from "../helpers/modalMedia";
 
 /**
  * Shared errorMessage used by every scanner when it can't locate any
@@ -19,6 +20,28 @@ export const getErrorMessage = (e: unknown): string => e instanceof Error ? e.me
 export const handleScanError = (program: Program, moduleName: string, e: unknown): MediaScanResult => {
     console.error("["+program.NAME+"] "+program.VERSION, moduleName + "()", e);
     return { found: false, errorMessage: getErrorMessage(e), error: e };
+};
+
+/**
+ * Shared execute() body for scanners whose only unique behavior is finding a
+ * single target element -- FeedScanner, PostAndReelScanner, ReelsScanner.
+ * StoriesScanner and ProfileScanner have genuinely different control flow
+ * (async fetches, highlights/feed branching) and stay bespoke.
+ */
+export const runSimpleScan = async (
+    program: Program,
+    moduleName: string,
+    findElement: () => HTMLElement | null
+): Promise<MediaScanResult | null> => {
+    try {
+        const element = findElement();
+        if (!element) {
+            return { found: false, errorMessage: NO_TARGET_FOUND };
+        }
+        return await generateModalBody(element, program);
+    } catch (e) {
+        return handleScanError(program, moduleName, e);
+    }
 };
 
 /**
