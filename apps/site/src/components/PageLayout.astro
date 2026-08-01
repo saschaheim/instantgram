@@ -76,7 +76,8 @@ const copy = {
     ctaTitle: "Bereit für den kürzesten Weg zum Download?",
     ctaText: "Ziehe Instantgram in deine Lesezeichenleiste. Das war's.",
     source: "Quellcode auf GitHub",
-    made: "Open Source, gebaut für das echte Web."
+    made: "Open Source, gebaut für das echte Web.",
+    support: "Unterstützen:"
   },
   "es-AR": {
     navHow: "Cómo funciona",
@@ -114,7 +115,8 @@ const copy = {
     ctaTitle: "¿Listo para la ruta más corta a tu descarga?",
     ctaText: "Arrastra Instantgram a tus marcadores. Eso es todo.",
     source: "Código fuente en GitHub",
-    made: "Código abierto, creado para la web real."
+    made: "Código abierto, creado para la web real.",
+    support: "Apoyar:"
   },
   "pt-BR": {
     navHow: "Como funciona",
@@ -152,7 +154,8 @@ const copy = {
     ctaTitle: "Pronto para o caminho mais curto até o download?",
     ctaText: "Arraste o Instantgram para seus favoritos. Só isso.",
     source: "Código-fonte no GitHub",
-    made: "Código aberto, feito para a web real."
+    made: "Código aberto, feito para a web real.",
+    support: "Apoiar:"
   },
   "en-US": {
     navHow: "How it works",
@@ -190,7 +193,8 @@ const copy = {
     ctaTitle: "Ready for the shortest route to your download?",
     ctaText: "Drag Instantgram to your bookmarks bar. That's it.",
     source: "Source code on GitHub",
-    made: "Open source, built for the real web."
+    made: "Open source, built for the real web.",
+    support: "Support:"
   }
 } as const;
 
@@ -358,7 +362,16 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
 
     <footer>
       <a class="brand footer-brand" href={homeHref}><span class="brand-mark">i</span><span>instantgram</span></a>
-      <p>{text.made}</p>
+      <div class="footer-middle">
+        <p>{text.made}</p>
+        <p class="support-links">
+          <span>{text.support}</span>
+          <a href="https://ko-fi.com/instantgram">Ko-fi</a>
+          <a href="https://patreon.com/instantgram">Patreon</a>
+          <a href="https://buymeacoffee.com/instantgram">Buy Me a Coffee</a>
+          <a href="https://paypal.me/saschaheimdev">PayPal</a>
+        </p>
+      </div>
       <a href="https://github.com/saschaheim/instantgram">{text.source} ↗</a>
     </footer>
 
@@ -691,6 +704,9 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
   footer { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 30px; padding: 32px max(32px, calc((100vw - 1176px)/2)); border-top: 1px solid var(--line); font-size: 13px; }
   footer p { margin: 0; color: var(--muted); text-align: center; }
   footer > a:last-child { justify-self: end; font-weight: 700; }
+  .footer-middle { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .support-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+  .support-links a { color: var(--ink); font-weight: 700; text-decoration: underline; }
   .footer-brand { font-size: 16px; }
   .footer-brand .brand-mark { width: 26px; height: 26px; font-size: 15px; }
 
