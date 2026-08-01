@@ -4,7 +4,7 @@
   "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c",
   "scripts": {
     "build": "pnpm run build:all",
-    "build:all": "pnpm --filter @instantgram/bookmarklet build:bundles && pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/bookmarklet size && pnpm --filter @instantgram/site build",
+    "build:all": "pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/bookmarklet size && pnpm --filter @instantgram/site build",
     "build:release": "pnpm run build:all",
     "build:bookmarklet": "pnpm --filter @instantgram/bookmarklet build",
     "build:site": "pnpm --filter @instantgram/site build",
