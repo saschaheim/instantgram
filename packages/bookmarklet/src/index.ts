@@ -29,7 +29,7 @@ export const program: Program = {
     regexPostPath: /^\/p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/")
     regexReelURI: /^\/reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
     regexReelsURI: /^\/reels\/[^/]+\/?$/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
-    regexStoriesURI: /^(?:\/stories\/[\w.]+(?:\/\d+)?\/?|\/stories\/highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
+    regexStoriesURI: /^\/stories\/(?:[\w.]+(?:\/\d+)?\/?|highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
 
 
     // User settings, fetched from localStorage to persist across sessions

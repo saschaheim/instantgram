@@ -52,12 +52,12 @@ export const findPostId = (articleNode: HTMLElement) => {
         return normalizePostId(locationPostIdMatch[1]);
     }
 
-    const locationReelIdMatch = window.location.href.match(/instagram\.com\/(?:reel|reels)\/([^/?#]+)/i);
+    const locationReelIdMatch = window.location.href.match(/instagram\.com\/reels?\/([^/?#]+)/i);
     if (locationReelIdMatch) {
         return normalizePostId(locationReelIdMatch[1]);
     }
 
-    const postIdPattern = /^\/(?:p|reel|reels)\/([^/?#]+)(?:\/|\?|#|$)/;
+    const postIdPattern = /^\/(?:p|reels?)\/([^/?#]+)(?:[/?#]|$)/;
     return normalizePostId(Array.from(articleNode.querySelectorAll("a[href]"))
         .map(a => a.getAttribute("href")?.match(postIdPattern))
         .find(match => match)?.[1] || null);
