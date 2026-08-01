@@ -5,11 +5,11 @@ const FIREFOX_LIMIT = 65536;
 const bookmarkletsPath = path.resolve(__dirname, "../dist/bookmarklets.json");
 const firefoxBookmarkletsPath = path.resolve(__dirname, "../../../apps/site/src/generated/firefox-bookmarklets.json");
 
-let bookmarklets = null;
+let bookmarklets;
 
 try {
   bookmarklets = JSON.parse(fs.readFileSync(bookmarkletsPath, "utf8"));
-} catch (error) {
+} catch {
   console.error("[instantgram] Could not read generated bookmarklets.");
   console.error("[instantgram] Run `pnpm --filter @instantgram/bookmarklet build:bookmarklet` first.");
   process.exitCode = 1;

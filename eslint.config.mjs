@@ -40,4 +40,12 @@ export default [
       // Additional rules for JavaScript files, if needed, can be added here
     },
   },
+  {
+    // Build scripts here use require()/module.exports and rely on Node's CommonJS
+    // wrapper to allow top-level `return` -- parse them as CommonJS, not ESM.
+    files: ["packages/bookmarklet/scripts/**/*.js"],
+    languageOptions: {
+      sourceType: "commonjs",
+    },
+  },
 ];
