@@ -22,8 +22,6 @@ No extension. No separate app. No account hand-off. Open Instagram, click instan
 2. Open a supported post, reel, story or profile on `instagram.com`.
 3. Click the bookmark and download the media you want.
 
-![instantgram demo](docs/img/demo.gif)
-
 ## The 2026.08.01 Release
 
 This is the biggest instantgram upgrade in years. The bookmarklet has evolved from a collection of dialogs into a compact, reactive app that still launches from a single bookmark.
