@@ -75,7 +75,7 @@ const buildResult = (
 export const generateModalBody = async (el: HTMLElement, program: Program): Promise<MediaScanResult> => {
     const isPathMatch = (path: string) => window.location.pathname.startsWith(path);
     if (findAD(el)) {
-        return { found: false, errorMessage: "Advertisement is not supported." };
+        return { found: false, errorMessage: localize("a.ie") };
     }
     let userName = getIGUsername(window.location.href);
     const postId = findPostId(el);

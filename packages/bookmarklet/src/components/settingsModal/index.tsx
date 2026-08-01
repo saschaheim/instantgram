@@ -109,6 +109,7 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
             {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
           </div>
         </div>
+        <a class="sw sx" href="//saschaheim.github.io/instantgram">{localize("sup")}</a>
       </div>
     </div>
   );
