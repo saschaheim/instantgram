@@ -1,6 +1,5 @@
 ---
 import { Image } from "astro:assets";
-import previewPost from "../assets/preview-post.jpg";
 import previewFashionBlack from "../assets/preview-fashion-black.jpg";
 import previewFashionRed from "../assets/preview-fashion-red.jpg";
 
@@ -287,7 +286,7 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
             </div>
             <div class="media-frame">
               <div class="media-slideshow">
-                <Image class="media-item active" src={previewPost} width={1200} alt="Autumn colors in the Eastern Washington countryside" loading="eager" />
+                <video class="media-item active" src={asset("img/preview-waterfall.mp4")} autoplay muted loop playsinline preload="auto" aria-label="Aerial view of a waterfall cascading through a heart-shaped cliff surrounded by forest"></video>
                 <video class="media-item" src={asset("img/preview-thailand.mp4")} muted loop playsinline preload="metadata" aria-label="Turquoise lagoon surrounded by Thailand's dramatic green cliffs"></video>
                 <Image class="media-item" src={previewFashionBlack} alt="Urban fashion portrait in Beijing" loading="eager" />
                 <Image class="media-item" src={previewFashionRed} alt="Street fashion portrait with a red blazer" loading="eager" />
