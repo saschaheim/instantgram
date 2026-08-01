@@ -1,5 +1,5 @@
 import { Program } from "../App";
-import { Module, NO_TARGET_FOUND, getErrorMessage } from "./Module";
+import { Module, NO_TARGET_FOUND, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
 import { storiesHighlightsPathPrefix, storiesPathPrefix } from "../helpers/common";
 import { getElementWithHighestWidth } from "../helpers/domDetection";
@@ -126,7 +126,7 @@ export class StoriesScanner implements Module {
                 return { found: false, errorMessage: NO_TARGET_FOUND }; // Return error if path does not match any story type
             }
         } catch (e) {
-            return { found: false, errorMessage: getErrorMessage(e), error: { cause: e } };
+            return handleScanError(program, this.getName(), e);
         }
     }
 }
