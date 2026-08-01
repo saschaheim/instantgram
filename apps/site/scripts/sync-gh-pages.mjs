@@ -35,3 +35,9 @@ for (const target of ["docs", "index.html", "lang", "img", "stylesheets"]) {
 for (const entry of fs.readdirSync(sourceDir)) {
   copyRecursive(path.join(sourceDir, entry), path.join(docsDir, entry));
 }
+
+// GitHub Pages runs the published branch through Jekyll by default, which
+// ignores any file or directory starting with an underscore -- silently
+// dropping Astro's entire _astro/ output (all CSS and JS) from the live
+// site. This file disables that Jekyll processing.
+fs.writeFileSync(path.join(docsDir, ".nojekyll"), "");
