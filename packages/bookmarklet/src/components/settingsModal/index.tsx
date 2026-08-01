@@ -109,7 +109,7 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
             {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
           </div>
         </div>
-        <p class="mt-2" style="text-align:center"><a class="sm" href="//saschaheim.github.io/instantgram">{localize("sup")}</a></p>
+        <p style="text-align:center"><a class="sm" href="//saschaheim.github.io/instantgram">{localize("sup")}</a></p>
       </div>
     </div>
   );
