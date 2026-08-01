@@ -384,7 +384,23 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
 
       const media = [...document.querySelectorAll(".media-item")];
       const pagination = [...document.querySelectorAll(".media-pagination button")];
+      const imageDelay = 4200;
       let activeMedia = 0;
+      let advanceTimer;
+      const advance = () => showMedia((activeMedia + 1) % media.length);
+      const scheduleAdvance = () => {
+        clearTimeout(advanceTimer);
+        const current = media[activeMedia];
+        if (current instanceof HTMLVideoElement) {
+          if (current.readyState >= 1 && isFinite(current.duration)) {
+            advanceTimer = setTimeout(advance, current.duration * 1000);
+          } else {
+            current.addEventListener("loadedmetadata", scheduleAdvance, { once: true });
+          }
+        } else {
+          advanceTimer = setTimeout(advance, imageDelay);
+        }
+      };
       const showMedia = (index) => {
         media[activeMedia]?.classList.remove("active");
         pagination[activeMedia]?.classList.remove("active");
@@ -396,9 +412,10 @@ const asset = (path: string) => `${assetBase}/${path}`.replace(/\/{2,}/g, "/");
           media[activeMedia].currentTime = 0;
           media[activeMedia].play().catch(() => {});
         }
+        scheduleAdvance();
       };
       pagination.forEach((button, index) => button.addEventListener("click", () => showMedia(index)));
-      setInterval(() => showMedia((activeMedia + 1) % media.length), 4200);
+      scheduleAdvance();
     </script>
     <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=UA-64893820-4"></script>
     <script is:inline>
