@@ -60,20 +60,10 @@ export const getImgOrVideoUrl = (item: InstagramMediaItem): { extension: MediaEx
     }
 };
 
-export const getMediaElement = (mediaType: MediaType, url: string, muted: boolean): string => {
-    return mediaType === MediaType.Video
-        ? '<video style="background:black;" height="450" data-media-src="'+url+'" controls preload="none"'+(muted ? " muted" : "")+"></video>"
-        : '<img data-media-src="'+url+'" loading="lazy" decoding="async" />';
-};
-
 export const resolveElementMediaType = (mediaArray: InstagramMediaItem) => {
     if (mediaArray.carousel_media) return MediaType.Carousel;
     if (mediaArray.video_dash_manifest || mediaArray.video_duration || mediaArray.video_versions) return MediaType.Video;
     return MediaType.Image;
-};
-
-export const resolveOverallMediaType = () => {
-    return MediaType.UNDEFINED;
 };
 
 export const userFilenameFormatter = (filename: string, placeholders: Record<string, string>): string => {
