@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
-import { Program } from "../App";
-import { resolveShouldMuteVideos } from "../helpers/common";
-import { playFlipAnimation } from "../helpers/flipAnimation";
-import { MediaSlide } from "../model/MediaScanResult";
-import { uiClasses } from "./uiTokens";
+import { Program } from "../../App";
+import { resolveShouldMuteVideos } from "../../helpers/common";
+import { playFlipAnimation } from "../../helpers/flipAnimation";
+import { MediaSlide } from "../../model/MediaScanResult";
+import { uiClasses } from "../shared/uiTokens";
 
 type Refs = {
   rootRef: { current: HTMLDivElement | null };

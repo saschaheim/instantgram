@@ -2,7 +2,7 @@ import { Program } from "../App";
 import { h } from "preact";
 import { Module, NO_TARGET_FOUND } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { Modal, ModalContent } from "../components/Modal";
+import { Modal, ModalContent } from "../components/modal";
 import {
     createMediaViewerStore,
     createUtilityViewerStore,
@@ -15,10 +15,10 @@ import {
     SettingsConfig,
     UtilityMessageBody,
     UtilityModalHeading
-} from "../components/mediaModalApp";
-import { cssCarouselSlider } from "../components/sliderStyles";
-import { cssGeneral, cssSlideOn } from "../components/generalStyles";
-import { uiClasses } from "../components/uiTokens";
+} from "../components/mediaViewer";
+import { cssCarouselSlider } from "../components/mediaViewer/sliderStyles";
+import { cssGeneral, cssSlideOn } from "../components/shared/generalStyles";
+import { uiClasses } from "../components/shared/uiTokens";
 import { FeedScanner } from "./FeedScanner";
 import { PostAndReelScanner } from "./PostAndReelScanner";
 import { ProfileScanner } from "./ProfileScanner";

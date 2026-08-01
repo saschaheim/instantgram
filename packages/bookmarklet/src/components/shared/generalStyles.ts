@@ -1,4 +1,4 @@
-import { cssImportant as I, cssLinearGradient, sharedUiClasses } from "./styleShared";
+import { cssImportant as I, cssLinearGradient, sharedUiClasses } from "./cssTokens";
 
 const { btn, btnPrimary, btnSuccess, modalBody } = sharedUiClasses;
 

@@ -2,10 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { ComponentChildren, render } from "preact";
 
 // MediaScanner -> helpers/localize.ts -> src/index.ts, and separately
-// MediaScanner -> components/Modal.ts -> src/index.ts (the browser entry
-// point, which runs side effects -- including `new MediaScanner()` -- at
-// import time). Stub both so importing the real MediaScanner class for its
-// buildNotFoundBody method doesn't drag that in.
+// MediaScanner -> components/modal/index.tsx -> src/index.ts (the browser
+// entry point, which runs side effects -- including `new MediaScanner()` --
+// at import time). Stub both so importing the real MediaScanner class for
+// its buildNotFoundBody method doesn't drag that in.
 vi.mock("../../src/helpers/localize", () => ({
     default: (key: string) => {
         const strings: Record<string, string> = {
@@ -15,7 +15,7 @@ vi.mock("../../src/helpers/localize", () => ({
         return strings[key] ?? key;
     },
 }));
-vi.mock("../../src/components/Modal", () => ({ Modal: class {} }));
+vi.mock("../../src/components/modal", () => ({ Modal: class {} }));
 
 import { MediaScanner } from "../../src/modules/MediaScanner";
 

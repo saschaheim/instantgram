@@ -1,8 +1,8 @@
 import { h } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
-import { Program } from "../App";
-import localize from "../helpers/localize";
-import { uiClasses } from "./uiTokens";
+import { Program } from "../../App";
+import localize from "../../helpers/localize";
+import { uiClasses } from "../shared/uiTokens";
 
 type SettingsPane = "general" | "stories";
 

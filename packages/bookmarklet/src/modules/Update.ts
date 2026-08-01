@@ -1,6 +1,6 @@
 import { Program } from "../App";
 import { h } from "preact";
-import { Modal } from "../components/Modal";
+import { Modal } from "../components/modal";
 import { UpdateModalBody } from "../components/updateModal";
 import { findAppId, mediaInfoUrlPrefix, shortcodeToMediaId, secureFetch } from "../helpers/instagramApi";
 import localize from "../helpers/localize";

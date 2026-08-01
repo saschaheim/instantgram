@@ -1,24 +1,24 @@
 import { h } from "preact";
 import { ComponentChildren } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import { Program } from "../App";
-import { formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
-import localize, { getLocale, loadLocale, localeUnavailableMessage, setLocale, SupportedLocale, supportedLocales } from "../helpers/localize";
-import { LocalizationKey } from "../localization";
-import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
-import { MediaSlide } from "../model/MediaScanResult";
-import { MediaType } from "../model/MediaType";
-import { logoIconGlyphPath, logoIconGlyphTransform, logoIconPath, logoViewBox, logoWordmarkPath, logoWordmarkTransform } from "../helpers/logo";
-import { useAutoExpand, useAutoSlideshow, useExpandAnimation, useVideoMuteSync } from "./mediaModalEffects";
-import { useMediaSlider } from "./mediaSlider";
-import { MediaViewerStore, SettingsConfig, UtilityViewerStore, useStoreState } from "./mediaViewerStore";
-import { ModalContent } from "./Modal";
-import { SettingsModalBody } from "./settingsModal";
-import { uiClasses } from "./uiTokens";
+import { Program } from "../../App";
+import { formatVersionLabel, resolveShouldMuteVideos } from "../../helpers/common";
+import localize, { getLocale, loadLocale, localeUnavailableMessage, setLocale, SupportedLocale, supportedLocales } from "../../helpers/localize";
+import { LocalizationKey } from "../../localization";
+import { buildProxyDownloadUrl } from "../../helpers/mediaFormatting";
+import { MediaSlide } from "../../model/MediaScanResult";
+import { MediaType } from "../../model/MediaType";
+import { logoIconGlyphPath, logoIconGlyphTransform, logoIconPath, logoViewBox, logoWordmarkPath, logoWordmarkTransform } from "../../helpers/logo";
+import { useAutoExpand, useAutoSlideshow, useExpandAnimation, useVideoMuteSync } from "./effects";
+import { useMediaSlider } from "./slider";
+import { MediaViewerStore, SettingsConfig, UtilityViewerStore, useStoreState } from "./store";
+import { ModalContent } from "../modal";
+import { SettingsModalBody } from "../settingsModal";
+import { uiClasses } from "../shared/uiTokens";
 
-export type { SettingsConfig } from "./settingsModal";
-export type { MediaViewerStore, UtilityViewerStore } from "./mediaViewerStore";
-export { createMediaViewerStore, createUtilityViewerStore } from "./mediaViewerStore";
+export type { SettingsConfig } from "../settingsModal";
+export type { MediaViewerStore, UtilityViewerStore } from "./store";
+export { createMediaViewerStore, createUtilityViewerStore } from "./store";
 
 export function LoadingBody() {
   return (

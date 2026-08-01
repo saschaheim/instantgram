@@ -1,4 +1,4 @@
-import { cssEasing as E, cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "./styleShared";
+import { cssEasing as E, cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "../shared/cssTokens";
 
 const {
   modalOverlay,

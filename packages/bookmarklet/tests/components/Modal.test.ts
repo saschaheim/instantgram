@@ -9,8 +9,8 @@ vi.mock("../../src/helpers/localize", () => ({
   subscribeLocale: () => () => undefined,
 }));
 
-import { Modal } from "../../src/components/Modal";
-import { uiClasses } from "../../src/components/uiTokens";
+import { Modal } from "../../src/components/modal";
+import { uiClasses } from "../../src/components/shared/uiTokens";
 
 afterEach(() => {
   document.body.replaceChildren();

@@ -1,11 +1,11 @@
 import { ComponentChildren, render } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { program } from "..";
-import localize, { subscribeLocale } from "../helpers/localize";
-import { LocalizationKey } from "../localization";
-import { cssModal } from "./modalStyles";
-import { uiClasses } from "./uiTokens";
-import { sleep } from "../helpers/common";
+import { program } from "../..";
+import localize, { subscribeLocale } from "../../helpers/localize";
+import { LocalizationKey } from "../../localization";
+import { cssModal } from "./styles";
+import { uiClasses } from "../shared/uiTokens";
+import { sleep } from "../../helpers/common";
 
 export interface ModalButton {
   text: string;

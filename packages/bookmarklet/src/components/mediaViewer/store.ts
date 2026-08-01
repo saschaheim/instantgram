@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 
-export type { SettingsConfig } from "./settingsModal";
+export type { SettingsConfig } from "../settingsModal";
 
 export type MediaViewerState = {
   expanded: boolean;

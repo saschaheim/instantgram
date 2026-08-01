@@ -1,6 +1,6 @@
 import { h } from "preact";
-import { formatVersionLabel } from "../helpers/common";
-import localize from "../helpers/localize";
+import { formatVersionLabel } from "../../helpers/common";
+import localize from "../../helpers/localize";
 
 const inline = (text: string) => text
   .replace(/&/g, "&amp;")

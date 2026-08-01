@@ -1,4 +1,4 @@
-import { cssEasing } from "../components/styleShared";
+import { cssEasing } from "../components/shared/cssTokens";
 
 // Shared FLIP (First-Last-Invert-Play) grow/shrink animation, used both for the media
 // modal's expand/collapse toggle and for the modal's initial open, so both look and feel

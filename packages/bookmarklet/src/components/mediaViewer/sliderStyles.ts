@@ -1,4 +1,4 @@
-import { cssEasing as E, cssImportant as I, sharedUiClasses } from "./styleShared";
+import { cssEasing as E, cssImportant as I, sharedUiClasses } from "../shared/cssTokens";
 
 const { modalDb } = sharedUiClasses;
 
