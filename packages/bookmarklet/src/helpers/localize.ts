@@ -15,13 +15,19 @@ const remoteLocalePosts: Partial<Record<SupportedLocale, string>> = {
     "pt-BR": "DbYOEu4NFQn",
 };
 
+// The day number (since epoch) is baked into the cache key itself, so a
+// remote translation update on Instagram reaches users within a day without
+// storing/checking a separate expiry timestamp -- yesterday's entry just
+// stops being the key anyone looks up and is never read again.
+const localeCacheKey = (locale: SupportedLocale) => localeCachePrefix + locale + (Date.now() / 8.64e7 | 0);
+
 const getDictionary = (locale: SupportedLocale) => {
     if (localizations[locale]) return localizations[locale];
     try {
-        const cached = JSON.parse(localStorage.getItem(localeCachePrefix + locale) || "null");
+        const cached = JSON.parse(localStorage.getItem(localeCacheKey(locale)) || "null");
         if (cached) localizations[locale] = cached;
     } catch {
-        localStorage.removeItem(localeCachePrefix + locale);
+        localStorage.removeItem(localeCacheKey(locale));
     }
     return localizations[locale];
 };
@@ -74,7 +80,7 @@ export const loadLocale = async (locale: SupportedLocale): Promise<boolean> => {
         const payload = caption!.slice(prefixIndex + prefix.length);
         const dictionary = JSON.parse(payload.slice(0, payload.lastIndexOf("}") + 1));
         localizations[locale] = dictionary;
-        localStorage.setItem(localeCachePrefix + locale, JSON.stringify(dictionary));
+        localStorage.setItem(localeCacheKey(locale), JSON.stringify(dictionary));
         return true;
     } catch (error) {
         console.error(cannotLoadPrefix+locale+": invalid translation JSON", error);

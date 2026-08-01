@@ -10,7 +10,7 @@ const enUS = {
     "a.ie": "This media isn't supported yet.",
     "ms.t": "Settings",
     "ms.g": "General",
-    "sup": "Made with love ♥. Support instantgram",
+    "sup": "Made with love ♥. Support",
     "msg.t2": "Download in a new tab",
     "msg.d2": "The download opens in a new tab",
     "msg.t3": "Slideshow on/off",
