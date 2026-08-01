@@ -64,7 +64,7 @@ const runApp = async () => {
     const scanner = new MediaScanner(); // Create a new instance of the MediaScanner
     await scanner.execute(program); // Execute the MediaScanner with the program configuration
 
-    if (!FIREFOX_LITE && !DEVELOPMENT && isInstagramHost()) {
+    if (!DEVELOPMENT && isInstagramHost()) {
         const updater = new VersionUpdater(program); // Create an instance of VersionUpdater
         await updater.check(VERSION); // Check for version updates
     }

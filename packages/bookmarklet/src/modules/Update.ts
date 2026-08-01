@@ -6,10 +6,28 @@ import { findAppId, mediaInfoUrlPrefix, shortcodeToMediaId, secureFetch } from "
 import localize from "../helpers/localize";
 import { normalizeVersionString } from "../helpers/common";
 
+const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
+
 type Changelog = {
     date: string;
     textBody: string;
 };
+
+// Chosen once at module scope (mirroring the pattern already used for the .ium CSS block
+// in modalStyles.ts) so the Firefox Lite build can prove the Modal/UpdateModalBody branch
+// is unreachable and drop it -- a conditional buried inside a class method's if/else
+// wasn't reliably eliminated by the bundler.
+const notifyUpdateAvailable: (localVersion: string, onlineVersion: string, changelogText: string, versionLine: string) => void = FIREFOX_LITE
+    ? (_localVersion, _onlineVersion, _changelogText, versionLine) => alert(localize("u.i")+"\n"+versionLine)
+    : (localVersion, onlineVersion, changelogText) => {
+        new Modal({
+            heading: "",
+            body: h(UpdateModalBody, { localVersion, onlineVersion, text: changelogText }),
+            bodyStyle: "padding:0!important",
+            modalClassName: "ium",
+            buttonList: [{ active: true, text: "", localizationKey: "c" }],
+        }).open();
+    };
 
 export class VersionUpdater {
     program: Program;
@@ -60,11 +78,12 @@ export class VersionUpdater {
         console.info(localize("modules.update@update_successful"));
 
         if (new Date(onlineVersion) > new Date(normalizedLocalVersion)) {
-            this.showUpdateModal(normalizedLocalVersion, onlineVersion, textBody);
-            console.warn(localize("u.i"));
-            console.warn(localize("u.v")
+            const versionLine = localize("u.v")
                 .replace("%version%", normalizedLocalVersion)
-                .replace("%onlineVersion%", onlineVersion));
+                .replace("%onlineVersion%", onlineVersion);
+            notifyUpdateAvailable(normalizedLocalVersion, onlineVersion, textBody, versionLine);
+            console.warn(localize("u.i"));
+            console.warn(versionLine);
         }
     }
 
@@ -93,16 +112,6 @@ export class VersionUpdater {
         const isDataExpired = Date.now() > data.dateExpiration;
 
         return isVersionOutdated || isDataExpired || !data;
-    }
-
-    private showUpdateModal(localVersion: string, onlineVersion: string, changelogText: string): void {
-        new Modal({
-            heading: "",
-            body: h(UpdateModalBody, { localVersion, onlineVersion, text: changelogText }),
-            bodyStyle: "padding:0!important",
-            modalClassName: "ium",
-            buttonList: [{ active: true, text: "", localizationKey: "c" }],
-        }).open();
     }
 }
 
