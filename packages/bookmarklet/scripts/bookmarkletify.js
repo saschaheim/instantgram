@@ -47,7 +47,7 @@ const minify = (code) => {
       toplevel: true,
       reserved: ['$super', '$', 'exports', 'require'],
       properties: {
-        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userName|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput)$/,
+        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userName|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput|sliderRef|suppressClickRef|selectSlide|handleSliderPointerDown|handleSliderPointerMove|handleSliderPointerEnd|rootRef|videoRefs)$/,
       },
     },
     output: {

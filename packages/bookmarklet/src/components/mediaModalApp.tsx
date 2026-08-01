@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { ComponentChildren } from "preact";
-import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { Program } from "../App";
 import { formatVersionLabel, resolveShouldMuteVideos } from "../helpers/common";
 import localize, { getLocale, loadLocale, localeUnavailableMessage, setLocale, SupportedLocale, supportedLocales } from "../helpers/localize";
@@ -9,113 +9,16 @@ import { buildProxyDownloadUrl } from "../helpers/mediaFormatting";
 import { MediaSlide } from "../model/MediaScanResult";
 import { MediaType } from "../model/MediaType";
 import { logoIconGlyphPath, logoIconGlyphTransform, logoIconPath, logoViewBox, logoWordmarkPath, logoWordmarkTransform } from "../helpers/logo";
-import { playFlipAnimation } from "../helpers/flipAnimation";
+import { useAutoExpand, useAutoSlideshow, useExpandAnimation, useVideoMuteSync } from "./mediaModalEffects";
+import { useMediaSlider } from "./mediaSlider";
+import { MediaViewerStore, SettingsConfig, UtilityViewerStore, useStoreState } from "./mediaViewerStore";
 import { ModalContent } from "./Modal";
-import { SettingsConfig, SettingsModalBody } from "./settingsModal";
+import { SettingsModalBody } from "./settingsModal";
 import { uiClasses } from "./uiTokens";
 
-type MediaViewerState = {
-  expanded: boolean;
-  mode: "media" | "settings";
-  selectedIndex: number;
-  settingsVersion: number;
-};
-
-type MediaViewerListener = () => void;
-type UtilityViewerMode = "message" | "settings";
-
-type UtilityViewerState = {
-  mode: UtilityViewerMode;
-  settingsVersion: number;
-};
-
-type UtilityViewerListener = () => void;
-
-type StoreLike<TState> = {
-  getState(): TState;
-  subscribe(listener: () => void): () => void;
-};
-
 export type { SettingsConfig } from "./settingsModal";
-
-export type MediaViewerStore = {
-  bumpSettingsVersion(): void;
-  closeSettings(): void;
-  getState(): MediaViewerState;
-  openSettings(): void;
-  setExpanded(expanded: boolean): void;
-  setSelectedIndex(selectedIndex: number): void;
-  subscribe(listener: MediaViewerListener): () => void;
-  toggleExpanded(): void;
-};
-
-export type UtilityViewerStore = {
-  bumpSettingsVersion(): void;
-  closeSettings(): void;
-  getState(): UtilityViewerState;
-  openSettings(): void;
-  subscribe(listener: UtilityViewerListener): () => void;
-};
-
-const createStore = <TState,>(state: TState) => {
-  const listeners = new Set<() => void>();
-  const update = (nextState: Partial<TState>) => {
-    state = { ...state, ...nextState };
-    listeners.forEach((listener) => listener());
-  };
-  return {
-    getState: () => state,
-    subscribe(listener: () => void) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    update,
-  };
-};
-
-const createBaseStoreMethods = <TState extends { mode: string; settingsVersion: number }>(
-  store: ReturnType<typeof createStore<TState>>,
-  idleMode: TState["mode"]
-) => ({
-  bumpSettingsVersion: () => store.update({ settingsVersion: store.getState().settingsVersion + 1 } as Partial<TState>),
-  closeSettings: () => store.update({ mode: idleMode } as Partial<TState>),
-  getState: store.getState,
-  openSettings: () => store.update({ mode: "settings" } as Partial<TState>),
-  subscribe: store.subscribe,
-});
-
-export const createMediaViewerStore = (selectedIndex = 0, expanded = false): MediaViewerStore => {
-  const store = createStore<MediaViewerState>({
-    expanded,
-    mode: "media",
-    selectedIndex,
-    settingsVersion: 0,
-  });
-
-  return {
-    ...createBaseStoreMethods(store, "media"),
-    setExpanded: (expanded) => store.getState().expanded === expanded || store.update({ expanded }),
-    setSelectedIndex: (selectedIndexValue) => store.getState().selectedIndex === selectedIndexValue || store.update({ selectedIndex: selectedIndexValue }),
-    toggleExpanded: () => store.update({ expanded: !store.getState().expanded }),
-  };
-};
-
-export const createUtilityViewerStore = (): UtilityViewerStore => {
-  const store = createStore<UtilityViewerState>({
-    mode: "message",
-    settingsVersion: 0,
-  });
-
-  return createBaseStoreMethods(store, "message");
-};
-
-const useStoreState = <TState,>(store: StoreLike<TState>) => {
-  const [state, setState] = useState(store.getState());
-
-  useEffect(() => store.subscribe(() => setState(store.getState())), [store]);
-
-  return state;
-};
+export type { MediaViewerStore, UtilityViewerStore } from "./mediaViewerStore";
+export { createMediaViewerStore, createUtilityViewerStore } from "./mediaViewerStore";
 
 export function LoadingBody() {
   return (
@@ -362,295 +265,22 @@ export function ReactiveMediaModalBody({
 }) {
   const state = useStoreState(store);
   const rootRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
-  const [progressValues, setProgressValues] = useState(() => slides.map(() => 0));
-  const previousExpandedRef = useRef<boolean | null>(null);
-  const selectSlide = (index: number) => {
-    const slider = sliderRef.current;
-    if (slider && Math.abs(state.selectedIndex - index) > 1) {
-      slider.style.transition = "none";
-      store.setSelectedIndex(index);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        slider.style.transition = "";
-      }));
-      return;
-    }
-    store.setSelectedIndex(index);
-  };
+  const refs = { rootRef, videoRefs };
 
-  const dragRef = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    dragging: boolean;
-    width: number;
-    baseTranslate: number;
-    offset: number;
-    lastX: number;
-    lastT: number;
-    velocity: number;
-  } | null>(null);
-  const suppressClickRef = useRef(false);
+  const {
+    sliderRef,
+    suppressClickRef,
+    selectSlide,
+    handleSliderPointerDown,
+    handleSliderPointerMove,
+    handleSliderPointerEnd,
+  } = useMediaSlider(state.selectedIndex, slides.length, store.setSelectedIndex);
 
-  const endDrag = (nextIndex: number) => {
-    const slider = sliderRef.current;
-    dragRef.current = null;
-    if (!slider) return;
-    slider.classList.remove("dragging");
-    slider.style.transition = "";
-    slider.style.transform = "translateX(-"+nextIndex*100+"%)";
-    selectSlide(nextIndex);
-  };
-
-  const handleSliderPointerDown = (event: PointerEvent) => {
-    if (slides.length <= 1 || event.button > 0) return;
-    const slider = sliderRef.current;
-    const width = slider?.getBoundingClientRect().width;
-    if (!slider || !width) return;
-    dragRef.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      dragging: false,
-      width,
-      baseTranslate: -state.selectedIndex * width,
-      offset: 0,
-      lastX: event.clientX,
-      lastT: event.timeStamp,
-      velocity: 0,
-    };
-  };
-
-  const handleSliderPointerMove = (event: PointerEvent) => {
-    const drag = dragRef.current;
-    const slider = sliderRef.current;
-    if (!drag || !slider || event.pointerId !== drag.pointerId) return;
-    const dx = event.clientX - drag.startX;
-    const dy = event.clientY - drag.startY;
-    if (!drag.dragging) {
-      if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return;
-      drag.dragging = true;
-      suppressClickRef.current = true;
-      slider.classList.add("dragging");
-      slider.style.transition = "none";
-      slider.setPointerCapture(event.pointerId);
-    }
-    event.preventDefault();
-    const dt = event.timeStamp - drag.lastT;
-    if (dt > 0) drag.velocity = (event.clientX - drag.lastX) / dt;
-    drag.lastX = event.clientX;
-    drag.lastT = event.timeStamp;
-
-    const atStart = state.selectedIndex === 0 && dx > 0;
-    const atEnd = state.selectedIndex === slides.length - 1 && dx < 0;
-    drag.offset = atStart || atEnd ? dx * 0.35 : dx;
-    slider.style.transform = "translateX("+(drag.baseTranslate+drag.offset)+"px)";
-  };
-
-  const handleSliderPointerEnd = (event: PointerEvent) => {
-    const drag = dragRef.current;
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    if (!drag.dragging) {
-      dragRef.current = null;
-      return;
-    }
-    const ratio = drag.offset / drag.width;
-    const flick = Math.abs(drag.velocity) > 0.35;
-    let nextIndex = state.selectedIndex;
-    if (flick || Math.abs(ratio) > 0.2) {
-      nextIndex += drag.offset < 0 ? 1 : -1;
-    }
-    nextIndex = Math.max(0, Math.min(slides.length - 1, nextIndex));
-    endDrag(nextIndex);
-  };
-
-  useLayoutEffect(() => {
-    if (state.mode !== "media") {
-      return undefined;
-    }
-    const rootElement = rootRef.current;
-    const modalWindow = rootElement?.closest("."+uiClasses.modal) as HTMLElement | null;
-    if (!modalWindow) {
-      return undefined;
-    }
-
-    if (previousExpandedRef.current === null) {
-      modalWindow.classList.toggle("ime", state.expanded);
-      previousExpandedRef.current = state.expanded;
-      return undefined;
-    }
-
-    if (previousExpandedRef.current === state.expanded) {
-      return undefined;
-    }
-
-    const activeVideo = videoRefs.current[state.selectedIndex];
-    const firstModalRect = modalWindow.getBoundingClientRect();
-    const previousTransition = modalWindow.style.transition;
-    const previousOverflow = modalWindow.style.overflow;
-    const activeMedia = activeVideo || (rootElement.querySelectorAll<HTMLElement>(".slide img")[state.selectedIndex] ?? null);
-    const previousMediaTransition = activeMedia?.style.transition ?? "";
-
-    modalWindow.style.transition = "none";
-    // Clip the non-matching axis while a single uniform scale animates in, so tall media
-    // never visibly spills outside the modal during the transition.
-    modalWindow.style.overflow = "hidden";
-    if (activeMedia) {
-      activeMedia.style.transition = "none";
-    }
-    modalWindow.classList.toggle("ime", state.expanded);
-    const lastModalRect = modalWindow.getBoundingClientRect();
-
-    const animation = playFlipAnimation(modalWindow, firstModalRect, lastModalRect);
-    previousExpandedRef.current = state.expanded;
-
-    const finish = () => {
-      modalWindow.style.transition = previousTransition;
-      modalWindow.style.overflow = previousOverflow;
-      if (activeMedia) {
-        activeMedia.style.transition = previousMediaTransition;
-      }
-    };
-
-    if (!animation) {
-      finish();
-      return undefined;
-    }
-
-    const settle = () => {
-      animation.removeEventListener("finish", settle);
-      animation.removeEventListener("cancel", settle);
-      finish();
-    };
-
-    animation.addEventListener("finish", settle);
-    animation.addEventListener("cancel", settle);
-
-    return () => {
-      animation.cancel();
-      finish();
-    };
-  }, [state.expanded, state.selectedIndex]);
-
-  useEffect(() => {
-    if (state.mode !== "media") {
-      return undefined;
-    }
-    if (!program.settings.autoExpand) {
-      return undefined;
-    }
-
-    let settled = false;
-    const trigger = () => {
-      if (settled) return;
-      settled = true;
-      clearInterval(pollId);
-      clearTimeout(fallbackTimer);
-      clearTimeout(delayTimer);
-      store.setExpanded(true);
-    };
-
-    // The active slide may still be showing its .slide-placeholder (fixed 300px height)
-    // instead of the real <img>/<video> at this point, since image loading is async and
-    // this effect fires as soon as the modal mounts. Poll until the real media element is
-    // present AND loaded, so the FLIP animation always measures the true expanded size,
-    // same as it does for a manual click (which can only happen once you can see it).
-    let delayTimer: ReturnType<typeof setTimeout> | undefined;
-    const isReady = () => {
-      const activeVideo = videoRefs.current[state.selectedIndex];
-      if (activeVideo) return activeVideo.readyState >= 1;
-      const activeSlideEl = rootRef.current?.querySelectorAll<HTMLElement>(".slide")[state.selectedIndex];
-      const activeImage = activeSlideEl?.querySelector<HTMLImageElement>("img") ?? null;
-      return !!activeImage?.complete;
-    };
-    const pollId = setInterval(() => {
-      if (isReady()) {
-        // Keep a short pause once ready so the expand doesn't happen instantly on open.
-        delayTimer = setTimeout(trigger, 500);
-        clearInterval(pollId);
-      }
-    }, 100);
-    const fallbackTimer = setTimeout(trigger, 3000);
-
-    return () => {
-      clearInterval(pollId);
-      clearTimeout(fallbackTimer);
-      clearTimeout(delayTimer);
-    };
-  }, [program.settings.autoExpand, state.mode, state.selectedIndex, store]);
-
-  useEffect(() => {
-    if (state.mode !== "media") {
-      return undefined;
-    }
-    const shouldMute = resolveShouldMuteVideos(program);
-    videoRefs.current.forEach((video) => {
-      if (!video) {
-        return;
-      }
-      video.defaultMuted = shouldMute;
-      video.muted = shouldMute;
-      if (shouldMute) {
-        video.setAttribute("muted", "");
-      } else {
-        video.removeAttribute("muted");
-      }
-    });
-  }, [program, state.mode, state.settingsVersion]);
-
-  useEffect(() => {
-    if (state.mode !== "media" || !slides.length) return undefined;
-
-    const mute = resolveShouldMuteVideos(program);
-    let timer: ReturnType<typeof setTimeout>;
-    let frame = 0;
-    const video = videoRefs.current[state.selectedIndex];
-    const auto = program.settings.autoSlideshow && slides.length > 1;
-    const progress = (value: number) => {
-      setProgressValues(slides.map((_, index) => (index === state.selectedIndex ? value : 0)));
-    };
-    const next = () => selectSlide((state.selectedIndex + 1) % slides.length);
-    const timedProgress = () => {
-      const started = performance.now();
-      const tick = (now: number) => {
-        const value = Math.min(100, (now - started) / 50);
-        progress(value);
-        if (value < 100) frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-      timer = setTimeout(next, 5000);
-    };
-
-    progress(0);
-
-    let handleTimeUpdate: (() => void) | undefined;
-    if (video) {
-      video.defaultMuted = video.muted = mute;
-      if (auto) {
-        handleTimeUpdate = () => {
-          progress(video.duration && isFinite(video.duration) ? (video.currentTime / video.duration) * 100 : 0);
-        };
-        video.addEventListener("timeupdate", handleTimeUpdate);
-        video.onended = next;
-      }
-      void video.play().catch(() => {
-        if (auto) timedProgress();
-      });
-    } else if (auto) {
-      timedProgress();
-    }
-
-    return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(frame);
-      if (video) {
-        if (handleTimeUpdate) video.removeEventListener("timeupdate", handleTimeUpdate);
-        video.onended = null;
-        video.pause();
-      }
-    };
-  }, [program, slides, state.mode, state.selectedIndex, state.settingsVersion, store]);
+  useExpandAnimation(state.mode, state.expanded, state.selectedIndex, refs);
+  useAutoExpand(program, state.mode, state.selectedIndex, store.setExpanded, refs);
+  useVideoMuteSync(program, state.mode, state.settingsVersion, videoRefs);
+  const progressValues = useAutoSlideshow(program, slides, state.mode, state.selectedIndex, state.settingsVersion, selectSlide, videoRefs);
 
   const shouldMute = resolveShouldMuteVideos(program);
   const activeSlide = slides[state.selectedIndex];
