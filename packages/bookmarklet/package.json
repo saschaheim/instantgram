@@ -19,7 +19,7 @@
     "build:bookmarklet:dev": "node scripts/bookmarkletify.js --dev",
     "dev": "nodemon --watch src --watch scripts --watch package.json --watch rollup.config.js --watch ../site/src/data --ext ts,js,json --exec \"pnpm run build\"",
     "lint": "eslint src/**/*.{ts,tsx} tests/**/*.ts",
-    "test": "vitest run --config vitest.config.ts",
+    "test": "vitest run --config vitest.config.mts",
     "size": "node scripts/size-bookmarklets.js"
   },
   "devDependencies": {

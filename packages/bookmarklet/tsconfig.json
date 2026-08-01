@@ -4,5 +4,5 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact"
   },
-  "exclude": ["node_modules", "dist", "tests", "tools", "vitest.config.ts"]
+  "exclude": ["node_modules", "dist", "tests", "tools", "vitest.config.mts"]
 }

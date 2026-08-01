@@ -12,7 +12,7 @@ export default [
   },
   pluginJs.configs.recommended,  // Apply the recommended JavaScript rules before language-specific overrides
   {
-    files: ["**/*.ts", "**/*.tsx"],  // Apply this configuration to TypeScript files (.ts and .tsx)
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts"],  // Apply this configuration to TypeScript files (.ts, .tsx, and .mts)
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },  // Define global variables for browser and node environments
       parser: tsParser,  // Use the TypeScript parser for TypeScript files
