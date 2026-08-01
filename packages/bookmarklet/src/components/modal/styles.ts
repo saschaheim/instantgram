@@ -1,4 +1,4 @@
-import { cssEasing as E, cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "../shared/cssTokens";
+import { cssEasing as E, cssFontStack as F, cssImportant as I, cssLinearGradient, sharedUiAnimations, sharedUiClasses } from "../shared/cssTokens";
 
 const {
   modalOverlay,
@@ -19,7 +19,7 @@ const { loadingSpin } = sharedUiAnimations;
 const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
 
 const modalCssRules = [
-  "."+modal+",."+modal+' *{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif'+I+'}',
+  "."+modal+",."+modal+" *{font-family:"+F+I+"}",
   "."+modal+"{font-size:14px"+I+";line-height:1.5"+I+"}",
   "."+modalFooter+" button,."+modalHeader+" h5{font-size:16px"+I+"}",
   "."+modalOverlay+"{display:none"+I+";opacity:0"+I+";transition:.1s"+I+";position:fixed"+I+";inset:0"+I+";z-index:1000"+I+";background:rgba(0,0,0,.65)"+I+";justify-content:center"+I+";align-items:center"+I+"}",
@@ -44,17 +44,15 @@ const modalCssRules = [
   "."+modalHeader+" h5{color:#fff"+I+";margin:revert"+I+";display:flex;justify-content:space-between;align-items:center;height:15px}",
   ".hl{flex:1;text-align:left}",
   ".igb{display:block"+I+";height:30px"+I+";width:auto"+I+";max-width:none"+I+";flex:none"+I+"}",
-  ".igb .igi{fill:#101820"+I+";stroke:rgb(255 255 255)"+I+";stroke-width:2"+I+"}",
-  ".igb .igg{fill:#fff"+I+"}",
-  ".igb .igt{fill:#fff"+I+"}",
+  ".igb .igi{fill:#101820"+I+";stroke:#fff"+I+";stroke-width:2"+I+"}",
+  ".igb .igg,.igb .igt{fill:#fff"+I+"}",
   ".hr{flex:1;text-align:right;display:flex;justify-content:flex-end;align-items:center;gap:10px}",
-  '.il{appearance:none;width:40px;height:40px;padding:0;color:#fff;color-scheme:light;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;font:700 12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;outline:0;cursor:pointer;text-align:center;text-align-last:center}',
-  ".il:hover{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}",
+  ".il{appearance:none;width:40px;height:40px;padding:0;color:#fff;color-scheme:light;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:7px;font:700 12px "+F+";outline:0;cursor:pointer;text-align:center;text-align-last:center}",
   ".il option{text-align:center;color:#101820}",
   ".hm{flex:1;text-align:center}",
   ".hm a{color:#fff"+I+"}",
   "."+settings+",.ima{cursor:pointer;box-sizing:border-box;padding:0"+I+";color:rgba(255,255,255,.7);background-color:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);border-radius:7px;transition:color .2s,background-color .2s,border-color .2s,transform .24s ease;width:40px;height:40px;font-size:20px;font-weight:700;line-height:1}",
-  "."+settings+":hover,.ima:hover{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}",
+  ".il:hover,."+settings+":hover,.ima:hover{color:rgba(255,255,255,.8);background-color:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3)}",
   ".ima.active{background-color:rgba(255,255,255,.28);border-color:rgba(255,255,255,.38);color:#fff}",
   ".ima svg{display:block;width:20px;height:20px;margin:auto}",
   ".ib i{position:relative;top:-3px}",
