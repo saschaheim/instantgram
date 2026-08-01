@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/badge/release-v2026.08.01-198754?style=for-the-badge)](CHANGELOG.md)
 [![For Instagram](https://img.shields.io/badge/for-Instagram-E4405F?style=for-the-badge)](https://www.instagram.com/)
 [![Powered by Preact](https://img.shields.io/badge/UI-Preact-673AB8?style=for-the-badge)](https://preactjs.com/)
-[![Firefox Lite](https://img.shields.io/badge/Firefox-Lite-FF7139?style=for-the-badge)](https://saschaheim.github.io/instantgram/firefox/)
+[![Firefox Lite](https://img.shields.io/badge/Firefox-Lite-FF7139?style=for-the-badge)](https://saschaheim.github.io/instantgram/#firefox)
 
 **Download Instagram posts, reels, stories and profile pictures directly from your bookmarks bar.**
 
@@ -28,7 +28,8 @@ This is the biggest instantgram upgrade in years. The bookmarklet has evolved fr
 - **Smarter Instagram detection:** stronger handling for posts, reels, stories, profiles and sponsored content, including feed and search fallbacks for Instagram API edge cases.
 - **Settings that feel native:** clearer cards, live language switching, persistent preferences and consistent controls throughout the app.
 - **Four languages:** English ships in the release bundle; German, Spanish and Portuguese can load directly through Instagram and remain cached locally.
-- **Firefox gets its own build:** Firefox Lite keeps every scanner, setting and console diagnostic while fitting below Firefox's bookmarklet limit.
+- **Firefox gets its own build:** Firefox Lite keeps every scanner, setting and console diagnostic, trims update-checking to a single alert and drops purely decorative styling (rounded corners, hover transitions, drop shadows) -- the combination that actually fits under Firefox's strict bookmarklet limit, with room to spare.
+- **A refreshed install page:** copy across all four languages now matches the real feature set instead of undersold "single image" wording, and the hero preview plays a looping clip at its real length instead of being cut short.
 - **A modern foundation:** pnpm workspaces, Turbo, Astro 7, TypeScript, Preact and a deterministic Vitest suite make future fixes dramatically easier to ship.
 
 ## Features
@@ -56,7 +57,7 @@ This is the biggest instantgram upgrade in years. The bookmarklet has evolved fr
 | Safari | Modern versions |
 | Internet Explorer 11 | Not supported |
 
-Firefox enforces a much smaller bookmarklet size limit than Chromium browsers. Use the dedicated **Firefox Lite** button on the install page; it removes update checking, not media scanners, settings or diagnostics.
+Firefox enforces a much smaller bookmarklet size limit than Chromium browsers. Use the dedicated **Firefox Lite** button on the install page; it trims update-checking to a single alert and drops decorative styling, not media scanners, settings or diagnostics.
 
 ## Development
 
