@@ -47,7 +47,7 @@ const generalRules = [
   ".sf ."+btn+"{align-self:flex-start;margin-right:0}",
   ".sw{position:relative;padding:11px 16px;font-size:13px;line-height:1.45;color:#58636d;background:#efded3;border:1px solid #e2cec1"+(FIREFOX_LITE?"":";border-radius:12px")+"}",
   ".sw .sx{color:#367da3;font-weight:700}",
-  ".sc{display:block;margin:0 auto 5px;padding:0;color:#7a838b;background:none;border:0;font-size:12px;line-height:1.4;text-decoration:underline;cursor:pointer}",
+  ".sc{display:block;margin:0 auto 5px;padding:0;color:#7a838b;background:0;border:0;font-size:12px;text-decoration:underline;cursor:pointer}",
   ...(!FIREFOX_LITE ? [".sc:hover{color:#101820}"] : []),
 ];
 

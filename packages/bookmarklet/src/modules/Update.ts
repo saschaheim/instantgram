@@ -43,7 +43,7 @@ export class VersionUpdater {
         const changelog = await this.fetchChangelog();
         const onlineVersion = changelog?.date || localVersion;
         this.storeVersionInfo(localVersion, onlineVersion);
-        if (changelog && this.isUpdateNecessary(localVersion, onlineVersion)) {
+        if (changelog) {
             this.processChangelog(localVersion, changelog);
         } else {
             console.info(`[${this.program.NAME}] No update required`);
@@ -51,22 +51,22 @@ export class VersionUpdater {
     }
 
     private async fetchChangelog(): Promise<Changelog | null> {
-        const failedPrefix = "Failed to fetch changelog: ";
+        const failedPrefix = "Update failed: ";
         const appId = findAppId();
         const mediaId = shortcodeToMediaId(this.changelogPostShortcode);
         if (!appId || !mediaId) {
-            console.error(failedPrefix+"missing Instagram App ID or media ID");
+            console.error(failedPrefix+"no app/media ID");
             return null;
         }
         const text = (await secureFetch(mediaInfoUrlPrefix+mediaId+"/info/", appId))
             ?.items?.[0]?.caption?.text;
         if (!text) {
-            console.error(failedPrefix+"caption text missing");
+            console.error(failedPrefix+"no caption");
             return null;
         }
         const [date, textBody] = text.split("::");
         if (!date || !textBody) {
-            console.error(failedPrefix+"invalid caption format");
+            console.error(failedPrefix+"caption");
             return null;
         }
         return { date, textBody };
@@ -88,30 +88,15 @@ export class VersionUpdater {
     }
 
     private storeVersionInfo(localVersion: string, onlineVersion: string): void {
-        const expirationDate = new Date();
-        expirationDate.setHours(expirationDate.getHours() + 6);
         const normalizedLocalVersion = normalizeVersionString(localVersion);
         const normalizedOnlineVersion = normalizeVersionString(onlineVersion);
 
         const versionInfo = {
             version: normalizedLocalVersion,
             onlineVersion: normalizedOnlineVersion,
-            lastVerification: Date.now(),
-            dateExpiration: expirationDate.getTime(),
         };
 
         localStorage.setItem(this.storageKey, JSON.stringify(versionInfo));
-    }
-
-    private isUpdateNecessary(localVersion: string, onlineVersion: string): boolean {
-        const data = JSON.parse(localStorage.getItem(this.storageKey) || "{}");
-        const installedVersion = new Date(normalizeVersionString(localVersion));
-        const latestOnlineVersion = new Date(normalizeVersionString(onlineVersion));
-
-        const isVersionOutdated = latestOnlineVersion > installedVersion;
-        const isDataExpired = Date.now() > data.dateExpiration;
-
-        return isVersionOutdated || isDataExpired || !data;
     }
 }
 

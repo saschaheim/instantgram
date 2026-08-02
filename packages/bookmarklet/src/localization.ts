@@ -12,7 +12,6 @@ const enUS = {
     "ms.g": "General",
     "sup": "Made with love ♥. Support",
     "clr": "Reset Instantgram",
-    "clr.q": "Reset all Instantgram settings and saved data?",
     "msg.t2": "Download in a new tab",
     "msg.d2": "The download opens in a new tab",
     "msg.t3": "Slideshow on/off",

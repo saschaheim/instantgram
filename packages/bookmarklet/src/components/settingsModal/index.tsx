@@ -57,19 +57,11 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
   };
 
   const reset = () => {
-    if (!confirm(localize("clr.q"))) return;
+    if (!confirm(localize("clr"))) return;
 
-    for (let index = localStorage.length - 1; index >= 0; index--) {
-      const key = localStorage.key(index);
-      if (key === program.STORAGE_NAME || key?.startsWith(program.STORAGE_NAME+"_")) {
-        localStorage.removeItem(key);
-      }
-    }
-
-    const resetChecks = Object.fromEntries(
-      settings.filter(({ largeInput }) => !largeInput).map(({ id }) => [id, false]),
-    );
-    setChecks(resetChecks);
+    Object.keys(localStorage).forEach((key) =>
+      key.startsWith(program.STORAGE_NAME) && localStorage.removeItem(key));
+    setChecks({});
     setFormat(defaultFormat);
     setSaved(false);
     settings.forEach(({ id, largeInput }) => onSettingChange(id, largeInput ? defaultFormat : false));
@@ -128,7 +120,7 @@ export function SettingsModalBody({ program, settings, onSettingChange }: {
             {settings.filter((setting) => setting.pane === pane).map(renderSetting)}
           </div>
         </div>
-        <button class="sc" type="button" onClick={reset}>{localize("clr")}</button>
+        <button class="sc" onClick={reset}>{localize("clr")}</button>
         <p style="text-align:center"><a class="sm" href="//saschaheim.github.io/instantgram">{localize("sup")}</a></p>
       </div>
     </div>
