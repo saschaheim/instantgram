@@ -1,6 +1,6 @@
 # <img style="vertical-align: bottom;" width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> instantgram
 
-[![Release](https://img.shields.io/badge/release-v2026.08.01-198754?style=for-the-badge)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v2026.08.02-198754?style=for-the-badge)](CHANGELOG.md)
 [![For Instagram](https://img.shields.io/badge/for-Instagram-E4405F?style=for-the-badge)](https://www.instagram.com/)
 [![Powered by Preact](https://img.shields.io/badge/UI-Preact-673AB8?style=for-the-badge)](https://preactjs.com/)
 [![Firefox Lite](https://img.shields.io/badge/Firefox-Lite-FF7139?style=for-the-badge)](https://saschaheim.github.io/instantgram/#firefox)
@@ -22,9 +22,11 @@ No extension. No separate app. No account hand-off. Open Instagram, click instan
 2. Open a supported post, reel, story or profile on `instagram.com`.
 3. Click the bookmark and download the media you want.
 
-## The 2026.08.01 Release
+## The 2026.08.02 Release
 
 This is the biggest instantgram upgrade in years. The bookmarklet has evolved from a collection of dialogs into a compact, reactive app that still launches from a single bookmark.
+
+The latest follow-up makes that app easier to recover and keeps Firefox support alive at the absolute edge: settings now include a discreet Instantgram reset that removes current and legacy Instantgram data without touching Instagram, while Firefox Lite retains its updater, scanners, settings and diagnostics at exactly the browser's 65,536-character bookmarklet limit.
 
 - **A real reactive interface:** the complete media viewer now runs on Preact, with smooth in-place transitions instead of tearing down and reopening modals.
 - **A better media experience:** polished sliders, stable video playback, live slideshow controls, instant settings updates and persistent expand state.
