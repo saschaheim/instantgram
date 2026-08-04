@@ -1,7 +1,13 @@
 import { Program } from "../App";
 import { Module, getErrorMessage, handleScanError } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { fetchDataFromApi, getIGUsername, resolveProfile } from "../helpers/instagramApi";
+import {
+    fetchDataFromApi,
+    fetchGraphqlOwner,
+    fetchWebProfileOwner,
+    getIGUsername,
+    resolveProfile
+} from "../helpers/instagramApi";
 import { generateModalBodyHelper, resolveProfilePictureInfo } from "../helpers/modalMedia";
 
 /**
@@ -33,9 +39,9 @@ export class ProfileScanner implements Module {
         }
 
         try {
-            // web_profile_info is currently switched off (see
-            // WEB_PROFILE_INFO_ENABLED); go straight to the feed and search
-            // fallbacks, which resolve the same account id without it.
+            // The account id comes from the feed/search lookups, never from
+            // web_profile_info -- that endpoint is per-account gated and fails
+            // outright for many profiles (issue #45).
             const profile = await resolveProfile(userName);
             const userId = profile.userId;
 
@@ -44,31 +50,40 @@ export class ProfileScanner implements Module {
                 return { found: false };
             }
 
-            // Fetch detailed user information using the user ID. /users/{id}/info/
-            // comes back with no profile_pic_url* field at all for some
-            // business/creator accounts, and completely empty
-            // ({"user":{},"status":"ok"}, confirmed via a real captured
-            // response) for private accounts, even once the id resolved
-            // fine -- fall back to whichever of the feed/search lookups
-            // above actually ran and still carries a profile_pic_url.
-            const userDetails = await fetchDataFromApi({ type: 'getUserFromInfo', userId });
-            const fallbackProfileInfo = resolveProfilePictureInfo(
+            // Every source that can carry a profile picture, queried at once:
+            // no single one is reliable. /users/{id}/info/ comes back with no
+            // profile_pic_url* field at all for some business/creator accounts
+            // and completely empty ({"user":{},"status":"ok"}) for private
+            // ones; the graphql query is the only source with the full-size
+            // original but depends on page tokens and a pinned doc_id;
+            // web_profile_info tops out at 320 and feed/search at 150.
+            const [userDetails, graphqlOwner, webProfileOwner] = await Promise.all([
+                fetchDataFromApi({ type: 'getUserFromInfo', userId }),
+                fetchGraphqlOwner(userId),
+                fetchWebProfileOwner(userName),
+            ]);
+            const bestProfileInfo = resolveProfilePictureInfo(
+                graphqlOwner,
                 userDetails?.user,
                 userDetails?.data?.user,
+                webProfileOwner,
                 profile.owner
             );
 
-            if (userDetails?.user && !userDetails.user.hd_profile_pic_url_info?.url && fallbackProfileInfo) {
-                userDetails.user.hd_profile_pic_url_info = fallbackProfileInfo;
+            // Overwrite unconditionally -- resolveProfilePictureInfo already
+            // compared every source, and /users/{id}/info/'s own
+            // hd_profile_pic_url_info is only 150px for some accounts.
+            if (userDetails?.user && bestProfileInfo) {
+                userDetails.user.hd_profile_pic_url_info = bestProfileInfo;
             }
 
             // If profile picture data is found, generate modal data and return it
             if (userDetails && userDetails.user?.hd_profile_pic_url_info?.url) {
                 return await generateModalBodyHelper(null, userDetails, userName, window.location.href, program);
-            } else if (fallbackProfileInfo) {
+            } else if (bestProfileInfo) {
                 return await generateModalBodyHelper(
                     null,
-                    { user: { username: userName, hd_profile_pic_url_info: fallbackProfileInfo } },
+                    { user: { username: userName, hd_profile_pic_url_info: bestProfileInfo } },
                     userName,
                     window.location.href,
                     program

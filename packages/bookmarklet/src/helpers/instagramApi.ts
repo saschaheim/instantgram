@@ -1,5 +1,10 @@
 import { storiesPathPrefix } from "./common";
-import { FetchDataConfig, FetchRequestType, InstagramMediaInfoResponse } from "./instagramTypes";
+import {
+    FetchDataConfig,
+    FetchRequestType,
+    InstagramMediaInfoResponse,
+    InstagramProfilePicture
+} from "./instagramTypes";
 
 const iApiV1Prefix = "https://i.instagram.com/api/v1/";
 const wwwPrefix = "https://www.instagram.com/";
@@ -25,15 +30,13 @@ const normalizePostId = (postId: string | null): string | null => {
         : trimmed;
 };
 
-export const findAppId = (): string | null => {
-    const appIdPattern = /["']?X-IG-App-ID["']?\s*:\s*["']?(\d+)/i;
-    const scripts = Array.from(document.scripts);
+const findInScripts = (pattern: RegExp): string | null =>
+    Array.from(document.scripts)
+        .map(s => s.textContent?.match(pattern))
+        .find(Boolean)?.[1] ?? null;
 
-    const script = scripts
-        .map(s => s.textContent?.match(appIdPattern))
-        .find(Boolean);
-    return script?.[1] || "936619743392459";
-};
+export const findAppId = (): string | null =>
+    findInScripts(/["']?X-IG-App-ID["']?\s*:\s*["']?(\d+)/i) || "936619743392459";
 
 export const findPostId = (articleNode: HTMLElement) => {
     const pathname = window.location.pathname;
@@ -147,14 +150,15 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
     return secureFetch(url, appId);
 };
 
-export const secureFetch = async (url: string, appId: string) => {
+export const secureFetch = async (url: string, appId: string, init?: RequestInit) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
         const response = await fetch(url, {
             method: 'GET',
-            headers: { Accept: '*/*', 'X-IG-App-ID': appId },
+            ...init,
+            headers: { Accept: '*/*', 'X-IG-App-ID': appId, ...init?.headers },
             credentials: 'include',
             mode: 'cors',
             signal: controller.signal,
@@ -176,14 +180,35 @@ export const secureFetch = async (url: string, appId: string) => {
     }
 };
 
-type SearchOwner = {
-    id?: string;
-    username?: string;
+/**
+ * The profile-picture fields every owner-shaped response carries, in whatever
+ * subset that endpoint happens to return. resolveProfilePictureInfo reads all
+ * of them and keeps the largest.
+ */
+type PictureOwner = {
     profile_pic_url?: string;
     profile_pic_url_hd?: string;
-    hd_profile_pic_url_info?: { url?: string; width?: number; height?: number };
+    hd_profile_pic_url_info?: InstagramProfilePicture;
+    hd_profile_pic_versions?: InstagramProfilePicture[];
 };
 
+type SearchOwner = PictureOwner & {
+    id?: string;
+    username?: string;
+};
+
+/**
+ * Resolves a username to its numeric user id via Instagram's web search
+ * endpoint, and returns the matched search-result user with it. Some accounts
+ * trigger a deleted-schema error ("ig_business_category_subvertical") from
+ * web_profile_info even though search still returns them. For private
+ * accounts, /users/{id}/info/ comes back completely empty
+ * ({"user":{},"status":"ok"}, confirmed via a real captured response) even
+ * once the id resolves fine, and the feed lookup can't help either since a
+ * private account's feed is empty for a non-follower -- search still returns
+ * the (150px) profile_pic_url, profile pictures being public even for private
+ * accounts, so it doubles as a last-resort picture source.
+ */
 const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> => {
     const appId = findAppId();
     if (!appId) {
@@ -198,29 +223,9 @@ const fetchSearchOwner = async (userName: string): Promise<SearchOwner | null> =
     return match?.user ?? null;
 };
 
-/**
- * Resolves a username to its numeric user id via Instagram's web search
- * endpoint. Some accounts currently trigger a deleted-schema error
- * ("ig_business_category_subvertical") from web_profile_info even though
- * search still returns them -- use this as a fallback when that lookup
- * fails.
- */
-/**
- * Same lookup as resolveUserIdFromSearch, but also returns the matched
- * search-result user object. For private accounts, /users/{id}/info/ comes
- * back completely empty ({"user":{},"status":"ok"}, confirmed via a real
- * captured response) even once the id resolves fine -- and the feed
- * fallback also can't help here, since a private account's feed is empty
- * for a non-follower. Search still returns the profile_pic_url (profile
- * pictures are public even for private accounts), so it's kept as a
- * last-resort profile-picture source too.
- */
-type FeedOwner = {
+type FeedOwner = PictureOwner & {
     pk?: string | number;
     id?: string | number;
-    profile_pic_url?: string;
-    profile_pic_url_hd?: string;
-    hd_profile_pic_url_info?: { url?: string; width?: number; height?: number };
 };
 
 const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
@@ -236,22 +241,13 @@ const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
 };
 
 /**
- * Resolves a username to its numeric user id via a direct username-scoped
- * feed lookup, with no separate id-resolution step. web_profile_info is a
- * known-brittle, per-account-gated endpoint (see
- * https://github.com/jackwener/opencli/issues/2147 and instaloader#2482,
- * both reporting 400/401 for otherwise-valid public accounts); this endpoint
- * isn't gated the same way and doesn't need web_profile_info at all. Used
- * as a fallback alongside resolveUserIdFromSearch when web_profile_info
- * fails.
- */
-/**
- * Same lookup as resolveUserIdFromFeed, but also returns the embedded owner
- * object. Some business/creator accounts get a stripped-down response from
- * the web-style /users/{id}/info/ endpoint (no profile_pic_url* fields at
- * all, confirmed via a real captured response for a creator account), even
- * once the id is resolved -- the feed owner's plain profile_pic_url is used
- * as a last-resort fallback source in that case.
+ * Resolves a username to its numeric user id and owner object, feed first and
+ * search as a fallback. Neither step needs web_profile_info, the brittle,
+ * per-account-gated endpoint that returns 400/401 for otherwise-valid public
+ * accounts (see https://github.com/jackwener/opencli/issues/2147 and
+ * instaloader#2482). The owner is kept because some business/creator accounts
+ * get a stripped-down /users/{id}/info/ response with no profile_pic_url*
+ * field at all, in which case it is the only remaining picture source.
  */
 export const resolveProfile = async (userName: string) => {
     const feed = await fetchFeedOwner(userName);
@@ -259,6 +255,83 @@ export const resolveProfile = async (userName: string) => {
     if (feedId != null) return { userId: String(feedId), owner: feed };
     const search = await fetchSearchOwner(userName);
     return { userId: search?.id ?? null, owner: search };
+};
+
+// PolarisProfilePageContentQuery -- the query instagram.com's own profile page
+// runs. It is the only source that returns the profile picture with no `stp`
+// resize at all, i.e. the full-size 1080 original, and the only one that does
+// so for a private account (feed is empty for a non-follower, search and
+// /users/{id}/info/ cap at 150, web_profile_info at 320). Verified live: A
+// minimal body and a body with only `lsd` both come back with a null user;
+// `fb_dtsg` is what makes the query resolve.
+const profilePageDocId = "37354402187538639";
+const profilePageVariables = (userId: string) => JSON.stringify({
+    id: userId,
+    enable_integrity_filters: true,
+    __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider: true,
+    __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider: false,
+    __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider: false,
+    __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider: true,
+    __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false,
+    __relay_internal__pv__PolarisLongformEnabledrelayprovider: false,
+});
+
+/**
+ * Fetches the profile picture through the page's own GraphQL query. Needs the
+ * page's `lsd` and `fb_dtsg` tokens, so it only works while running on
+ * instagram.com -- and it silently returns null if either token or the doc_id
+ * stops working, leaving the smaller sources as fallbacks.
+ */
+export const fetchGraphqlOwner = async (userId: string): Promise<PictureOwner | null> => {
+    const appId = findAppId();
+    const lsd = document.querySelector<HTMLInputElement>('input[name="lsd"]')?.value
+        || findInScripts(/"LSD",\[\],\{"token":"([^"]+)"/);
+    const dtsg = findInScripts(/"DTSGInitialData",\[\],\{"token":"([^"]+)"/);
+    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+    if (!appId || !lsd || !dtsg || !csrfToken) {
+        return null;
+    }
+
+    const body = new URLSearchParams({
+        doc_id: profilePageDocId,
+        variables: profilePageVariables(userId),
+        lsd,
+        fb_dtsg: dtsg,
+        server_timestamps: "true",
+        fb_api_caller_class: "RelayModern",
+        fb_api_req_friendly_name: "PolarisProfilePageContentQuery",
+    });
+
+    const payload = await secureFetch(wwwPrefix+"api/graphql", appId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+            'X-FB-Friendly-Name': "PolarisProfilePageContentQuery",
+        },
+        body: body.toString(),
+    });
+
+    return payload?.data?.user ?? null;
+};
+
+/**
+ * web_profile_info stays switched off for id resolution -- it's the brittle,
+ * per-account-gated endpoint from issue #45. It is still the only source that
+ * hands back a 320px profile picture for a private account, though: the feed
+ * is empty for a non-follower and both search and /users/{id}/info/ cap out
+ * at the 150px thumbnail. Fetched purely as an extra picture candidate, so a
+ * failure here costs nothing.
+ */
+export const fetchWebProfileOwner = async (userName: string): Promise<PictureOwner | null> => {
+    const appId = findAppId();
+    if (!appId) {
+        return null;
+    }
+
+    const url = wwwPrefix+"api/v1/users/web_profile_info/?username="+encodeURIComponent(userName);
+    const payload = await secureFetch(url, appId);
+    return payload?.data?.user ?? null;
 };
 
 export const getIGUsername = (url: string): string | null => {
