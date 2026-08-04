@@ -2,7 +2,7 @@ import { Program } from "../App";
 import { h } from "preact";
 import { Module, NO_TARGET_FOUND } from "./Module";
 import { MediaScanResult } from "../model/MediaScanResult";
-import { Modal, ModalContent } from "../components/modal";
+import { Modal, ModalContent, findModalRoot } from "../components/modal";
 import {
     createMediaViewerStore,
     createUtilityViewerStore,
@@ -16,8 +16,6 @@ import {
     UtilityMessageBody,
     UtilityModalHeading
 } from "../components/mediaViewer";
-import { cssCarouselSlider } from "../components/mediaViewer/sliderStyles";
-import { cssGeneral, cssSlideOn } from "../components/shared/generalStyles";
 import { uiClasses } from "../components/shared/uiTokens";
 import { FeedScanner } from "./FeedScanner";
 import { PostAndReelScanner } from "./PostAndReelScanner";
@@ -93,20 +91,6 @@ export class MediaScanner implements Module {
     }
 
     constructor() { }
-
-    /**
-     * Initializes the necessary styles by appending them to the document.
-     * It removes any previously added styles to avoid duplicates.
-     * @param program The program object that contains the configuration and context.
-     */
-    private initializeStyles(program: Program): void {
-        const styleId = program.DOM_PREFIX+"-css";
-        document.getElementById(styleId)?.remove();
-        const styleElement = document.createElement("style");
-        styleElement.id = styleId;
-        styleElement.textContent = cssGeneral + cssSlideOn + cssCarouselSlider;
-        document.body.appendChild(styleElement);
-    }
 
     /**
      * Displays a modal dialog with the given content.
@@ -258,7 +242,7 @@ export class MediaScanner implements Module {
      * @returns {boolean} True if the modal is open, otherwise false.
      */
     private isModalOpen(): boolean {
-        return !!document.querySelector("div."+uiClasses.modalOverlay+"."+uiClasses.modalVisible);
+        return !!findModalRoot()?.querySelector("div."+uiClasses.modalOverlay+"."+uiClasses.modalVisible);
     }
 
     /** 
@@ -267,7 +251,7 @@ export class MediaScanner implements Module {
      * @param modalSelector The CSS selector of the modal element to shake.
      */
     private shakeModal(modalSelector: string): void {
-        const modal = document.querySelector("." + modalSelector) as HTMLElement;
+        const modal = findModalRoot()?.querySelector("." + modalSelector) as HTMLElement | null;
         if (modal) {
             // Apply the shaking animation to the modal
             modal.style.animation = "horizontal-shaking 0.25s linear infinite";
@@ -292,9 +276,6 @@ export class MediaScanner implements Module {
                 this.shakeModal(uiClasses.modal); // If modal is open, shake it to get attention
                 return;
             }
-
-            // Initialize necessary styles for the page
-            this.initializeStyles(program);
 
             // Handle different URL patterns and trigger the appropriate scanner
             await this.handleURLPatterns(program);
