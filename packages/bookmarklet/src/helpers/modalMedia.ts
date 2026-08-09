@@ -38,7 +38,40 @@ const createMediaSlide = (media: DownloadableMedia, index: number, userName: str
     };
 };
 
+// Widths for the url-only fields. The CDN encodes the resize in the url's
+// `stp` param (`dst-jpg_s320x320_tt6`), which is the real size regardless of
+// which field it came from -- profile_pic_url_hd is 1080 for a public
+// account but only 320 for a private one. No size token means no resize,
+// i.e. the full-size original.
+const fullSizeWidth = 1080;
+const thumbnailWidth = 150;
+const widthFromUrl = (url: string): number => Number(url.match(/_s(\d+)x\d+/)?.[1]) || fullSizeWidth;
+
+/**
+ * Picks the largest profile picture across every source. The size-suffixed
+ * CDN urls can't be upgraded by hand (the `oh` signature covers the `stp`
+ * param, so a stripped url 403s), so the only way to stay HD is to compare
+ * what the APIs actually hand back -- and no field name is a reliable
+ * ranking: hd_profile_pic_url_info is the full-size original from the
+ * profile-page graphql query but only 150px in the feed/search fallbacks,
+ * which carry their bigger sizes in hd_profile_pic_versions instead. Ties
+ * keep the earliest source.
+ */
 export const resolveProfilePictureInfo = (...sources: Array<unknown>): ProfilePictureInfo | null => {
+    let best: ProfilePictureInfo | null = null;
+    let bestWidth = -1;
+
+    const consider = (picture: ProfilePictureInfo | undefined, cap = fullSizeWidth) => {
+        if (!picture?.url) {
+            return;
+        }
+        const width = Math.min(picture.width ?? Infinity, widthFromUrl(picture.url), cap);
+        if (width > bestWidth) {
+            best = picture;
+            bestWidth = width;
+        }
+    };
+
     for (const source of sources) {
         if (!source || typeof source !== "object") {
             continue;
@@ -47,16 +80,17 @@ export const resolveProfilePictureInfo = (...sources: Array<unknown>): ProfilePi
             profile_pic_url_hd?: string;
             profile_pic_url?: string;
             hd_profile_pic_url_info?: ProfilePictureInfo;
+            hd_profile_pic_versions?: ProfilePictureInfo[];
         };
-        if (candidate.hd_profile_pic_url_info?.url) {
-            return candidate.hd_profile_pic_url_info;
-        }
-        const fallbackUrl = candidate.profile_pic_url_hd || candidate.profile_pic_url;
-        if (fallbackUrl) {
-            return { url: fallbackUrl };
-        }
+        consider(candidate.hd_profile_pic_url_info);
+        candidate.hd_profile_pic_versions?.forEach(version => consider(version));
+        consider(candidate.profile_pic_url_hd ? { url: candidate.profile_pic_url_hd } : undefined);
+        // profile_pic_url is always the thumbnail, even when the url carries
+        // no size token (the anonymous default avatar).
+        consider(candidate.profile_pic_url ? { url: candidate.profile_pic_url } : undefined, thumbnailWidth);
     }
-    return null;
+
+    return best;
 };
 
 const buildResult = (

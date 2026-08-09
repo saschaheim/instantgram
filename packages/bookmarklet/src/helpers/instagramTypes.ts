@@ -10,15 +10,19 @@ export interface InstagramVideoVersion {
     url?: string;
 }
 
+export interface InstagramProfilePicture {
+    width?: number;
+    height?: number;
+    url?: string;
+}
+
 export interface InstagramUserSummary {
     id?: string;
     username?: string;
+    profile_pic_url?: string;
     profile_pic_url_hd?: string;
-    hd_profile_pic_url_info?: {
-        width?: number;
-        height?: number;
-        url?: string;
-    };
+    hd_profile_pic_url_info?: InstagramProfilePicture;
+    hd_profile_pic_versions?: InstagramProfilePicture[];
 }
 
 export interface InstagramMediaItem {

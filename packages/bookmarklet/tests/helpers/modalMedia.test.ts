@@ -6,7 +6,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // importing the real modalMedia.ts doesn't drag src/index.ts in.
 vi.mock("../../src/helpers/localize", () => ({ default: (key: string) => key }));
 
-import { processMediaInfo, generateModalBody, generateModalBodyHelper } from "../../src/helpers/modalMedia";
+import {
+    processMediaInfo,
+    generateModalBody,
+    generateModalBodyHelper,
+    resolveProfilePictureInfo
+} from "../../src/helpers/modalMedia";
 import { InstagramMediaItem } from "../../src/helpers/instagramTypes";
 import { loadFixture } from "../utils/fixtures";
 import { createTestProgram } from "../utils/program";
@@ -320,5 +325,48 @@ describe("generateModalBodyHelper", () => {
         );
 
         expect(result?.found).toBe(false);
+    });
+});
+
+describe("resolveProfilePictureInfo", () => {
+    it("prefers the largest picture, even when a smaller hd_profile_pic_url_info comes first", () => {
+        const userInfo = { hd_profile_pic_url_info: { url: "small.jpg", width: 150, height: 150 } };
+        const feedOwner = {
+            profile_pic_url: "thumb.jpg",
+            hd_profile_pic_versions: [
+                { url: "medium.jpg", width: 320, height: 320 },
+                { url: "large.jpg", width: 640, height: 640 },
+            ],
+        };
+
+        expect(resolveProfilePictureInfo(userInfo, feedOwner)?.url).toBe("large.jpg");
+    });
+
+    it("keeps a full-size hd_profile_pic_url_info over the fallbacks' smaller versions", () => {
+        const userInfo = { hd_profile_pic_url_info: { url: "hd.jpg", width: 1080, height: 1080 } };
+        const feedOwner = { hd_profile_pic_versions: [{ url: "large.jpg", width: 640, height: 640 }] };
+
+        expect(resolveProfilePictureInfo(userInfo, feedOwner)?.url).toBe("hd.jpg");
+    });
+
+    it("falls back to the search result's 150px profile_pic_url when nothing else is available", () => {
+        expect(resolveProfilePictureInfo({}, { profile_pic_url: "thumb.jpg" })?.url).toBe("thumb.jpg");
+        expect(resolveProfilePictureInfo(null, undefined, {})).toBeNull();
+    });
+
+    // A private account's web-style profile_pic_url_hd is only a 320px
+    // resize, encoded in the url's stp param -- it must not outrank a real
+    // 640px version just because the field is named "hd".
+    it("ranks url-only fields by the size encoded in their stp param", () => {
+        const webInfo = {
+            profile_pic_url_hd: "https://cdn/pic.jpg?stp=dst-jpg_s320x320_tt6",
+            profile_pic_url: "https://cdn/pic.jpg?stp=dst-jpg_s150x150_tt6",
+        };
+        const feedOwner = {
+            hd_profile_pic_versions: [{ url: "https://cdn/pic.jpg?stp=dst-jpg_s640x640_tt6", width: 640 }],
+        };
+
+        expect(resolveProfilePictureInfo(webInfo, feedOwner)?.url).toContain("s640x640");
+        expect(resolveProfilePictureInfo(webInfo)?.url).toContain("s320x320");
     });
 });

@@ -1,5 +1,12 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
-import { fetchDataFromApi, findPostId, getIGUsername, resolveProfile, shortcodeToMediaId } from "../../src/helpers/instagramApi";
+import {
+    fetchDataFromApi,
+    fetchGraphqlOwner,
+    findPostId,
+    getIGUsername,
+    resolveProfile,
+    shortcodeToMediaId
+} from "../../src/helpers/instagramApi";
 import { setLocation } from "../utils/location";
 
 describe("getIGUsername", () => {
@@ -240,5 +247,53 @@ describe("resolveProfile", () => {
 
         expect(result.userId).toBeNull();
         expect(result.owner).toBeNull();
+    });
+});
+
+describe("fetchGraphqlOwner", () => {
+    const addScript = (content: string) => {
+        const script = document.createElement("script");
+        script.type = "application/json";
+        script.textContent = content;
+        document.body.appendChild(script);
+    };
+
+    beforeEach(() => {
+        document.body.innerHTML = "";
+        addScript('"X-IG-App-ID":"123456789"');
+        document.cookie = "csrftoken=csrf-value";
+    });
+
+    afterEach(() => {
+        vi.unstubAllGlobals();
+        vi.restoreAllMocks();
+    });
+
+    // The query resolves to a null user without fb_dtsg (verified live), so
+    // there is no point firing it when the page tokens can't be scraped.
+    it("returns null without sending anything when the page tokens are missing", async () => {
+        vi.stubGlobal("fetch", vi.fn());
+
+        expect(await fetchGraphqlOwner("2936798892")).toBeNull();
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("posts the tokens it scraped and returns the graphql user", async () => {
+        addScript('"LSD",[],{"token":"lsd-value"}');
+        addScript('"DTSGInitialData",[],{"token":"dtsg-value"}');
+        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+            ok: true,
+            json: async () => ({ data: { user: { hd_profile_pic_url_info: { url: "https://cdn/full.jpg" } } } }),
+        }));
+
+        const owner = await fetchGraphqlOwner("2936798892");
+
+        expect(owner?.hd_profile_pic_url_info?.url).toBe("https://cdn/full.jpg");
+        const [url, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+        expect(url).toContain("api/graphql");
+        expect(init.method).toBe("POST");
+        expect(init.body).toContain("fb_dtsg=dtsg-value");
+        expect(init.body).toContain("lsd=lsd-value");
+        expect(init.body).toContain("2936798892");
     });
 });
