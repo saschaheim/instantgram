@@ -4,6 +4,8 @@ import { program } from "../..";
 import localize, { subscribeLocale } from "../../helpers/localize";
 import { LocalizationKey } from "../../localization";
 import { cssModal } from "./styles";
+import { cssCarouselSlider } from "../mediaViewer/sliderStyles";
+import { cssGeneral, cssSlideOn } from "../shared/generalStyles";
 import { uiClasses } from "../shared/uiTokens";
 import { sleep } from "../../helpers/common";
 
@@ -50,21 +52,39 @@ export interface ModalOptions {
   closeOnOverlayClick?: boolean;
 }
 
+let activeRoot: ShadowRoot | null = null;
+
+/**
+ * The shadow root of the modal that opened last, or null while none is open.
+ * Every element and every style rule of ours lives in there: the class names
+ * are single letters ("a".."q") and several rules are unscoped and !important,
+ * so injecting them into the page itself restyled Instagram's own buttons and
+ * inputs, and the <style> tags outlived the modal. Tracked in a variable
+ * rather than looked up by id because the update notice can open its own modal
+ * while another one is already up.
+ */
+export const findModalRoot = (): ShadowRoot | null => activeRoot;
+
 export class Modal {
   private options: ModalOptions;
   private modal: HTMLDivElement | null = null;
   private modalHost: HTMLDivElement | null = null;
+  private host: HTMLDivElement | null = null;
+  private shadowRoot: ShadowRoot | null = null;
   private openTimerId = 0;
 
   public constructor(modalOptions: ModalOptions) {
     this.options = modalOptions;
-    const styleId = program.DOM_PREFIX + "-modal";
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = cssModal;
-      document.head.appendChild(style);
-    }
+  }
+
+  private createHost(): HTMLDivElement {
+    const host = document.createElement("div");
+    host.className = program.DOM_PREFIX + "-root";
+    const style = document.createElement("style");
+    style.textContent = cssModal + cssGeneral + cssSlideOn + cssCarouselSlider;
+    this.shadowRoot = host.attachShadow({ mode: "open" });
+    this.shadowRoot.appendChild(style);
+    return host;
   }
 
   private renderModal(): void {
@@ -94,7 +114,11 @@ export class Modal {
 
     const modal = this.createModal();
     this.modal = modal;
-    document.body.appendChild(modal);
+    const host = this.createHost();
+    this.host = host;
+    this.shadowRoot!.appendChild(modal);
+    activeRoot = this.shadowRoot;
+    document.body.appendChild(host);
     modal.classList.add(uiClasses.modalVisible);
     this.openTimerId = window.setTimeout(() => modal.classList.add(uiClasses.modalShow));
   }
@@ -113,6 +137,12 @@ export class Modal {
     await sleep(100);
     render(null, this.modalHost!);
     modal.remove();
-    this.modalHost = this.modal = null;
+    // Takes the shadow root's <style> with it, so nothing of ours is left in
+    // the page once the modal is closed.
+    this.host?.remove();
+    if (activeRoot === this.shadowRoot) {
+      activeRoot = null;
+    }
+    this.shadowRoot = this.host = this.modalHost = this.modal = null;
   }
 }
