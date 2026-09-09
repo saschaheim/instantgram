@@ -17,6 +17,8 @@ import {
     resolveUserLink
 } from "./mediaFormatting";
 
+const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
+
 type ProfilePictureInfo = {
     url: string;
     width?: number;
@@ -58,6 +60,18 @@ const widthFromUrl = (url: string): number => Number(url.match(/_s(\d+)x\d+/)?.[
  * keep the earliest source.
  */
 export const resolveProfilePictureInfo = (...sources: Array<unknown>): ProfilePictureInfo | null => {
+    if (FIREFOX_LITE) {
+        for (const source of sources) {
+            if (source && typeof source === "object") {
+                const candidate = source as { profile_pic_url_hd?: string; profile_pic_url?: string; hd_profile_pic_url_info?: ProfilePictureInfo };
+                if (candidate.hd_profile_pic_url_info?.url) return candidate.hd_profile_pic_url_info;
+                const url = candidate.profile_pic_url_hd || candidate.profile_pic_url;
+                if (url) return { url };
+            }
+        }
+        return null;
+    }
+
     let best: ProfilePictureInfo | null = null;
     let bestWidth = -1;
 

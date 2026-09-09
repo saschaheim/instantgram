@@ -10,6 +10,8 @@ import {
 } from "../helpers/instagramApi";
 import { generateModalBodyHelper, resolveProfilePictureInfo } from "../helpers/modalMedia";
 
+const FIREFOX_LITE = process.env.FIREFOX_LITE as unknown as boolean ?? false;
+
 /**
  * ProfileScanner is a module responsible for scanning profile pages on Instagram (or similar).
  * It extracts the username from the URL, fetches user data from an API, and generates modal data based on the profile.
@@ -59,8 +61,7 @@ export class ProfileScanner implements Module {
             // web_profile_info tops out at 320 and feed/search at 150.
             const [userDetails, graphqlOwner, webProfileOwner] = await Promise.all([
                 fetchDataFromApi({ type: 'getUserFromInfo', userId }),
-                fetchGraphqlOwner(userId),
-                fetchWebProfileOwner(userName),
+                ...(!FIREFOX_LITE ? [fetchGraphqlOwner(userId), fetchWebProfileOwner(userName)] : []),
             ]);
             const bestProfileInfo = resolveProfilePictureInfo(
                 graphqlOwner,

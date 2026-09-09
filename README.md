@@ -1,6 +1,6 @@
-# <img style="vertical-align: bottom;" width="35" src="https://upload.wikimedia.org/wikipedia/commons/4/4c/Typescript_logo_2020.svg"> instantgram
+# <img width="280" height="48" src="apps/site/public/img/readme-wordmark-aligned.svg" alt="instantgram">
 
-[![Release](https://img.shields.io/badge/release-v2026.08.02-198754?style=for-the-badge)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v2026.09.09-198754?style=for-the-badge)](CHANGELOG.md)
 [![For Instagram](https://img.shields.io/badge/for-Instagram-E4405F?style=for-the-badge)](https://www.instagram.com/)
 [![Powered by Preact](https://img.shields.io/badge/UI-Preact-673AB8?style=for-the-badge)](https://preactjs.com/)
 [![Firefox Lite](https://img.shields.io/badge/Firefox-Lite-FF7139?style=for-the-badge)](https://saschaheim.github.io/instantgram/#firefox)
@@ -21,6 +21,14 @@ No extension. No separate app. No account hand-off. Open Instagram, click instan
 1. Drag the instantgram button into your browser's bookmarks bar.
 2. Open a supported post, reel, story or profile on `instagram.com`.
 3. Click the bookmark and download the media you want.
+
+## The 2026.09.09 Release
+
+This maintenance release restores Firefox Lite installation and includes two community fixes by [Kaique Gazola (@kaiquegazola)](https://github.com/kaiquegazola).
+
+- **Firefox Lite installs again:** the release build now measures the complete `javascript:` URL, stays below Firefox's 65,536-character limit and fails if a generated Lite bookmarklet is too large.
+- **Full-resolution profile pictures:** the full build checks Instagram's original-resolution candidates instead of settling for a thumbnail (#51).
+- **Isolated modal styles:** Instantgram now renders inside a shadow root, preventing its CSS from changing Instagram's interface or remaining behind after the modal closes (#52).
 
 ## The 2026.08.02 Release
 

@@ -68,7 +68,8 @@ const minify = (code) => {
   return result.code;
 };
 
-const bookmarkletify = (code) => `javascript:(function(){;${encodeURI(minify(code))}})()`;
+// Firefox applies its limit to the complete javascript: URL, wrapper included.
+const bookmarkletify = (code) => `javascript:(()=>{${encodeURI(minify(code))}})()`;
 
 const escapeHtmlAttr = (value) =>
   value
