@@ -23,6 +23,7 @@ import { ProfileScanner } from "./ProfileScanner";
 import { ReelsScanner } from "./ReelsScanner";
 import { StoriesScanner } from "./StoriesScanner";
 import localize from "../helpers/localize";
+import { storiesPathPrefix } from "../helpers/common";
 
 type ScannerClass =
     | typeof StoriesScanner
@@ -122,7 +123,7 @@ export class MediaScanner implements Module {
      * "wrong page" hint there is misleading, so use a distinct message.
      */
     private buildNotFoundBody(errorMessage?: string): ModalContent {
-        if (errorMessage && errorMessage !== NO_TARGET_FOUND) {
+        if (window.location.pathname.startsWith(storiesPathPrefix) || (errorMessage && errorMessage !== NO_TARGET_FOUND)) {
             console.info(`[${this.getName()}] Instagram returned an error:`, errorMessage);
             return h(UtilityMessageBody, { localizationKey: "a.ie" });
         }

@@ -20,27 +20,27 @@ export type UtilityViewerState = {
 type UtilityViewerListener = () => void;
 
 type StoreLike<TState> = {
-  getState(): TState;
-  subscribe(listener: () => void): () => void;
+  readViewerState(): TState;
+  subscribeViewer(listener: () => void): () => void;
 };
 
 export type MediaViewerStore = {
   bumpSettingsVersion(): void;
   closeSettings(): void;
-  getState(): MediaViewerState;
+  readViewerState(): MediaViewerState;
   openSettings(): void;
   setExpanded(expanded: boolean): void;
   setSelectedIndex(selectedIndex: number): void;
-  subscribe(listener: MediaViewerListener): () => void;
+  subscribeViewer(listener: MediaViewerListener): () => void;
   toggleExpanded(): void;
 };
 
 export type UtilityViewerStore = {
   bumpSettingsVersion(): void;
   closeSettings(): void;
-  getState(): UtilityViewerState;
+  readViewerState(): UtilityViewerState;
   openSettings(): void;
-  subscribe(listener: UtilityViewerListener): () => void;
+  subscribeViewer(listener: UtilityViewerListener): () => void;
 };
 
 const createStore = <TState,>(state: TState) => {
@@ -50,8 +50,8 @@ const createStore = <TState,>(state: TState) => {
     listeners.forEach((listener) => listener());
   };
   return {
-    getState: () => state,
-    subscribe(listener: () => void) {
+    readViewerState: () => state,
+    subscribeViewer(listener: () => void) {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
@@ -63,11 +63,11 @@ const createBaseStoreMethods = <TState extends { mode: string; settingsVersion: 
   store: ReturnType<typeof createStore<TState>>,
   idleMode: TState["mode"]
 ) => ({
-  bumpSettingsVersion: () => store.update({ settingsVersion: store.getState().settingsVersion + 1 } as Partial<TState>),
+  bumpSettingsVersion: () => store.update({ settingsVersion: store.readViewerState().settingsVersion + 1 } as Partial<TState>),
   closeSettings: () => store.update({ mode: idleMode } as Partial<TState>),
-  getState: store.getState,
+  readViewerState: store.readViewerState,
   openSettings: () => store.update({ mode: "settings" } as Partial<TState>),
-  subscribe: store.subscribe,
+  subscribeViewer: store.subscribeViewer,
 });
 
 export const createMediaViewerStore = (selectedIndex = 0, expanded = false): MediaViewerStore => {
@@ -80,9 +80,9 @@ export const createMediaViewerStore = (selectedIndex = 0, expanded = false): Med
 
   return {
     ...createBaseStoreMethods(store, "media"),
-    setExpanded: (expanded) => store.getState().expanded === expanded || store.update({ expanded }),
-    setSelectedIndex: (selectedIndexValue) => store.getState().selectedIndex === selectedIndexValue || store.update({ selectedIndex: selectedIndexValue }),
-    toggleExpanded: () => store.update({ expanded: !store.getState().expanded }),
+    setExpanded: (expanded) => store.readViewerState().expanded === expanded || store.update({ expanded }),
+    setSelectedIndex: (selectedIndexValue) => store.readViewerState().selectedIndex === selectedIndexValue || store.update({ selectedIndex: selectedIndexValue }),
+    toggleExpanded: () => store.update({ expanded: !store.readViewerState().expanded }),
   };
 };
 
@@ -96,9 +96,9 @@ export const createUtilityViewerStore = (): UtilityViewerStore => {
 };
 
 export const useStoreState = <TState,>(store: StoreLike<TState>) => {
-  const [state, setState] = useState(store.getState());
+  const [state, setState] = useState(store.readViewerState());
 
-  useEffect(() => store.subscribe(() => setState(store.getState())), [store]);
+  useEffect(() => store.subscribeViewer(() => setState(store.readViewerState())), [store]);
 
   return state;
 };

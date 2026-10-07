@@ -7,7 +7,7 @@ const enUS = {
     "h.ld": "[instantgram] Language: en-US\nFor more information about available languages, visit https://saschaheim.github.io/instantgram",
     "a.wo": "Only works on instagram.com",
     "a.nf": "Did you open an Instagram post? For example:",
-    "a.ie": "This media isn't supported yet.",
+    "a.ie": "Media unavailable. Reload Instagram.",
     "ms.t": "Settings",
     "ms.g": "General",
     "sup": "Made with love ♥. Support",

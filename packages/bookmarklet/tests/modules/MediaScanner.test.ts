@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ComponentChildren, render } from "preact";
+import { setLocation } from "../utils/location";
 
 // MediaScanner -> helpers/localize.ts -> src/index.ts, and separately
 // MediaScanner -> components/modal/index.tsx -> src/index.ts (the browser
@@ -10,7 +11,7 @@ vi.mock("../../src/helpers/localize", () => ({
     default: (key: string) => {
         const strings: Record<string, string> = {
             "a.nf": "Did you open any Instagram post? Like for example",
-            "a.ie": "This media isn't supported yet.",
+            "a.ie": "Media unavailable. Reload Instagram.",
         };
         return strings[key] ?? key;
     },
@@ -31,6 +32,22 @@ const renderNotFoundBody = (errorMessage?: string): HTMLElement => {
 };
 
 describe("MediaScanner > buildNotFoundBody", () => {
+    beforeEach(() => setLocation("https://www.instagram.com/p/ABC123abcde/"));
+
+    it.each([undefined, "No target found.", "No story items returned by Instagram."])(
+        "shows a story-specific message for a failed story scan (%s)", (message) => {
+            setLocation("https://www.instagram.com/stories/tinaruthe/4000437001439449734/");
+            const body = renderNotFoundBody(message);
+            expect(body.textContent).toContain("Media unavailable. Reload Instagram.");
+            expect(body.textContent).not.toContain("Did you open any Instagram post?");
+            expect(body.querySelector("a")).toBeNull();
+        }
+    );
+
+    it("shows a story-specific message for unavailable highlights", () => {
+        setLocation("https://www.instagram.com/stories/highlights/123456/");
+        expect(renderNotFoundBody().textContent).toContain("Media unavailable. Reload Instagram.");
+    });
     // Regression coverage for the follow-up to issue #45: a user who opened a
     // real, valid story was shown "Did you open any Instagram post?" -- a
     // message that implies user/navigation error -- when the actual cause was
@@ -49,7 +66,7 @@ describe("MediaScanner > buildNotFoundBody", () => {
 
     it("shows an unsupported-media message (not the 'wrong page' hint) when a target was found but Instagram's API failed", () => {
         const body = renderNotFoundBody("No story items returned by Instagram.");
-        expect(body.textContent).toContain("This media isn't supported yet.");
+        expect(body.textContent).toContain("Media unavailable. Reload Instagram.");
         expect(body.textContent).not.toContain("Did you open any Instagram post?");
         expect(body.querySelector("a")).toBeNull();
     });

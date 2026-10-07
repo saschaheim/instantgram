@@ -1,7 +1,7 @@
 {
   "name": "instantgram-monorepo",
   "private": true,
-  "packageManager": "pnpm@11.18.0+sha512.33d83c77da82f49fba836925c6f1b841181ec3132b670639bd012f7075f5c7cf634c5f870147c19aae7478fac01df09d8892e880454896edd23ee9b33757563c",
+  "packageManager": "pnpm@11.28.5+sha512.484563d30b4c2ad27cb48aa94ff2b302dbcebc8ff6bf28816c2589886e146ce7f76f354f3bc1a438e6f5e9768c302aa0a6f7add8232903cd4cf81426cbc14d9e",
   "scripts": {
     "build": "pnpm run build:all",
     "build:all": "pnpm --filter @instantgram/bookmarklet build:release && pnpm --filter @instantgram/bookmarklet size && pnpm --filter @instantgram/site build",
@@ -13,6 +13,6 @@
     "test": "turbo run test"
   },
   "devDependencies": {
-    "turbo": "^2.10.8"
+    "turbo": "^2.11.7"
   }
 }

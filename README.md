@@ -1,6 +1,6 @@
 # <img width="280" height="48" src="apps/site/public/img/readme-wordmark-aligned.svg" alt="instantgram">
 
-[![Release](https://img.shields.io/badge/release-v2026.09.09-198754?style=for-the-badge)](CHANGELOG.md)
+[![Release](https://img.shields.io/badge/release-v2026.10.07-198754?style=for-the-badge)](CHANGELOG.md)
 [![For Instagram](https://img.shields.io/badge/for-Instagram-E4405F?style=for-the-badge)](https://www.instagram.com/)
 [![Powered by Preact](https://img.shields.io/badge/UI-Preact-673AB8?style=for-the-badge)](https://preactjs.com/)
 [![Firefox Lite](https://img.shields.io/badge/Firefox-Lite-FF7139?style=for-the-badge)](https://saschaheim.github.io/instantgram/#firefox)
@@ -21,6 +21,15 @@ No extension. No separate app. No account hand-off. Open Instagram, click instan
 1. Drag the instantgram button into your browser's bookmarks bar.
 2. Open a supported post, reel, story or profile on `instagram.com`.
 3. Click the bookmark and download the media you want.
+
+## The 2026.10.07 Release
+
+This maintenance release improves failed-story feedback and updates the app and development toolchain while keeping Firefox Lite installable.
+
+- **Clearer story failures:** unavailable stories and highlights no longer show the misleading “Did you open an Instagram post?” hint. The download failure reported in #54 remains under investigation.
+- **Updated dependencies:** Preact 11, Vitest 5, Astro 7.3.5 and Turbo 2.11.7, with compatible compiler versions retained where newer releases break the build.
+- **Firefox Lite still fits:** internal UI and drag-state fields are minified more efficiently to stay below the complete 65,536-character bookmarklet URL limit.
+- **More reliable regression coverage:** corrected the empty-story test so it actually reaches the story endpoint, and added coverage for redirected feed responses and failed-story messages.
 
 ## The 2026.09.09 Release
 

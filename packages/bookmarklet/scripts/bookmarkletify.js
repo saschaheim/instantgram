@@ -46,8 +46,9 @@ const minify = (code) => {
     mangle: {
       toplevel: true,
       reserved: ['$super', '$', 'exports', 'require'],
+      // Only our UI/store/drag fields: never mangle Instagram data or browser APIs.
       properties: {
-        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userName|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput|sliderRef|suppressClickRef|selectSlide|handleSliderPointerDown|handleSliderPointerMove|handleSliderPointerEnd|rootRef|videoRefs)$/,
+        regex: /^(expanded|selectedIndex|settingsVersion|openSettings|closeSettings|setExpanded|setSelectedIndex|toggleExpanded|bumpSettingsVersion|mediaType|mediaUrl|downloadLabel|downloadAttributes|selectedSliderIndex|userName|userLink|errorMessage|bodyStyle|buttonList|modalClassName|closeOnOverlayClick|largeInput|sliderRef|suppressClickRef|selectSlide|handleSliderPointerDown|handleSliderPointerMove|handleSliderPointerEnd|rootRef|videoRefs|baseTranslate|startX|startY|lastX|lastT|velocity|dragging|readViewerState|subscribeViewer)$/,
       },
     },
     output: {
