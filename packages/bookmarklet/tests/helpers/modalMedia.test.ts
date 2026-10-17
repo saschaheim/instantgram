@@ -18,6 +18,11 @@ import { loadFixture } from "../utils/fixtures";
 import { createTestProgram } from "../utils/program";
 import { setLocation } from "../utils/location";
 
+const embeddedPageResponse = (fixture: string) => ({
+    ok: true,
+    text: async () => '<script type="application/json">'+JSON.stringify(loadFixture<unknown>(fixture))+'</script>',
+});
+
 describe("processMediaInfo", () => {
     it("processes a single-image post (items[0])", () => {
         const fixture = loadFixture("post-single-image");
@@ -187,10 +192,10 @@ describe("generateModalBody", () => {
     it("reports found: false (not a broken empty slider) when a story's reel has zero items", async () => {
         setLocation("https://www.instagram.com/stories/expired_story_user/123456789/");
         stubAppId();
-        // Resolve the owner through the username feed before fetching the story.
+        // Resolve the owner through the profile HTML before fetching the story.
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ user: { pk: "3000001" } }] }) })
+            .mockResolvedValueOnce(profilePageResponse({ username: "expired_story_user", pk: "3000001" }))
             .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-empty-items") });
 
         const container = document.createElement("div");
@@ -201,19 +206,14 @@ describe("generateModalBody", () => {
         // found: true with an empty slide list, rendering an empty slider shell.
         expect(result.found).toBe(false);
         expect(result.slides).toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledTimes(2);
         expect(fetchMock.mock.calls[1][0]).toContain("feed/reels_media/?reel_ids=3000001");
     });
 
-    it("reports no media after a redirected HTML feed, successful profile HTML lookup, and empty story response (issue #54)", async () => {
+    it("reports no media after a successful profile HTML lookup and empty story response (issue #54)", async () => {
         setLocation("https://www.instagram.com/stories/tinaruthe/4000437001439449734/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({
-                ok: true,
-                json: async () => { throw new SyntaxError("Unexpected token '<'"); },
-            })
             .mockResolvedValueOnce(profilePageResponse({ username: "tinaruthe", id: "49526630" }))
             // The screenshot shows a tiny response, but not its body. An empty
             // reel list is a hypothesis, not a captured fixture from the issue.
@@ -224,37 +224,57 @@ describe("generateModalBody", () => {
         expect(result.found).toBe(false);
         expect(result.slides).toBeUndefined();
         expect(result.errorMessage).toBeUndefined();
-        expect(fetchMock).toHaveBeenCalledTimes(3);
-        expect(fetchMock.mock.calls[0][0]).toContain("feed/user/tinaruthe/username/");
-        expect(fetchMock.mock.calls[1][0]).toContain("https://www.instagram.com/tinaruthe/");
-        expect(fetchMock.mock.calls[2][0]).toContain("feed/reels_media/?reel_ids=49526630");
+        expect(fetchMock.mock.calls[0][0]).toContain("https://www.instagram.com/tinaruthe/");
+        expect(fetchMock.mock.calls[1][0]).toContain("feed/reels_media/?reel_ids=49526630");
     });
 
-    it("loads a single story when the feed redirects and profile HTML returns 403", async () => {
+    it("loads a single story when profile HTML returns 403 and the feed redirects", async () => {
         setLocation("https://www.instagram.com/stories/skogan89/123456789/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({ ok: true, json: async () => { throw new SyntaxError("HTML redirect"); } })
             .mockResolvedValueOnce({ ok: false, status: 403 })
+            .mockResolvedValueOnce({ ok: true, json: async () => { throw new SyntaxError("HTML redirect"); } })
             .mockResolvedValueOnce({ ok: true, json: async () => ({
                 items: loadFixture("story-single").reels_media[0].items,
             }) });
         const result = await generateModalBody(document.createElement("div"), program);
         expect(result.found).toBe(true);
         expect(result.slides).toHaveLength(1);
+        expect(fetchMock).toHaveBeenCalledTimes(3);
         expect(fetchMock.mock.calls[2][0]).toBe("https://i.instagram.com/api/v1/media/123456789/info/");
+    });
+
+    // Captured 2026-10-16: the username feed answers {"spam":true,"status":"fail"}
+    // and the anonymous profile HTML is a login wall. The story id in the URL
+    // still resolves the owner, whose whole reel is then loaded.
+    it("loads the whole reel through the story's own owner when every username lookup fails", async () => {
+        setLocation("https://www.instagram.com/stories/story_user/123456789/");
+        stubAppId();
+        const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
+        fetchMock
+            .mockResolvedValueOnce(profilePageResponse({}))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ message: "", spam: true, status: "fail" }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({
+                items: [{ ...loadFixture("story-single").reels_media[0].items[0], user: { pk: "2000001", username: "story_user" } }],
+            }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-multi") });
+        const result = await generateModalBody(document.createElement("div"), program);
+        expect(result.found).toBe(true);
+        expect(result.slides).toHaveLength(3);
+        expect(fetchMock).toHaveBeenCalledTimes(4);
+        expect(fetchMock.mock.calls[2][0]).toBe("https://i.instagram.com/api/v1/media/123456789/info/");
+        expect(fetchMock.mock.calls[3][0]).toContain("feed/reels_media/?reel_ids=2000001");
     });
 
     it.each([
         "https://www.instagram.com/stories/skogan89/",
         "https://www.instagram.com/stories/skogan89/123456789/",
-    ])("loads stories through profile HTML when the username feed is empty: %s", async (url) => {
+    ])("loads stories through profile HTML without touching the username feed: %s", async (url) => {
         setLocation(url);
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
             .mockResolvedValueOnce(profilePageResponse({ username: "skogan89", pk: 3000001 }))
             .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-single") });
 
@@ -262,17 +282,18 @@ describe("generateModalBody", () => {
 
         expect(result.found).toBe(true);
         expect(result.slides).toHaveLength(1);
-        expect(fetchMock.mock.calls[1][0]).toBe(
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toBe(
             "https://www.instagram.com/skogan89/"
         );
-        expect(fetchMock.mock.calls[2][0]).toContain("feed/reels_media/?reel_ids=3000001");
+        expect(fetchMock.mock.calls[1][0]).toContain("feed/reels_media/?reel_ids=3000001");
     });
 
     it("reports found: true with one slide for a single-item story", async () => {
         setLocation("https://www.instagram.com/stories/story_user/123456789/");
         stubAppId();
         (fetch as unknown as ReturnType<typeof vi.fn>)
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ user: { pk: "3000001" } }] }) })
+            .mockResolvedValueOnce(profilePageResponse({ username: "story_user", pk: "3000001" }))
             .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-single") });
 
         const container = document.createElement("div");
@@ -297,34 +318,34 @@ describe("generateModalBody", () => {
     // an empty reels_media list -- reproducing the empty-slider bug from a
     // different angle. It must now fail fast after the fallbacks instead of
     // guessing.
-    it("reports found: false when the feed fallback and the profile HTML lookup fallback both find nothing (no bogus highlight query)", async () => {
+    it("reports found: false when the profile HTML lookup and the feed fallback both find nothing (no bogus highlight query)", async () => {
         setLocation("https://www.instagram.com/stories/lascanaofficial/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce(profilePageResponse({}));
+            .mockResolvedValueOnce(profilePageResponse({}))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) });
 
         const container = document.createElement("div");
         const result = await generateModalBody(container, program);
 
         expect(result.found).toBe(false);
-        // web_profile_info is switched off, so only the feed fallback, then
-        // the profile HTML lookup fallback are tried -- and no reels_media request
+        // web_profile_info is switched off, so only the profile HTML lookup,
+        // then the feed fallback are tried -- and no reels_media request
         // (highlight-prefixed or otherwise), since no id was resolved.
         expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock.mock.calls[0][0]).toContain("feed/user/");
-        expect(fetchMock.mock.calls[1][0]).toContain("https://www.instagram.com/lascanaofficial/");
+        expect(fetchMock.mock.calls[0][0]).toContain("https://www.instagram.com/lascanaofficial/");
+        expect(fetchMock.mock.calls[1][0]).toContain("feed/user/");
     });
 
-    // The actual fix, not just a graceful failure: with web_profile_info
-    // switched off (real, confirmed error above), the feed fallback resolves
-    // the account id directly and the story should load normally.
-    it("resolves the story via the feed fallback", async () => {
+    // The feed is the last resort now that Instagram flags it as spam for
+    // some sessions, but where it still answers it must resolve the id.
+    it("resolves the story via the feed fallback when the profile HTML has no profile", async () => {
         setLocation("https://www.instagram.com/stories/lascanaofficial/123456789/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
+            .mockResolvedValueOnce(profilePageResponse({}))
             .mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ items: [{ user: { pk: "999888777" } }] }),
@@ -336,20 +357,19 @@ describe("generateModalBody", () => {
 
         expect(result.found).toBe(true);
         expect(result.slides).toHaveLength(1);
-        expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock.mock.calls[0][0]).toContain("feed/user/");
-        expect(fetchMock.mock.calls[1][0]).toContain("reel_ids=999888777");
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(fetchMock.mock.calls[1][0]).toContain("feed/user/");
+        expect(fetchMock.mock.calls[2][0]).toContain("reel_ids=999888777");
     });
 
-    // Confirms the profile HTML lookup fallback still works as a second-level fallback
-    // when the feed fallback finds nothing.
-    it("resolves the story via the profile HTML lookup fallback when the feed fallback finds nothing", async () => {
-        setLocation("https://www.instagram.com/stories/lascanaofficial/123456789/");
+    // Captured 2026-10-16: the anonymous profile page carries no user dict
+    // any more, only the route definition's page_logging.profile_id.
+    it("resolves the story via the anonymous profile page's route profile_id", async () => {
+        setLocation("https://www.instagram.com/stories/route_user/123456789/");
         stubAppId();
         const fetchMock = fetch as unknown as ReturnType<typeof vi.fn>;
         fetchMock
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce(profilePageResponse({ username: "lascanaofficial", id: "999888777" }))
+            .mockResolvedValueOnce(embeddedPageResponse("profile-page-anonymous"))
             .mockResolvedValueOnce({ ok: true, json: async () => loadFixture("story-single") });
 
         const container = document.createElement("div");
@@ -357,8 +377,9 @@ describe("generateModalBody", () => {
 
         expect(result.found).toBe(true);
         expect(result.slides).toHaveLength(1);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
-        expect(fetchMock.mock.calls[2][0]).toContain("reel_ids=999888777");
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toBe("https://www.instagram.com/route_user/");
+        expect(fetchMock.mock.calls[1][0]).toContain("reel_ids=999888777");
     });
 });
 

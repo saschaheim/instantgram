@@ -17,6 +17,7 @@ export interface InstagramProfilePicture {
 }
 
 export interface InstagramUserSummary {
+    pk?: string | number;
     id?: string;
     username?: string;
     profile_pic_url?: string;

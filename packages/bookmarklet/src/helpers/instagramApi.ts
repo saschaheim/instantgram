@@ -102,6 +102,55 @@ export async function findMediaId(postId: string) {
     return mediaIdCache.get(postId);
 }
 
+const reelsMediaUrl = (reelId: string, isHighlight = false) =>
+    iApiV1Prefix+"feed/reels_media/?reel_ids="+(isHighlight ? 'highlight%3A' : '')+reelId;
+
+const hasReelItems = (response: InstagramMediaInfoResponse | null | undefined) =>
+    !!response?.reels_media?.[0]?.items?.length;
+
+// PolarisStoriesV3ReelPageStandaloneQuery -- the query instagram.com's own
+// story page preloads. Its items already have the mobile shape (image_versions2,
+// video_versions), so nothing needs converting.
+const storyReelDocId = "28449850404637481";
+
+/**
+ * Loads a user's story reel. The mobile reels_media endpoint now answers
+ * {"reels":{},"status":"ok"} for some web sessions (captured 2026-10-17), so
+ * an empty answer falls through to the web app's own GraphQL story query and
+ * then to Instaloader's legacy query.
+ */
+const fetchStoryReel = async (reelId: string, mediaId: string | undefined, appId: string): Promise<InstagramMediaInfoResponse | null> => {
+    const mobile = await secureFetch(reelsMediaUrl(reelId), appId);
+    if (hasReelItems(mobile)) return mobile;
+
+    const web = (await postGraphql(storyReelDocId, "PolarisStoriesV3ReelPageStandaloneQuery", JSON.stringify({
+        media_id: mediaId ?? null,
+        reel_ids_arr: [reelId],
+        __relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider: true,
+    })))?.data?.xdt_api__v1__feed__reels_media;
+    if (hasReelItems(web)) return web;
+
+    // Same story query as Instaloader.get_stories; convert its web media fields
+    // into the mobile-shaped media objects consumed by our viewer.
+    const variables = JSON.stringify({ reel_ids: [reelId], precomposed_overlay: false });
+    const graphql = await secureFetch(wwwPrefix+"graphql/query/?query_hash=303a4ae99711322310f25250d988f3b7&variables="+encodeURIComponent(variables), appId);
+    const reels = graphql?.data?.reels_media as Array<{
+        user?: InstagramMediaItem["user"];
+        items?: Array<InstagramMediaItem & {
+            owner?: InstagramMediaItem["user"];
+            display_resources?: Array<{ src?: string }>;
+            video_resources?: Array<{ src?: string }>;
+        }>;
+    }> | undefined;
+    const legacy = Array.isArray(reels) ? { reels_media: reels.map(reel => ({ ...reel, items: reel.items?.map(item => ({
+        ...item,
+        user: item.owner,
+        image_versions2: { candidates: item.display_resources?.map(resource => ({ url: resource.src })) },
+        video_versions: item.video_resources?.map(resource => ({ url: resource.src })),
+    })) })) } : null;
+    return hasReelItems(legacy) ? legacy : null;
+};
+
 export const fetchDataFromApi = async (config: FetchDataConfig): Promise<InstagramMediaInfoResponse | null> => {
     const { type } = config;
     const appId = findAppId();
@@ -110,22 +159,28 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
         return null;
     }
 
+    const id = "id" in config ? config.id : undefined;
+    const isHighlight = "isHighlight" in config ? config.isHighlight : false;
+
+    if (type === "getReelsMediaFromFeed" && !isHighlight) {
+        // A story URL already identifies the media even when owner lookup
+        // fails, and that single story's owner identifies the whole reel.
+        const storyId = window.location.pathname.match(/^\/stories\/(?!highlights\/)[^/]+\/(\d+)\/?$/)?.[1];
+        const singleUrl = storyId ? mediaInfoUrlPrefix+storyId+"/info/" : null;
+        const single = !id && singleUrl ? await secureFetch(singleUrl, appId) : null;
+        const owner = single?.items?.[0]?.user;
+        const reelId = id || (owner?.pk ?? owner?.id)?.toString();
+        const reel = reelId ? await fetchStoryReel(reelId, storyId, appId) : null;
+        return reel || single || (id && singleUrl ? await secureFetch(singleUrl, appId) : null);
+    }
+
     const urlMap: Record<FetchRequestType, () => Promise<string | null> | string> = {
         'getReelsMediaFromFeed': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
-            const id = "id" in config ? config.id : undefined;
-            const isHighlight = "isHighlight" in config ? config.isHighlight : false;
-
-            // A story URL already identifies the media even when owner lookup fails.
-            if (!isHighlight && !id) {
-                const storyId = window.location.pathname.match(/^\/stories\/(?!highlights\/)[^/]+\/(\d+)\/?$/)?.[1];
-                return storyId ? mediaInfoUrlPrefix+storyId+"/info/" : null;
-            }
-
             const postId = articleNode ? findPostId(articleNode) : null;
             const mediaId = id || (postId ? await findMediaId(postId) : null);
             if (!mediaId) return null;
-            return iApiV1Prefix+"feed/reels_media/?reel_ids="+(isHighlight ? 'highlight%3A' : '')+mediaId;
+            return reelsMediaUrl(mediaId, isHighlight);
         },
         'getMediaFromInfo': async () => {
             const articleNode = "articleNode" in config ? config.articleNode : undefined;
@@ -144,29 +199,7 @@ export const fetchDataFromApi = async (config: FetchDataConfig): Promise<Instagr
     const url = await urlMap[type]?.();
     if (!url) return null;
 
-    const result = await secureFetch(url, appId);
-    if (result || type !== "getReelsMediaFromFeed" || !("id" in config) || !config.id || config.isHighlight) {
-        return result;
-    }
-    // Same story query as Instaloader.get_stories; convert its web media fields
-    // into the mobile-shaped media objects consumed by our viewer.
-    const variables = JSON.stringify({ reel_ids: [config.id], precomposed_overlay: false });
-    const graphql = await secureFetch(wwwPrefix+"graphql/query/?query_hash=303a4ae99711322310f25250d988f3b7&variables="+encodeURIComponent(variables), appId);
-    const reels = graphql?.data?.reels_media as Array<{
-        user?: InstagramMediaItem["user"];
-        items?: Array<InstagramMediaItem & {
-            owner?: InstagramMediaItem["user"];
-            display_resources?: Array<{ src?: string }>;
-            video_resources?: Array<{ src?: string }>;
-        }>;
-    }> | undefined;
-    if (!Array.isArray(reels)) return null;
-    return { reels_media: reels.map(reel => ({ ...reel, items: reel.items?.map(item => ({
-        ...item,
-        user: item.owner,
-        image_versions2: { candidates: item.display_resources?.map(resource => ({ url: resource.src })) },
-        video_versions: item.video_resources?.map(resource => ({ url: resource.src })),
-    })) })) };
+    return await secureFetch(url, appId);
 };
 
 export const secureFetch = async (url: string, appId: string, init?: RequestInit) => {
@@ -220,26 +253,58 @@ type UsernameOwner = PictureOwner & {
 /** Read the profile data embedded in HTML, as Instaloader's from_username does.
  * Browser fetch cannot set Instaloader's Sec-Fetch navigation headers, so the
  * existing page is checked first and an anonymous HTML fetch is only a fallback.
+ *
+ * Two embedded shapes carry the id. A user dict with the wanted `username`
+ * and a `pk` is preferred: `xig_user_by_username` on a logged-in profile
+ * page, or the `reels_media[].user` preloaded on a directly opened story
+ * page. Failing that, the route definition names the user in
+ * `route.params.username` and its id in `page_logging.params.profile_id`
+ * (also as the `profilePage_<id>` / `StoriesPage_<id>` page_id). Since
+ * October 2026 the anonymous profile page embeds no user dict at all, so
+ * that route id is all the HTML fallback has left.
  */
 export const findEmbeddedProfile = (page: Document, userName: string): UsernameOwner | null => {
-    const find = (value: unknown): UsernameOwner | null => {
-        if (!value || typeof value !== "object") return null;
-        const record = value as Record<string, unknown>;
-        const user = record.xig_user_by_username as UsernameOwner | undefined;
-        if (user?.username?.toLowerCase() === userName.toLowerCase() && user.pk != null) return user;
+    const wanted = userName.toLowerCase();
+    const isWanted = (name: unknown) => typeof name === "string" && name.toLowerCase() === wanted;
+    const asRecord = (value: unknown): Record<string, unknown> | null =>
+        value && typeof value === "object" ? value as Record<string, unknown> : null;
+
+    const findRouteId = (value: unknown): string | null => {
+        const record = asRecord(value);
+        if (!record) return null;
+        if (/^\d+$/.test(String(record.profile_id ?? ""))) return String(record.profile_id);
+        const pageId = String(record.page_id ?? "").match(/^(?:profilePage|StoriesPage)_(\d+)$/)?.[1];
+        if (pageId) return pageId;
         for (const child of Object.values(record)) {
-            const match = find(child);
+            const id = findRouteId(child);
+            if (id) return id;
+        }
+        return null;
+    };
+
+    const routeIds: string[] = [];
+    const findUser = (value: unknown): UsernameOwner | null => {
+        const record = asRecord(value);
+        if (!record) return null;
+        if (isWanted(record.username) && record.pk != null) return record as UsernameOwner;
+        if (isWanted(asRecord(record.params)?.username)) {
+            const id = findRouteId(record);
+            if (id) routeIds.push(id);
+        }
+        for (const child of Object.values(record)) {
+            const match = findUser(child);
             if (match) return match;
         }
         return null;
     };
+
     for (const script of page.querySelectorAll('script[type="application/json"]')) {
         try {
-            const user = find(JSON.parse(script.textContent || "null"));
+            const user = findUser(JSON.parse(script.textContent || "null"));
             if (user) return user;
         } catch { /* Malformed or unrelated scripts are not profile data. */ }
     }
-    return null;
+    return routeIds.length ? { pk: routeIds[0], username: userName } : null;
 };
 
 const fetchPageOwner = async (userName: string): Promise<UsernameOwner | null> => {
@@ -273,22 +338,26 @@ const fetchFeedOwner = async (userName: string): Promise<FeedOwner | null> => {
 };
 
 /**
- * Resolves a username to its numeric user id and owner object, feed first and
- * embedded profile HTML as a fallback. Neither step needs web_profile_info, the brittle,
- * per-account-gated endpoint that returns 400/401 for otherwise-valid public
- * accounts (see https://github.com/jackwener/opencli/issues/2147 and
- * instaloader#2482). The owner is kept because some business/creator accounts
- * get a stripped-down /users/{id}/info/ response with no profile_pic_url*
- * field at all, in which case it is the only remaining picture source.
+ * Resolves a username to its numeric user id and owner object: the current
+ * page's embedded data first, then the anonymous profile HTML, and the
+ * username feed last. The feed used to go first, but Instagram now answers
+ * it with {"spam":true,"status":"fail"} for some sessions, so it is only hit
+ * once the request-free and anonymous sources have both failed. None of the
+ * steps needs web_profile_info, the brittle, per-account-gated endpoint that
+ * returns 400/401 for otherwise-valid public accounts (see
+ * https://github.com/jackwener/opencli/issues/2147 and instaloader#2482).
+ * The owner is kept because some business/creator accounts get a
+ * stripped-down /users/{id}/info/ response with no profile_pic_url* field at
+ * all, in which case it is the only remaining picture source.
  */
 export const resolveProfile = async (userName: string) => {
     const embedded = findEmbeddedProfile(document, userName);
     if (embedded) return { userId: String(embedded.pk), owner: embedded };
+    const page = await fetchPageOwner(userName);
+    if (page?.pk != null) return { userId: String(page.pk), owner: page };
     const feed = await fetchFeedOwner(userName);
     const feedId = feed?.pk ?? feed?.id;
-    if (feedId != null) return { userId: String(feedId), owner: feed };
-    const owner = await fetchPageOwner(userName);
-    return { userId: owner?.pk != null ? String(owner.pk) : null, owner };
+    return { userId: feedId != null ? String(feedId) : null, owner: feed ?? page };
 };
 
 // PolarisProfilePageContentQuery -- the query instagram.com's own profile page
@@ -316,7 +385,15 @@ const profilePageVariables = (userId: string) => JSON.stringify({
  * instagram.com -- and it silently returns null if either token or the doc_id
  * stops working, leaving the smaller sources as fallbacks.
  */
-export const fetchGraphqlOwner = async (userId: string): Promise<PictureOwner | null> => {
+export const fetchGraphqlOwner = async (userId: string): Promise<PictureOwner | null> =>
+    (await postGraphql(profilePageDocId, "PolarisProfilePageContentQuery", profilePageVariables(userId)))?.data?.user ?? null;
+
+/**
+ * Posts a persisted query to instagram.com's own GraphQL endpoint, as the web
+ * app does. Needs the page's `lsd`, `fb_dtsg` and csrftoken, so it returns
+ * null without sending anything when any of them is missing.
+ */
+const postGraphql = async (docId: string, friendlyName: string, variables: string) => {
     const appId = findAppId();
     const lsd = document.querySelector<HTMLInputElement>('input[name="lsd"]')?.value
         || findInScripts(/"LSD",\[\],\{"token":"([^"]+)"/);
@@ -327,26 +404,25 @@ export const fetchGraphqlOwner = async (userId: string): Promise<PictureOwner | 
     }
 
     const body = new URLSearchParams({
-        doc_id: profilePageDocId,
-        variables: profilePageVariables(userId),
+        doc_id: docId,
+        variables,
         lsd,
         fb_dtsg: dtsg,
         server_timestamps: "true",
         fb_api_caller_class: "RelayModern",
-        fb_api_req_friendly_name: "PolarisProfilePageContentQuery",
+        fb_api_req_friendly_name: friendlyName,
     });
 
-    const payload = await secureFetch(wwwPrefix+"api/graphql", appId, {
+    return await secureFetch(wwwPrefix+"api/graphql", appId, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-CSRFToken': csrfToken,
-            'X-FB-Friendly-Name': "PolarisProfilePageContentQuery",
+            'X-FB-Friendly-Name': friendlyName,
+            'X-FB-LSD': lsd,
         },
         body: body.toString(),
     });
-
-    return payload?.data?.user ?? null;
 };
 
 /**

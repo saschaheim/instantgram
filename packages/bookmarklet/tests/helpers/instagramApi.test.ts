@@ -1,4 +1,5 @@
 import { profilePageResponse } from "../utils/profilePage";
+import { loadFixture } from "../utils/fixtures";
 import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import {
     fetchDataFromApi,
@@ -10,6 +11,10 @@ import {
     shortcodeToMediaId
 } from "../../src/helpers/instagramApi";
 import { setLocation } from "../utils/location";
+
+const embeddedScript = (fixture: string) =>
+    '<script type="application/json">'+JSON.stringify(loadFixture<unknown>(fixture))+'</script>';
+const htmlResponse = (html: string) => ({ ok: true, text: async () => html });
 
 describe("getIGUsername", () => {
     it("extracts the username from a plain profile URL", () => {
@@ -128,6 +133,79 @@ describe("fetchDataFromApi > getReelsMediaFromFeed", () => {
         expect(fetch).toHaveBeenCalledWith(
             "https://i.instagram.com/api/v1/media/123456789/info/", expect.any(Object)
         );
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("expands a single story into its owner's whole reel", async () => {
+        setLocation("https://www.instagram.com/stories/skogan89/123456789/");
+        const reel = { reels_media: [{ user: { pk: "2000001" }, items: [{ taken_at: 1 }, { taken_at: 2 }] }] };
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ user: { pk: "2000001" }, taken_at: 1 }] }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => reel });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const result = await fetchDataFromApi({ type: "getReelsMediaFromFeed", id: null, isHighlight: false });
+
+        expect(result).toEqual(reel);
+        expect(fetchMock.mock.calls[1][0]).toBe("https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=2000001");
+    });
+
+    it("keeps the single story when the owner's reel comes back empty", async () => {
+        setLocation("https://www.instagram.com/stories/skogan89/123456789/");
+        const single = { items: [{ user: { id: "2000001" }, taken_at: 1 }] };
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => single })
+            .mockResolvedValueOnce({ ok: false, status: 403 })
+            .mockResolvedValueOnce({ ok: false, status: 403 });
+        vi.stubGlobal("fetch", fetchMock);
+
+        expect(await fetchDataFromApi({ type: "getReelsMediaFromFeed", id: null, isHighlight: false })).toEqual(single);
+        // Single story, mobile reel, legacy GraphQL reel. The web GraphQL
+        // query is skipped because this page has no lsd/fb_dtsg tokens.
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+
+    // Captured 2026-10-17: the mobile endpoint answers an empty reel map with
+    // HTTP 200, which must not count as an answer.
+    it("falls back to the web app's GraphQL story query when reels_media is empty", async () => {
+        setLocation("https://www.instagram.com/stories/story_user/3000001/");
+        for (const content of ['"LSD",[],{"token":"lsd-value"}', '"DTSGInitialData",[],{"token":"dtsg-value"}']) {
+            const script = document.createElement("script");
+            script.type = "application/json";
+            script.textContent = content;
+            document.body.appendChild(script);
+        }
+        document.cookie = "csrftoken=csrf-value";
+        const reel = loadFixture<{ require: any }>("story-page-reels-media")
+            .require[0][3][0].__bbox.require[0][3][1].__bbox.result;
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ reels: {}, status: "ok" }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => reel });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const result = await fetchDataFromApi({ type: "getReelsMediaFromFeed", id: "2000001", isHighlight: false });
+
+        expect(result?.reels_media?.[0]?.items).toHaveLength(1);
+        const [url, init] = fetchMock.mock.calls[1];
+        expect(url).toBe("https://www.instagram.com/api/graphql");
+        const body = new URLSearchParams(init.body);
+        expect(body.get("doc_id")).toBe("28449850404637481");
+        expect(body.get("fb_api_req_friendly_name")).toBe("PolarisStoriesV3ReelPageStandaloneQuery");
+        expect(JSON.parse(body.get("variables")!)).toMatchObject({ media_id: "3000001", reel_ids_arr: ["2000001"] });
+        document.cookie = "csrftoken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    });
+
+    it("loads the single story from the URL when every reel source is empty", async () => {
+        setLocation("https://www.instagram.com/stories/story_user/3000001/");
+        const single = { items: [{ user: { pk: "2000001" }, taken_at: 1 }] };
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ reels: {}, status: "ok" }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ data: { reels_media: [] } }) })
+            .mockResolvedValueOnce({ ok: true, json: async () => single });
+        vi.stubGlobal("fetch", fetchMock);
+
+        expect(await fetchDataFromApi({ type: "getReelsMediaFromFeed", id: "2000001", isHighlight: false })).toEqual(single);
+        expect(fetchMock.mock.calls[2][0]).toBe("https://i.instagram.com/api/v1/media/3000001/info/");
     });
 
     it("builds a plain reel_ids query (no highlight prefix) when a user id is resolved", async () => {
@@ -199,81 +277,106 @@ describe("resolveProfile", () => {
         vi.restoreAllMocks();
     });
 
-    it("returns the id and owner from the username feed", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ items: [{ user: {
-                pk: "999888777",
-                profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg",
-            } }] }),
+    it("resolves the profile HTML first and matches the username case-insensitively", async () => {
+        const fetchMock = vi.fn().mockResolvedValueOnce(profilePageResponse({
+            username: "Lascanaofficial",
+            id: "999888777",
+            profile_pic_url: "https://scontent.cdninstagram.com/v/username.jpg",
         }));
-
-        const result = await resolveProfile("lascanaofficial");
-
-        expect(result.userId).toBe("999888777");
-        expect(result.owner?.profile_pic_url).toContain("pic.jpg");
-        const [calledUrl] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
-        expect(calledUrl).toContain("feed/user/");
-        expect(calledUrl).toContain("lascanaofficial");
-    });
-
-    it("uses the feed owner's id when pk is absent", async () => {
-        vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-            ok: true,
-            json: async () => ({ items: [{ user: { id: 555444333 } }] }),
-        }));
-
-        expect((await resolveProfile("lascanaofficial")).userId).toBe("555444333");
-    });
-
-    it("falls back to profile HTML lookup and matches the username case-insensitively", async () => {
-        const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce(profilePageResponse({
-                            username: "Lascanaofficial",
-                            id: "999888777",
-                            profile_pic_url: "https://scontent.cdninstagram.com/v/username.jpg",
-                        }));
         vi.stubGlobal("fetch", fetchMock);
 
         const result = await resolveProfile("lascanaofficial");
 
         expect(result.userId).toBe("999888777");
         expect(result.owner?.profile_pic_url).toContain("username.jpg");
-        expect(fetchMock).toHaveBeenCalledTimes(2);
-        expect(fetchMock.mock.calls[1][0]).toContain("https://www.instagram.com/lascanaofficial/");
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+        expect(fetchMock.mock.calls[0][0]).toContain("https://www.instagram.com/lascanaofficial/");
     });
 
     it("resolves skogan89 through the profile HTML with a numeric pk", async () => {
-        const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce(profilePageResponse({ username: "Skogan89", pk: 999888777 }));
+        const fetchMock = vi.fn().mockResolvedValueOnce(profilePageResponse({ username: "Skogan89", pk: 999888777 }));
         vi.stubGlobal("fetch", fetchMock);
 
         expect((await resolveProfile("skogan89")).userId).toBe("999888777");
-        expect(fetchMock.mock.calls[1][0]).toBe(
+        expect(fetchMock.mock.calls[0][0]).toBe(
             "https://www.instagram.com/skogan89/"
         );
-        expect(fetchMock.mock.calls[1][1]).toMatchObject({
+        expect(fetchMock.mock.calls[0][1]).toMatchObject({
             credentials: "omit",
             headers: { Accept: "text/html" },
         });
     });
 
-    it("falls back to profile HTML lookup when the feed request fails", async () => {
-        const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: false, status: 429 })
-            .mockResolvedValueOnce(profilePageResponse({ username: "lascanaofficial", id: "999888777" }));
+    // Captured 2026-10-16: the anonymous profile page no longer embeds any
+    // user dict, only the route definition with page_logging.profile_id.
+    it("reads the route profile_id from the anonymous profile page without touching the feed", async () => {
+        const fetchMock = vi.fn().mockResolvedValueOnce(htmlResponse(embeddedScript("profile-page-anonymous")));
         vi.stubGlobal("fetch", fetchMock);
 
-        expect((await resolveProfile("lascanaofficial")).userId).toBe("999888777");
+        const result = await resolveProfile("Route_User");
+
+        expect(result.userId).toBe("999888777");
+        expect(result.owner?.pk).toBe("999888777");
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("ignores the route profile_id of a different user", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(htmlResponse(embeddedScript("profile-page-anonymous")))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) });
+        vi.stubGlobal("fetch", fetchMock);
+
+        expect((await resolveProfile("someone_else")).userId).toBeNull();
+    });
+
+    it("falls through to the username feed only after the profile HTML fails", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce({ ok: false, status: 429 })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ items: [{ user: {
+                    pk: "999888777",
+                    profile_pic_url: "https://scontent.cdninstagram.com/v/pic.jpg",
+                } }] }),
+            });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const result = await resolveProfile("lascanaofficial");
+
+        expect(result.userId).toBe("999888777");
+        expect(result.owner?.profile_pic_url).toContain("pic.jpg");
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[1][0]).toContain("feed/user/");
+        expect(fetchMock.mock.calls[1][0]).toContain("lascanaofficial");
+    });
+
+    it("uses the feed owner's id when pk is absent", async () => {
+        vi.stubGlobal("fetch", vi.fn()
+            .mockResolvedValueOnce(profilePageResponse({ username: "someone_else", id: "111" }))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [{ user: { id: 555444333 } }] }) }));
+
+        expect((await resolveProfile("lascanaofficial")).userId).toBe("555444333");
+    });
+
+    // Captured 2026-10-16: {"message":"","spam":true,"status":"fail"} is what
+    // the username feed now answers for some sessions.
+    it("treats a spam-flagged username feed answer as a miss", async () => {
+        const fetchMock = vi.fn()
+            .mockResolvedValueOnce(profilePageResponse({ username: "someone_else", id: "111" }))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ message: "", spam: true, status: "fail" }) });
+        vi.stubGlobal("fetch", fetchMock);
+
+        const result = await resolveProfile("lascanaofficial");
+
+        expect(result.userId).toBeNull();
+        expect(result.owner).toBeNull();
         expect(fetchMock).toHaveBeenCalledTimes(2);
     });
 
-    it("returns null values when neither feed nor profile HTML lookup finds the profile", async () => {
+    it("returns null values when neither profile HTML nor feed lookup finds the profile", async () => {
         const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce(profilePageResponse({ username: "someone_else", id: "111" }));
+            .mockResolvedValueOnce(profilePageResponse({ username: "someone_else", id: "111" }))
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) });
         vi.stubGlobal("fetch", fetchMock);
 
         const result = await resolveProfile("lascanaofficial");
@@ -300,6 +403,31 @@ describe("embedded profiles", () => {
         expect(fetch).not.toHaveBeenCalled();
         document.body.innerHTML = "";
         vi.unstubAllGlobals();
+    });
+
+    // Captured 2026-10-16 from a directly opened /stories/<user>/<id>/ page.
+    it("resolves a directly opened story page from its preloaded reel owner", async () => {
+        document.body.innerHTML = embeddedScript("story-page-route")+embeddedScript("story-page-reels-media");
+        vi.stubGlobal("fetch", vi.fn());
+        const result = await resolveProfile("story_user");
+        expect(result.userId).toBe("2000001");
+        expect(result.owner?.username).toBe("story_user");
+        expect(fetch).not.toHaveBeenCalled();
+        document.body.innerHTML = "";
+        vi.unstubAllGlobals();
+    });
+
+    it("reads the StoriesPage route id when only the route definition is embedded", () => {
+        const page = new DOMParser().parseFromString(embeddedScript("story-page-route"), "text/html");
+        expect(findEmbeddedProfile(page, "story_user")?.pk).toBe("2000001");
+        expect(findEmbeddedProfile(page, "another_user")).toBeNull();
+    });
+
+    it("does not mistake a username-only object for a user dict", () => {
+        const page = new DOMParser().parseFromString(
+            '<script type="application/json">{"params":{"username":"story_user"},"id":"not-a-profile"}</script>', "text/html"
+        );
+        expect(findEmbeddedProfile(page, "story_user")).toBeNull();
     });
 });
 

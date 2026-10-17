@@ -74,12 +74,12 @@ describe("ProfileScanner", () => {
         expect(result?.slides).toHaveLength(1);
     });
 
-    it("reports found: false when both the feed fallback and the profile HTML lookup fallback find no user id", async () => {
+    it("reports found: false when both the profile HTML lookup and the feed fallback find no user id", async () => {
         setLocation("https://www.instagram.com/ghost_user/");
         stubAppId();
         const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ users: [] }) });
+            .mockResolvedValueOnce({ ok: true, text: async () => "<html></html>" })
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) });
         vi.stubGlobal("fetch", fetchMock);
 
         const result = await new ProfileScanner().execute(program);
@@ -91,11 +91,10 @@ describe("ProfileScanner", () => {
     });
 
     // The actual fix for https://github.com/saschaheim/instantgram/issues/45,
-    // not just a graceful failure: when web_profile_info is switched off and
-    // the feed fallback finds nothing, Instagram's search endpoint still
-    // resolves the account, and the profile picture should load normally
-    // instead of giving up.
-    it("resolves the profile via the profile HTML lookup fallback when the feed fallback has no user id", async () => {
+    // not just a graceful failure: when web_profile_info is switched off, the
+    // anonymous profile HTML still resolves the account, and the profile
+    // picture should load normally instead of giving up.
+    it("resolves the profile via the profile HTML lookup without touching the feed", async () => {
         setLocation("https://www.instagram.com/ghost_user/");
         document.body.innerHTML = "";
         const script = document.createElement("script");
@@ -103,7 +102,6 @@ describe("ProfileScanner", () => {
         script.textContent = '"X-IG-App-ID":"123456789"';
         document.body.appendChild(script);
         const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
             .mockResolvedValueOnce(profilePageResponse({ username: "ghost_user", id: "555444333" }));
         vi.stubGlobal("fetch", fetchMock);
 
@@ -112,6 +110,8 @@ describe("ProfileScanner", () => {
         const result = await new ProfileScanner().execute(program);
 
         expect(result?.found).toBe(true);
+        expect(fetchMock.mock.calls[0][0]).toBe("https://www.instagram.com/ghost_user/");
+        expect(fetchMock.mock.calls.some(([url]) => String(url).includes("feed/user/"))).toBe(false);
         expect(fetchDataFromApi).toHaveBeenCalledWith({ type: "getUserFromInfo", userId: "555444333" });
     });
 
@@ -160,7 +160,6 @@ describe("ProfileScanner", () => {
         script.textContent = '"X-IG-App-ID":"123456789"';
         document.body.appendChild(script);
         const fetchMock = vi.fn()
-            .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [] }) })
             .mockResolvedValueOnce(profilePageResponse({ username: "private_user", id: "31857140226", profile_pic_url: "https://scontent.cdninstagram.com/v/search_owner_pic.jpg" }));
         vi.stubGlobal("fetch", fetchMock);
 

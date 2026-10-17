@@ -1,0 +1,38 @@
+{
+    "require": [
+        ["ScheduledServerJS", "handle", null, [{ "__bbox": { "require": [
+            ["CometPlatformRootClient", "initialize", ["__inst_0", "RequireDeferredReference"], [{
+                "client_id": "0",
+                "rootElementID": "mount_0_0",
+                "expectedPreloaders": [{
+                    "preloaderID": "adp_PolarisStoriesV3ReelPageStandaloneQueryRelayPreloader_0",
+                    "queryName": "PolarisStoriesV3ReelPageStandaloneQuery",
+                    "variables": { "media_id": "3000001", "reel_ids_arr": ["2000001"] }
+                }],
+                "initialRouteInfo": {
+                    "route": {
+                        "actorID": "0",
+                        "canonicalRouteName": "PolarisStoriesV3Root",
+                        "rootView": {
+                            "props": {
+                                "page_logging": {
+                                    "name": "StoriesPage",
+                                    "params": { "page_id": "StoriesPage_2000001" }
+                                },
+                                "user_id": "2000001",
+                                "preload": true
+                            }
+                        },
+                        "url": "/stories/story_user/3000001/",
+                        "params": {
+                            "username": "story_user",
+                            "initial_media_id": "3000001",
+                            "r": null
+                        },
+                        "routePath": "/stories/{username}/{initial_media_id}/"
+                    }
+                }
+            }]]
+        ] } }]]
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "require": [
+        ["ScheduledServerJS", "handle", null, [{ "__bbox": { "require": [
+            ["CometPlatformRootClient", "initialize", ["__inst_0", "RequireDeferredReference"], [{
+                "client_id": "0",
+                "rootElementID": "mount_0_0",
+                "initialRouteInfo": {
+                    "route": {
+                        "actorID": "0",
+                        "canonicalRouteName": "PolarisProfilePostsTabRoot",
+                        "rootView": {
+                            "props": {
+                                "id": "999888777",
+                                "page_logging": {
+                                    "name": "profilePage",
+                                    "params": {
+                                        "page_id": "profilePage_999888777",
+                                        "profile_id": "999888777",
+                                        "sub_path": "posts"
+                                    }
+                                },
+                                "number_of_preloaded_posts": 12
+                            }
+                        },
+                        "hostableView": {
+                            "props": {
+                                "id": "999888777",
+                                "page_logging": {
+                                    "name": "profilePage",
+                                    "params": {
+                                        "page_id": "profilePage_999888777",
+                                        "profile_id": "999888777",
+                                        "sub_path": "posts"
+                                    }
+                                }
+                            }
+                        },
+                        "url": "/route_user/",
+                        "params": {
+                            "username": "route_user",
+                            "tab": null,
+                            "show_story_unavailable": null
+                        },
+                        "routePath": "/{username}/"
+                    }
+                }
+            }]]
+        ] } }]]
+    ]
+}
