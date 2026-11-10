@@ -119,6 +119,12 @@ describe("resolveUserLink", () => {
         );
     });
 
+    it("builds a plain profile link for a username-prefixed post path", () => {
+        expect(resolveUserLink("https://www.instagram.com", "/someuser/p/ABC123/", "someuser")).toBe(
+            "https://www.instagram.com/someuser/"
+        );
+    });
+
     it("builds a reels-scoped profile link for a reels path", () => {
         expect(resolveUserLink("https://www.instagram.com", "/reels/ABC123/", "someuser")).toBe(
             "https://www.instagram.com/someuser/reels/"

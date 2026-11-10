@@ -29,6 +29,10 @@ describe("getIGUsername", () => {
         expect(getIGUsername("https://www.instagram.com/reels/some_user/")).toBe("some_user");
     });
 
+    it("extracts the username from a username-prefixed post URL", () => {
+        expect(getIGUsername("https://www.instagram.com/some_user/p/ABC123abcde/")).toBe("some_user");
+    });
+
     it("returns null for a URL that does not match the Instagram host pattern", () => {
         expect(getIGUsername("https://example.com/some_user/")).toBeNull();
     });
@@ -62,6 +66,24 @@ describe("findPostId", () => {
         expect(findPostId(article)).toBe("ABC123abcde");
     });
 
+    it("extracts the post id from a username-prefixed /p/ URL", () => {
+        setLocation("https://www.instagram.com/some_user/p/ABC123abcde/");
+        const article = document.createElement("article");
+        expect(findPostId(article)).toBe("ABC123abcde");
+    });
+
+    it("extracts the reel id from a username-prefixed /reel/ URL", () => {
+        setLocation("https://www.instagram.com/some_user/reel/XYZ987xyzab/");
+        const article = document.createElement("article");
+        expect(findPostId(article)).toBe("XYZ987xyzab");
+    });
+
+    it("does not mistake a profile's reels tab for a reel", () => {
+        setLocation("https://www.instagram.com/some_user/reels/");
+        const article = document.createElement("article");
+        expect(findPostId(article)).toBeNull();
+    });
+
     it("truncates an over-long shortcode to the canonical 11-character length", () => {
         setLocation("https://www.instagram.com/p/ABC123abcdeEXTRA/");
         const article = document.createElement("article");
@@ -84,6 +106,13 @@ describe("findPostId", () => {
         setLocation("https://www.instagram.com/");
         const article = document.createElement("article");
         article.innerHTML = '<a href="/p/FALLBACK123/">post</a>';
+        expect(findPostId(article)).toBe("FALLBACK123");
+    });
+
+    it("falls back to scanning anchors in the article for a username-prefixed /p/ link", () => {
+        setLocation("https://www.instagram.com/");
+        const article = document.createElement("article");
+        article.innerHTML = '<a href="/some_user/p/FALLBACK123/">post</a>';
         expect(findPostId(article)).toBe("FALLBACK123");
     });
 

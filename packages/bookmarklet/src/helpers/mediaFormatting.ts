@@ -81,7 +81,7 @@ export const wrapInSliderContainer = (modalBody: string) =>
     '<div class="slider-container"><div class="slider">'+modalBody+'</div><div class="slider-controls"></div></div>';
 
 export const resolveUserLink = (rootUrl: string, path: string, userName: string) => {
-    if (path.startsWith("/p/") || path.startsWith(storiesPathPrefix)) {
+    if (/^\/(?:[\w.]+\/)?p\//.test(path) || path.startsWith(storiesPathPrefix)) {
         return rootUrl+"/"+userName+"/";
     } else if (path.startsWith("/reels/")) {
         return rootUrl+"/"+userName+"/reels/";

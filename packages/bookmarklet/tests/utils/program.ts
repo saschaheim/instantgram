@@ -10,8 +10,8 @@ export const createTestProgram = (overrides: Partial<Program["settings"]> = {}):
     hostname: "www.instagram.com",
     regexRootPath: /^\/+$/,
     regexProfilePath: /^\/(\w[-\w.]+)\/?$/,
-    regexPostPath: /^\/p\/[^/]+\/?$/,
-    regexReelURI: /^\/reel\/[^/]+\/?$/,
+    regexPostPath: /^\/(?:[\w.]+\/)?p\/[^/]+\/?$/,
+    regexReelURI: /^\/(?:[\w.]+\/)?reel\/[^/]+\/?$/,
     regexReelsURI: /^\/reels\/[^/]+\/?$/,
     regexStoriesURI: /^(?:\/stories\/[\w.]+(?:\/\d+)?\/?|\/stories\/highlights\/\d+\/?)$/,
     settings: {

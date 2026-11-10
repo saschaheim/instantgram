@@ -19,6 +19,10 @@ vi.mock("../../src/helpers/localize", () => ({
 vi.mock("../../src/components/modal", () => ({ Modal: class {} }));
 
 import { MediaScanner } from "../../src/modules/MediaScanner";
+import { PostAndReelScanner } from "../../src/modules/PostAndReelScanner";
+import { ProfileScanner } from "../../src/modules/ProfileScanner";
+import { Program } from "../../src/App";
+import { createTestProgram } from "../utils/program";
 
 // buildNotFoundBody is private -- accessed via a cast, the same way the real
 // call site (handleURLPatterns) invokes it internally.
@@ -82,5 +86,28 @@ describe("MediaScanner > buildNotFoundBody", () => {
         );
 
         infoSpy.mockRestore();
+    });
+});
+
+describe("MediaScanner > resolveScannerClass", () => {
+    const program = createTestProgram();
+    const resolveScannerClass = (url: string) => {
+        setLocation(url);
+        return (new MediaScanner() as unknown as {
+            resolveScannerClass(program: Program): unknown;
+        }).resolveScannerClass(program);
+    };
+
+    it.each([
+        "https://www.instagram.com/p/ABC123abcde/",
+        "https://www.instagram.com/some_user/p/ABC123abcde/",
+        "https://www.instagram.com/reel/XYZ987xyzab/",
+        "https://www.instagram.com/some_user/reel/XYZ987xyzab/",
+    ])("uses PostAndReelScanner for %s", (url) => {
+        expect(resolveScannerClass(url)).toBe(PostAndReelScanner);
+    });
+
+    it("still uses ProfileScanner for a plain profile URL", () => {
+        expect(resolveScannerClass("https://www.instagram.com/some_user/")).toBe(ProfileScanner);
     });
 });

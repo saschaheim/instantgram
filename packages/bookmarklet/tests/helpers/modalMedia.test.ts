@@ -175,6 +175,19 @@ describe("generateModalBody", () => {
         expect(result.slides).toHaveLength(1);
     });
 
+    it("reports found: true for a post opened from a username-prefixed URL", async () => {
+        setLocation("https://www.instagram.com/some_user/p/ABC123abcde/");
+        stubAppId();
+        mockApiResponse(loadFixture("post-single-image"));
+
+        const article = document.createElement("article");
+
+        const result = await generateModalBody(article, program);
+
+        expect(result.found).toBe(true);
+        expect(result.slides).toHaveLength(1);
+    });
+
     it("reports found: true with three slides for a carousel post", async () => {
         setLocation("https://www.instagram.com/p/CAROUSEL01/");
         stubAppId();

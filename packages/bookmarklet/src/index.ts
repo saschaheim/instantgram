@@ -26,8 +26,8 @@ export const program: Program = {
     // Regular expressions used for matching specific URL paths
     regexRootPath: /^\/+$/, // Regex to match the root path (e.g., "/")
     regexProfilePath: /^\/(\w[-\w.]+)\/?$/, // Regex to match Instagram profile paths (e.g., "/username/")
-    regexPostPath: /^\/p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/")
-    regexReelURI: /^\/reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/")
+    regexPostPath: /^\/(?:[\w.]+\/)?p\/[^/]+\/?$/, // Regex to match Instagram post paths (e.g., "/p/post_id/" or "/username/p/post_id/")
+    regexReelURI: /^\/(?:[\w.]+\/)?reel\/[^/]+\/?$/, // Regex to match Instagram reel URLs (e.g., "/reel/reel_id/" or "/username/reel/reel_id/")
     regexReelsURI: /^\/reels\/[^/]+\/?$/, // Regex to match Instagram reels URLs (e.g., "/reels/reel_id/")
     regexStoriesURI: /^\/stories\/(?:[\w.]+(?:\/\d+)?\/?|highlights\/\d+\/?)$/, // Regex to match Instagram stories and highlights URLs
 
